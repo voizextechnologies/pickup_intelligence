@@ -17,7 +17,13 @@ import {
   EyeOff,
   ArrowLeft,
   LogOut,
-  Link as LinkIcon
+  Link as LinkIcon,
+  Mail,
+  Globe,
+  Car,
+  Smartphone,
+  MapPin,
+  History as HistoryIcon
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useOfficerAuth } from '../contexts/OfficerAuthContext';
@@ -27,12 +33,14 @@ import { PhonePrefillV2Response, PhonePrefillV2Request } from '../types';
 import toast from 'react-hot-toast';
 
 export const OfficerDashboard: React.FC = () => {
-  const { officer, logout } = useOfficerAuth();
+  const { officer, logout, updateOfficerState } = useOfficerAuth();
   const { isDark } = useTheme();
-  const { apis, queries, addQuery } = useSupabaseData();
+  const { apis, queries, addQuery, addTransaction, getOfficerEnabledAPIs } = useSupabaseData();
   
   // State for search functionality
   const [activeTab, setActiveTab] = useState<'dashboard' | 'free' | 'pro' | 'tracklink' | 'history' | 'account'>('dashboard');
+  const [activeFreeLookupSubTab, setActiveFreeLookupSubTab] = useState<'mobile-check' | 'email-check' | 'platform-scan'>('mobile-check');
+  const [activeProLookupSubTab, setActiveProLookupSubTab] = useState<'phone-prefill-v2' | 'rc-imei-fasttag' | 'credit-history' | 'cell-id'>('phone-prefill-v2');
   const [searchQuery, setSearchQuery] = useState('');
   const [fullName, setFullName] = useState('');
   const [isSearching, setIsSearching] = useState(false);
@@ -66,7 +74,20 @@ export const OfficerDashboard: React.FC = () => {
       return;
     }
 
-    const phonePrefillAPI = getPhonePrefillAPI();
+    if (!officer) {
+      toast.error('Officer not authenticated');
+      return;
+    }
+
+    // Get officer's enabled APIs with plan-specific pricing
+    const enabledAPIs = getOfficerEnabledAPIs(officer.id);
+    const phonePrefillAPI = enabledAPIs.find(api => 
+      api.name.toLowerCase().includes('phone prefill v2') || 
+      api.name.toLowerCase().includes('phone kyc') ||
+      api.name.toLowerCase().includes('phonekyc') ||
+      api.name.toLowerCase().includes('phone prefill')
+    );
+
     if (!phonePrefillAPI) {
       toast.error('Phone Prefill V2 API not configured. Please contact admin.');
       return;
@@ -74,6 +95,13 @@ export const OfficerDashboard: React.FC = () => {
 
     if (phonePrefillAPI.key_status !== 'Active') {
       toast.error('Phone Prefill V2 API is currently inactive');
+      return;
+    }
+
+    // Check if officer has sufficient credits
+    const creditCost = phonePrefillAPI.credit_cost || phonePrefillAPI.default_credit_charge || 1;
+    if (officer.credits_remaining < creditCost) {
+      toast.error(`Insufficient credits. Required: ${creditCost}, Available: ${officer.credits_remaining}`);
       return;
     }
 
@@ -125,21 +153,35 @@ export const OfficerDashboard: React.FC = () => {
       setSearchResults(data);
       setShowResults(true);
 
+      // Deduct credits and record transaction
+      const newCreditsRemaining = officer.credits_remaining - creditCost;
+      
+      // Update officer's state locally for immediate UI update
+      updateOfficerState({ credits_remaining: newCreditsRemaining });
+
+      // Record credit deduction transaction in database
+      await addTransaction({
+        officer_id: officer.id,
+        officer_name: officer.name,
+        action: 'Deduction',
+        credits: creditCost,
+        payment_mode: 'Query Usage',
+        remarks: `Phone Prefill V2 query for ${cleanPhoneNumber}`
+      });
+
       // Log the query to database
-      if (officer) {
-        await addQuery({
-          officer_id: officer.id,
-          officer_name: officer.name,
-          type: 'PRO',
-          category: 'Phone Prefill V2',
-          input_data: `Phone: ${cleanPhoneNumber}${fullName ? `, Name: ${fullName}` : ''}`,
-          source: 'Signzy Phone Prefill V2',
-          result_summary: `Found data for ${data.response.name?.fullName || 'Unknown'}`,
-          full_result: data,
-          credits_used: phonePrefillAPI.default_credit_charge || 1,
-          status: 'Success'
-        });
-      }
+      await addQuery({
+        officer_id: officer.id,
+        officer_name: officer.name,
+        type: 'PRO',
+        category: 'Phone Prefill V2',
+        input_data: `Phone: ${cleanPhoneNumber}${fullName ? `, Name: ${fullName}` : ''}`,
+        source: 'Signzy Phone Prefill V2',
+        result_summary: `Found data for ${data.response.name?.fullName || 'Unknown'}`,
+        full_result: data,
+        credits_used: creditCost,
+        status: 'Success'
+      });
 
       toast.success('Phone prefill data retrieved successfully!');
 
@@ -147,7 +189,7 @@ export const OfficerDashboard: React.FC = () => {
       console.error('Phone Prefill V2 API Error:', error);
       
       // Log failed query
-      if (officer) {
+      if (officer && phonePrefillAPI) {
         await addQuery({
           officer_id: officer.id,
           officer_name: officer.name,
@@ -157,7 +199,7 @@ export const OfficerDashboard: React.FC = () => {
           source: 'Signzy Phone Prefill V2',
           result_summary: `Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
           full_result: null,
-          credits_used: 0,
+          credits_used: 0, // No credits deducted for failed queries
           status: 'Failed'
         });
       }
@@ -375,7 +417,242 @@ export const OfficerDashboard: React.FC = () => {
     })()
   );
 
+  const renderFreeLookups = () => (
+    <div className="space-y-6">
+      {/* Sub-navigation for Free Lookups */}
+      <div className={`border border-cyber-teal/20 rounded-lg p-4 ${
+        isDark ? 'bg-muted-graphite' : 'bg-white'
+      }`}>
+        <div className="flex space-x-2">
+          <button
+            onClick={() => setActiveFreeLookupSubTab('mobile-check')}
+            className={`flex items-center space-x-2 py-2 px-4 rounded-lg transition-all duration-200 ${
+              activeFreeLookupSubTab === 'mobile-check'
+                ? 'bg-cyber-teal/20 text-cyber-teal border border-cyber-teal/30'
+                : isDark 
+                  ? 'text-gray-400 hover:text-cyber-teal hover:bg-cyber-teal/10' 
+                  : 'text-gray-600 hover:text-cyber-teal hover:bg-cyber-teal/10'
+            }`}
+          >
+            <Phone className="w-4 h-4" />
+            <span className="font-medium">Mobile Check</span>
+          </button>
+          <button
+            onClick={() => setActiveFreeLookupSubTab('email-check')}
+            className={`flex items-center space-x-2 py-2 px-4 rounded-lg transition-all duration-200 ${
+              activeFreeLookupSubTab === 'email-check'
+                ? 'bg-cyber-teal/20 text-cyber-teal border border-cyber-teal/30'
+                : isDark 
+                  ? 'text-gray-400 hover:text-cyber-teal hover:bg-cyber-teal/10' 
+                  : 'text-gray-600 hover:text-cyber-teal hover:bg-cyber-teal/10'
+            }`}
+          >
+            <Mail className="w-4 h-4" />
+            <span className="font-medium">Email Check</span>
+          </button>
+          <button
+            onClick={() => setActiveFreeLookupSubTab('platform-scan')}
+            className={`flex items-center space-x-2 py-2 px-4 rounded-lg transition-all duration-200 ${
+              activeFreeLookupSubTab === 'platform-scan'
+                ? 'bg-cyber-teal/20 text-cyber-teal border border-cyber-teal/30'
+                : isDark 
+                  ? 'text-gray-400 hover:text-cyber-teal hover:bg-cyber-teal/10' 
+                  : 'text-gray-600 hover:text-cyber-teal hover:bg-cyber-teal/10'
+            }`}
+          >
+            <Globe className="w-4 h-4" />
+            <span className="font-medium">Platform Scan</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Content based on active sub-tab */}
+      {activeFreeLookupSubTab === 'mobile-check' && (
+        <div className={`border border-cyber-teal/20 rounded-lg p-6 ${
+          isDark ? 'bg-muted-graphite' : 'bg-white'
+        }`}>
+          <h2 className={`text-xl font-semibold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+            Mobile Check (Free)
+          </h2>
+          <div className="space-y-4">
+            <input
+              type="tel"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Enter mobile number..."
+              className={`w-full px-4 py-3 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal focus:border-transparent ${
+                isDark 
+                  ? 'bg-crisp-black text-white placeholder-gray-500' 
+                  : 'bg-white text-gray-900 placeholder-gray-400'
+              }`}
+            />
+            <button
+              onClick={handleOSINTSearch}
+              disabled={isSearching || !searchQuery.trim()}
+              className="w-full py-3 px-4 bg-cyber-gradient text-white font-medium rounded-lg hover:shadow-cyber transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+            >
+              {isSearching ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <span>Searching...</span>
+                </>
+              ) : (
+                <>
+                  <Phone className="w-5 h-5" />
+                  <span>Check Mobile</span>
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {activeFreeLookupSubTab === 'email-check' && (
+      <div className={`border border-cyber-teal/20 rounded-lg p-6 ${
+        isDark ? 'bg-muted-graphite' : 'bg-white'
+      }`}>
+          <h2 className={`text-xl font-semibold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+            Email Check (Free)
+        </h2>
+        <div className="space-y-4">
+          <input
+            type="email"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Enter email address..."
+            className={`w-full px-4 py-3 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal focus:border-transparent ${
+              isDark 
+                ? 'bg-crisp-black text-white placeholder-gray-500' 
+                : 'bg-white text-gray-900 placeholder-gray-400'
+            }`}
+          />
+          <button
+            onClick={handleOSINTSearch}
+            disabled={isSearching || !searchQuery.trim()}
+            className="w-full py-3 px-4 bg-cyber-gradient text-white font-medium rounded-lg hover:shadow-cyber transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+          >
+            {isSearching ? (
+              <>
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <span>Searching...</span>
+              </>
+            ) : (
+              <>
+                <Mail className="w-5 h-5" />
+                <span>Check Email</span>
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+      )}
+
+      {activeFreeLookupSubTab === 'platform-scan' && (
+        <div className={`border border-cyber-teal/20 rounded-lg p-6 ${
+          isDark ? 'bg-muted-graphite' : 'bg-white'
+        }`}>
+          <h2 className={`text-xl font-semibold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+            Platform Scan (Free)
+          </h2>
+          <div className="space-y-4">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Enter username or profile URL..."
+              className={`w-full px-4 py-3 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal focus:border-transparent ${
+                isDark 
+                  ? 'bg-crisp-black text-white placeholder-gray-500' 
+                  : 'bg-white text-gray-900 placeholder-gray-400'
+              }`}
+            />
+            <button
+              onClick={handleOSINTSearch}
+              disabled={isSearching || !searchQuery.trim()}
+              className="w-full py-3 px-4 bg-cyber-gradient text-white font-medium rounded-lg hover:shadow-cyber transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+            >
+              {isSearching ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <span>Scanning...</span>
+                </>
+              ) : (
+                <>
+                  <Globe className="w-5 h-5" />
+                  <span>Scan Platforms</span>
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
   const renderPROLookups = () => (
+    <div className="space-y-6">
+      {/* Sub-navigation for PRO Lookups */}
+      <div className={`border border-cyber-teal/20 rounded-lg p-4 ${
+        isDark ? 'bg-muted-graphite' : 'bg-white'
+      }`}>
+        <div className="flex space-x-2 flex-wrap gap-2">
+          <button
+            onClick={() => setActiveProLookupSubTab('phone-prefill-v2')}
+            className={`flex items-center space-x-2 py-2 px-4 rounded-lg transition-all duration-200 ${
+              activeProLookupSubTab === 'phone-prefill-v2'
+                ? 'bg-cyber-teal/20 text-cyber-teal border border-cyber-teal/30'
+                : isDark 
+                  ? 'text-gray-400 hover:text-cyber-teal hover:bg-cyber-teal/10' 
+                  : 'text-gray-600 hover:text-cyber-teal hover:bg-cyber-teal/10'
+            }`}
+          >
+            <Phone className="w-4 h-4" />
+            <span className="font-medium">Phone Prefill V2</span>
+          </button>
+          <button
+            onClick={() => setActiveProLookupSubTab('rc-imei-fasttag')}
+            className={`flex items-center space-x-2 py-2 px-4 rounded-lg transition-all duration-200 ${
+              activeProLookupSubTab === 'rc-imei-fasttag'
+                ? 'bg-cyber-teal/20 text-cyber-teal border border-cyber-teal/30'
+                : isDark 
+                  ? 'text-gray-400 hover:text-cyber-teal hover:bg-cyber-teal/10' 
+                  : 'text-gray-600 hover:text-cyber-teal hover:bg-cyber-teal/10'
+            }`}
+          >
+            <Car className="w-4 h-4" />
+            <span className="font-medium">RC / IMEI / FastTag</span>
+          </button>
+          <button
+            onClick={() => setActiveProLookupSubTab('credit-history')}
+            className={`flex items-center space-x-2 py-2 px-4 rounded-lg transition-all duration-200 ${
+              activeProLookupSubTab === 'credit-history'
+                ? 'bg-cyber-teal/20 text-cyber-teal border border-cyber-teal/30'
+                : isDark 
+                  ? 'text-gray-400 hover:text-cyber-teal hover:bg-cyber-teal/10' 
+                  : 'text-gray-600 hover:text-cyber-teal hover:bg-cyber-teal/10'
+            }`}
+          >
+            <CreditCard className="w-4 h-4" />
+            <span className="font-medium">Credit History</span>
+          </button>
+          <button
+            onClick={() => setActiveProLookupSubTab('cell-id')}
+            className={`flex items-center space-x-2 py-2 px-4 rounded-lg transition-all duration-200 ${
+              activeProLookupSubTab === 'cell-id'
+                ? 'bg-cyber-teal/20 text-cyber-teal border border-cyber-teal/30'
+                : isDark 
+                  ? 'text-gray-400 hover:text-cyber-teal hover:bg-cyber-teal/10' 
+                  : 'text-gray-600 hover:text-cyber-teal hover:bg-cyber-teal/10'
+            }`}
+          >
+            <MapPin className="w-4 h-4" />
+            <span className="font-medium">Cell ID</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Content based on active PRO sub-tab */}
+      {activeProLookupSubTab === 'phone-prefill-v2' && (
     <div className="space-y-6">
       {/* Phone Prefill V2 Search */}
       <div className={`border border-cyber-teal/20 rounded-lg p-6 ${
@@ -739,49 +1016,172 @@ export const OfficerDashboard: React.FC = () => {
         </div>
       )}
     </div>
-  );
+      )}
 
-  const renderFreeLookups = () => (
-    <div className="space-y-6">
-      <div className={`border border-cyber-teal/20 rounded-lg p-6 ${
-        isDark ? 'bg-muted-graphite' : 'bg-white'
-      }`}>
-        <h2 className={`text-xl font-semibold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-          Free OSINT Lookups
-        </h2>
-        <div className="space-y-4">
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Enter email, username, or any identifier..."
-            className={`w-full px-4 py-3 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal focus:border-transparent ${
-              isDark 
-                ? 'bg-crisp-black text-white placeholder-gray-500' 
-                : 'bg-white text-gray-900 placeholder-gray-400'
-            }`}
-          />
-          <button
-            onClick={handleOSINTSearch}
-            disabled={isSearching || !searchQuery.trim()}
-            className="w-full py-3 px-4 bg-cyber-gradient text-white font-medium rounded-lg hover:shadow-cyber transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
-          >
-            {isSearching ? (
-              <>
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                <span>Searching...</span>
-              </>
-            ) : (
-              <>
-                <Search className="w-5 h-5" />
-                <span>Search OSINT</span>
-              </>
-            )}
-          </button>
+      {activeProLookupSubTab === 'rc-imei-fasttag' && (
+        <div className={`border border-cyber-teal/20 rounded-lg p-6 ${
+          isDark ? 'bg-muted-graphite' : 'bg-white'
+        }`}>
+          <h2 className={`text-xl font-semibold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+            RC / IMEI / FastTag Verification
+          </h2>
+          <div className="text-center py-12">
+            <Car className={`w-16 h-16 mx-auto mb-4 ${isDark ? 'text-gray-400' : 'text-gray-500'}`} />
+            <h3 className={`text-lg font-medium mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+              Coming Soon
+            </h3>
+            <p className={isDark ? 'text-gray-400' : 'text-gray-600'}>
+              RC, IMEI, and FastTag verification services will be available soon.
+            </p>
+          </div>
         </div>
-      </div>
+      )}
+
+      {activeProLookupSubTab === 'credit-history' && (
+        <div className={`border border-cyber-teal/20 rounded-lg p-6 ${
+          isDark ? 'bg-muted-graphite' : 'bg-white'
+        }`}>
+          <h2 className={`text-xl font-semibold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+            Credit History
+          </h2>
+          <div className="text-center py-12">
+            <CreditCard className={`w-16 h-16 mx-auto mb-4 ${isDark ? 'text-gray-400' : 'text-gray-500'}`} />
+            <h3 className={`text-lg font-medium mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+              Credit History
+            </h3>
+            <p className={isDark ? 'text-gray-400' : 'text-gray-600'}>
+              Your credit transaction history will be displayed here.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {activeProLookupSubTab === 'cell-id' && (
+        <div className={`border border-cyber-teal/20 rounded-lg p-6 ${
+          isDark ? 'bg-muted-graphite' : 'bg-white'
+        }`}>
+          <h2 className={`text-xl font-semibold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+            Cell ID Lookup
+          </h2>
+          <div className="text-center py-12">
+            <MapPin className={`w-16 h-16 mx-auto mb-4 ${isDark ? 'text-gray-400' : 'text-gray-500'}`} />
+            <h3 className={`text-lg font-medium mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+              Coming Soon
+            </h3>
+            <p className={isDark ? 'text-gray-400' : 'text-gray-600'}>
+              Cell ID lookup functionality will be available soon.
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
+
+  const renderHistory = () => {
+    const officerQueries = queries.filter(q => q.officer_id === officer?.id);
+
+    const getStatusIcon = (status: string) => {
+      switch (status) {
+        case 'Success':
+          return <CheckCircle className="w-4 h-4 text-green-400" />;
+        case 'Failed':
+          return <XCircle className="w-4 h-4 text-red-400" />;
+        case 'Pending':
+          return <AlertCircle className="w-4 h-4 text-yellow-400" />;
+        case 'Processing':
+          return <Clock className="w-4 h-4 text-yellow-400 animate-spin" />;
+        default:
+          return <AlertCircle className="w-4 h-4 text-gray-400" />;
+      }
+    };
+
+    return (
+      <div className={`border border-cyber-teal/20 rounded-lg overflow-hidden ${
+        isDark ? 'bg-muted-graphite' : 'bg-white'
+      }`}>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className={`border-b border-cyber-teal/20 ${
+              isDark ? 'bg-crisp-black/50' : 'bg-gray-50'
+            }`}>
+              <tr>
+                <th className={`px-6 py-4 text-left text-sm font-medium ${
+                  isDark ? 'text-gray-300' : 'text-gray-600'
+                }`}>Type</th>
+                <th className={`px-6 py-4 text-left text-sm font-medium ${
+                  isDark ? 'text-gray-300' : 'text-gray-600'
+                }`}>Category</th>
+                <th className={`px-6 py-4 text-left text-sm font-medium ${
+                  isDark ? 'text-gray-300' : 'text-gray-600'
+                }`}>Input Data</th>
+                <th className={`px-6 py-4 text-left text-sm font-medium ${
+                  isDark ? 'text-gray-300' : 'text-gray-600'
+                }`}>Credits Used</th>
+                <th className={`px-6 py-4 text-left text-sm font-medium ${
+                  isDark ? 'text-gray-300' : 'text-gray-600'
+                }`}>Status</th>
+                <th className={`px-6 py-4 text-left text-sm font-medium ${
+                  isDark ? 'text-gray-300' : 'text-gray-600'
+                }`}>Timestamp</th>
+              </tr>
+            </thead>
+            <tbody>
+              {officerQueries.length > 0 ? (
+                officerQueries.map((query) => (
+                  <tr key={query.id} className={`border-b border-cyber-teal/10 transition-colors ${
+                    isDark ? 'hover:bg-crisp-black/50' : 'hover:bg-gray-50'
+                  }`}>
+                    <td className="px-6 py-4">
+                      <span className={`text-xs px-2 py-1 rounded ${
+                        query.type === 'PRO' 
+                          ? 'bg-neon-magenta/20 text-neon-magenta' 
+                          : 'bg-cyber-teal/20 text-cyber-teal'
+                      }`}>
+                        {query.type}
+                      </span>
+                    </td>
+                    <td className={`px-6 py-4 text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                      {query.category}
+                    </td>
+                    <td className={`px-6 py-4 text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                      {query.input_data}
+                    </td>
+                    <td className={`px-6 py-4 text-sm font-medium ${
+                      query.credits_used > 0 ? 'text-red-400' : 'text-green-400'
+                    }`}>
+                      {query.credits_used > 0 ? `-${query.credits_used}` : '0'}
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center space-x-2">
+                        {getStatusIcon(query.status)}
+                        <span className={`text-sm ${
+                          query.status === 'Success' ? 'text-green-400' :
+                          query.status === 'Failed' ? 'text-red-400' :
+                          'text-yellow-400'
+                        }`}>
+                          {query.status}
+                        </span>
+                      </div>
+                    </td>
+                    <td className={`px-6 py-4 text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                      {new Date(query.created_at).toLocaleString()}
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={6} className={`px-6 py-12 text-center ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                    <HistoryIcon className={`w-12 h-12 mx-auto mb-3 ${isDark ? 'text-gray-400' : 'text-gray-500'}`} />
+                    <p>No queries found in your history.</p>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className={`min-h-screen ${isDark ? 'bg-crisp-black' : 'bg-soft-white'}`}>
@@ -918,17 +1318,7 @@ export const OfficerDashboard: React.FC = () => {
             </p>
           </div>
         )}
-        {activeTab === 'history' && (
-          <div className="text-center py-12">
-            <Clock className={`w-16 h-16 mx-auto mb-4 ${isDark ? 'text-gray-400' : 'text-gray-500'}`} />
-            <h3 className={`text-lg font-medium mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-              Query History
-            </h3>
-            <p className={isDark ? 'text-gray-400' : 'text-gray-600'}>
-              Your search history will appear here.
-            </p>
-          </div>
-        )}
+        {activeTab === 'history' && renderHistory()}
         {activeTab === 'account' && (
           <div className="text-center py-12">
             <User className={`w-16 h-16 mx-auto mb-4 ${isDark ? 'text-gray-400' : 'text-gray-500'}`} />
