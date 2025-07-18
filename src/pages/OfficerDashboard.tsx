@@ -88,7 +88,7 @@ export const OfficerDashboard: React.FC = () => {
       
       // Prepare request payload for Phone Prefill V2
       const requestPayload: PhonePrefillV2Request = {
-        phoneNumber: cleanPhoneNumber,
+        mobileNumber: cleanPhoneNumber,
         firstName: firstName.trim().toUpperCase(),
         lastName: lastName.trim().toUpperCase() || undefined,
         consentFlag: true,

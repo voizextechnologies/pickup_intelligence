@@ -107,7 +107,7 @@ export interface PhonePrefillV2Response {
 }
 
 export interface PhonePrefillV2Request {
-  phoneNumber: string;
+  mobileNumber: string;
   firstName: string;
   lastName?: string;
   consentFlag: boolean;
