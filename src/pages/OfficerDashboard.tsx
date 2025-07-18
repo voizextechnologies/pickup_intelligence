@@ -29,7 +29,7 @@ import toast from 'react-hot-toast';
 export const OfficerDashboard: React.FC = () => {
   const { officer, logout } = useOfficerAuth();
   const { isDark } = useTheme();
-  const { apis, addQuery } = useSupabaseData();
+  const { apis, queries, addQuery } = useSupabaseData();
   
   // State for search functionality
   const [activeTab, setActiveTab] = useState<'dashboard' | 'free' | 'pro' | 'tracklink' | 'history' | 'account'>('dashboard');
@@ -225,6 +225,29 @@ export const OfficerDashboard: React.FC = () => {
     return phone;
   };
 
+  // Calculate real-time statistics for the officer
+  const calculateOfficerStats = () => {
+    if (!officer) return { todayQueries: 0, successRate: 0, creditsUsed: 0 };
+
+    // Filter queries for this officer
+    const officerQueries = queries.filter(q => q.officer_id === officer.id);
+    
+    // Today's queries
+    const today = new Date().toDateString();
+    const todayQueries = officerQueries.filter(q => {
+      return new Date(q.created_at).toDateString() === today;
+    }).length;
+
+    // Success rate
+    const successfulQueries = officerQueries.filter(q => q.status === 'Success').length;
+    const successRate = officerQueries.length > 0 ? Math.round((successfulQueries / officerQueries.length) * 100) : 0;
+
+    // Credits used (total credits - remaining credits)
+    const creditsUsed = officer.total_credits - officer.credits_remaining;
+
+    return { todayQueries, successRate, creditsUsed };
+  };
+
   if (!officer) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -234,6 +257,9 @@ export const OfficerDashboard: React.FC = () => {
   }
 
   const renderDashboard = () => (
+    (() => {
+      const { todayQueries, successRate, creditsUsed } = calculateOfficerStats();
+      return (
     <div className="space-y-6">
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -246,7 +272,7 @@ export const OfficerDashboard: React.FC = () => {
                 Today's Queries
               </p>
               <p className={`text-2xl font-bold mt-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                12
+                {todayQueries}
               </p>
             </div>
             <Search className="w-8 h-8 text-cyber-teal" />
@@ -262,7 +288,7 @@ export const OfficerDashboard: React.FC = () => {
                 Success Rate
               </p>
               <p className={`text-2xl font-bold mt-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                98%
+                {successRate}%
               </p>
             </div>
             <CheckCircle className="w-8 h-8 text-green-400" />
@@ -278,7 +304,7 @@ export const OfficerDashboard: React.FC = () => {
                 Credits Used
               </p>
               <p className={`text-2xl font-bold mt-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                18
+                {creditsUsed}
               </p>
             </div>
             <CreditCard className="w-8 h-8 text-neon-magenta" />
@@ -294,7 +320,7 @@ export const OfficerDashboard: React.FC = () => {
                 Active Links
               </p>
               <p className={`text-2xl font-bold mt-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                2
+                0
               </p>
             </div>
             <LinkIcon className="w-8 h-8 text-electric-blue" />
@@ -352,6 +378,8 @@ export const OfficerDashboard: React.FC = () => {
         </div>
       </div>
     </div>
+      );
+    })()
   );
 
   const renderPROLookups = () => (
