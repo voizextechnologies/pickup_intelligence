@@ -108,7 +108,7 @@ export const OfficerDashboard: React.FC = () => {
       console.log('Using API key:', phonePrefillAPI.api_key);
 
       // Make direct API call to Signzy (not through proxy)
-      const response = await fetch('https://api.signzy.app/api/v3/phonekyc/phone-prefill-v2', {
+      const response = await fetch('/api/signzy/api/v3/phonekyc/phone-prefill-v2', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
