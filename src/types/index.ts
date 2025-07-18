@@ -55,6 +55,67 @@ export interface LiveRequest {
   status: 'Processing' | 'Success' | 'Failed';
 }
 
+// Updated Phone Prefill V2 API Response Types
+export interface PhonePrefillV2Response {
+  response: {
+    alternatePhone: Array<{
+      serialNo: string;
+      phoneNumber: string;
+    }>;
+    email: Array<{
+      serialNo: string;
+      email: string;
+    }>;
+    address: Array<{
+      Seq: string;
+      ReportedDate: string;
+      Address: string;
+      State: string;
+      Postal: string;
+      Type: string;
+    }>;
+    voterId: Array<{
+      seq: string;
+      IdNumber: string;
+      ReportedDate: string;
+    }>;
+    passport: Array<{
+      seq: string;
+      IdNumber: string;
+      ReportedDate: string;
+    }>;
+    drivingLicense: Array<{
+      seq: string;
+      IdNumber: string;
+      ReportedDate: string;
+    }>;
+    PAN: Array<{
+      seq: string;
+      ReportedDate: string;
+      IdNumber: string;
+    }>;
+    name: {
+      fullName: string;
+      firstName: string;
+      lastName: string;
+    };
+    income: string;
+    gender: string;
+    age: string;
+    dob: string;
+  };
+}
+
+export interface PhonePrefillV2Request {
+  phoneNumber: string;
+  firstName: string;
+  lastName?: string;
+  consentFlag: boolean;
+  consentTimestamp: number;
+  consentIpAddress: string;
+  consentMessageId: string;
+}
+
 export interface DashboardStats {
   total_officers: number;
   active_officers: number;
