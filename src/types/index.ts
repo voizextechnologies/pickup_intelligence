@@ -81,8 +81,8 @@ export interface PhonePrefillV2Response {
     }>;
     passport: Array<{
       seq: string;
-      IdNumber: string;
-      ReportedDate: string;
+      passport: string;
+      ReportedDate?: string;
     }>;
     drivingLicense: Array<{
       seq: string;
