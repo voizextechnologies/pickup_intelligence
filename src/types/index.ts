@@ -108,12 +108,13 @@ export interface PhonePrefillV2Response {
 
 export interface PhonePrefillV2Request {
   mobileNumber: string;
-  firstName: string;
-  lastName?: string;
-  consentFlag: boolean;
-  consentTimestamp: number;
-  consentIpAddress: string;
-  consentMessageId: string;
+  fullName?: string;
+  consent: {
+    consentFlag: boolean;
+    consentTimestamp: number;
+    consentIpAddress: string;
+    consentMessageId: string;
+  };
 }
 
 export interface DashboardStats {

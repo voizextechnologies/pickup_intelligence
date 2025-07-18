@@ -34,8 +34,7 @@ export const OfficerDashboard: React.FC = () => {
   // State for search functionality
   const [activeTab, setActiveTab] = useState<'dashboard' | 'free' | 'pro' | 'tracklink' | 'history' | 'account'>('dashboard');
   const [searchQuery, setSearchQuery] = useState('');
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
+  const [fullName, setFullName] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [searchResults, setSearchResults] = useState<PhonePrefillV2Response | null>(null);
   const [showResults, setShowResults] = useState(false);
@@ -62,8 +61,8 @@ export const OfficerDashboard: React.FC = () => {
   };
 
   const handlePhonePrefillSearch = async () => {
-    if (!searchQuery.trim() || !firstName.trim()) {
-      toast.error('Please enter both phone number and first name');
+    if (!searchQuery.trim()) {
+      toast.error('Please enter phone number');
       return;
     }
 
@@ -89,20 +88,14 @@ export const OfficerDashboard: React.FC = () => {
       // Prepare request payload for Phone Prefill V2
       const requestPayload: PhonePrefillV2Request = {
         mobileNumber: cleanPhoneNumber,
-        firstName: firstName.trim().toUpperCase(),
-        lastName: lastName.trim().toUpperCase() || undefined,
-        consentFlag: true,
-        consentTimestamp: Date.now(),
-        consentIpAddress: clientIP,
-        consentMessageId: `CM_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-      };
-
-      // Remove undefined values
-      Object.keys(requestPayload).forEach(key => {
-        if (requestPayload[key as keyof PhonePrefillV2Request] === undefined) {
-          delete requestPayload[key as keyof PhonePrefillV2Request];
+        ...(fullName.trim() && { fullName: fullName.trim() }),
+        consent: {
+          consentFlag: true,
+          consentTimestamp: Math.floor(Date.now() / 1000), // Convert to seconds
+          consentIpAddress: clientIP,
+          consentMessageId: `CM_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
         }
-      });
+      };
 
       console.log('Making API request with payload:', requestPayload);
       console.log('Using API key:', phonePrefillAPI.api_key);
@@ -139,7 +132,7 @@ export const OfficerDashboard: React.FC = () => {
           officer_name: officer.name,
           type: 'PRO',
           category: 'Phone Prefill V2',
-          input_data: `Phone: ${cleanPhoneNumber}, Name: ${firstName} ${lastName}`.trim(),
+          input_data: `Phone: ${cleanPhoneNumber}${fullName ? `, Name: ${fullName}` : ''}`,
           source: 'Signzy Phone Prefill V2',
           result_summary: `Found data for ${data.response.name?.fullName || 'Unknown'}`,
           full_result: data,
@@ -160,7 +153,7 @@ export const OfficerDashboard: React.FC = () => {
           officer_name: officer.name,
           type: 'PRO',
           category: 'Phone Prefill V2',
-          input_data: `Phone: ${searchQuery}, Name: ${firstName} ${lastName}`.trim(),
+          input_data: `Phone: ${searchQuery}${fullName ? `, Name: ${fullName}` : ''}`,
           source: 'Signzy Phone Prefill V2',
           result_summary: `Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
           full_result: null,
@@ -421,13 +414,13 @@ export const OfficerDashboard: React.FC = () => {
             <label className={`block text-sm font-medium mb-2 ${
               isDark ? 'text-gray-300' : 'text-gray-700'
             }`}>
-              First Name *
+              Full Name (Optional)
             </label>
             <input
               type="text"
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
-              placeholder="RAMBABU"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              placeholder="RAMBABU DARA"
               className={`w-full px-4 py-3 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal focus:border-transparent ${
                 isDark 
                   ? 'bg-crisp-black text-white placeholder-gray-500' 
@@ -435,29 +428,12 @@ export const OfficerDashboard: React.FC = () => {
               }`}
             />
           </div>
-          <div>
-            <label className={`block text-sm font-medium mb-2 ${
-              isDark ? 'text-gray-300' : 'text-gray-700'
-            }`}>
-              Last Name
-            </label>
-            <input
-              type="text"
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
-              placeholder="DARA (optional)"
-              className={`w-full px-4 py-3 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal focus:border-transparent ${
-                isDark 
-                  ? 'bg-crisp-black text-white placeholder-gray-500' 
-                  : 'bg-white text-gray-900 placeholder-gray-400'
-              }`}
-            />
-          </div>
+          <div></div>
         </div>
 
         <button
           onClick={handlePhonePrefillSearch}
-          disabled={isSearching || !searchQuery.trim() || !firstName.trim()}
+          disabled={isSearching || !searchQuery.trim()}
           className="w-full py-3 px-4 bg-cyber-gradient text-white font-medium rounded-lg hover:shadow-cyber transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
         >
           {isSearching ? (
@@ -473,7 +449,7 @@ export const OfficerDashboard: React.FC = () => {
           )}
         </button>
         <p className={`text-xs mt-2 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-          * Required fields. This will consume credits from your account.
+          * Phone number is required. Full name is optional but may improve results. This will consume credits from your account.
         </p>
       </div>
 
@@ -753,8 +729,7 @@ export const OfficerDashboard: React.FC = () => {
                 setShowResults(false);
                 setSearchResults(null);
                 setSearchQuery('');
-                setFirstName('');
-                setLastName('');
+                setFullName('');
               }}
               className="px-4 py-2 bg-cyber-gradient text-white rounded-lg hover:shadow-cyber transition-all duration-200"
             >
