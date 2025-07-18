@@ -21,6 +21,7 @@ interface OfficerAuthContextType {
   officer: OfficerUser | null;
   login: (identifier: string, password: string) => Promise<void>;
   logout: () => void;
+  updateOfficerState: (updates: Partial<OfficerUser>) => void;
   isLoading: boolean;
 }
 
@@ -210,8 +211,17 @@ export const OfficerAuthProvider: React.FC<OfficerAuthProviderProps> = ({ childr
     toast.success('Logged out successfully');
   };
 
+  const updateOfficerState = (updates: Partial<OfficerUser>) => {
+    setOfficer(prev => {
+      if (!prev) return null;
+      const updatedOfficer = { ...prev, ...updates };
+      localStorage.setItem('officer_auth_user', JSON.stringify(updatedOfficer));
+      return updatedOfficer;
+    });
+  };
+
   return (
-    <OfficerAuthContext.Provider value={{ officer, login, logout, isLoading }}>
+    <OfficerAuthContext.Provider value={{ officer, login, logout, updateOfficerState, isLoading }}>
       {children}
     </OfficerAuthContext.Provider>
   );
