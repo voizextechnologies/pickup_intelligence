@@ -3,7 +3,7 @@ import { Shield, Zap, Phone, User, ArrowLeft, Mail, Building, UserPlus, Clock } 
 import { Link, useNavigate } from 'react-router-dom';
 import { useTheme } from '../contexts/ThemeContext';
 import { useOfficerAuth } from '../contexts/OfficerAuthContext';
-import { supabase } from '../lib/supabase';
+import { supabase, supabaseAdmin } from '../lib/supabase';
 import toast from 'react-hot-toast';
 
 export const OfficerLogin: React.FC = () => {

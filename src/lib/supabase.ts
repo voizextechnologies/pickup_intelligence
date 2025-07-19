@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 // For demo purposes, use placeholder values if environment variables are not set
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://placeholder.supabase.co';
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'placeholder-anon-key';
+const supabaseServiceKey = import.meta.env.VITE_SUPABASE_SERVICE_ROLE_KEY;
 
 // Create a mock client if no real Supabase credentials are provided
 const isDemo = !import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -28,6 +29,11 @@ export const supabase = isDemo ?
     }
   } as any :
   createClient(supabaseUrl, supabaseAnonKey);
+
+// Service role client for admin operations (like file uploads)
+export const supabaseAdmin = supabaseServiceKey 
+  ? createClient(supabaseUrl, supabaseServiceKey)
+  : supabase;
 
 // Database types
 export interface Officer {
