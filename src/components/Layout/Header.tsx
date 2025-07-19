@@ -8,6 +8,9 @@ import { useSupabaseData } from '../../hooks/useSupabaseData';
 export const Header: React.FC = () => {
   const { isDark, toggleTheme } = useTheme();
   const { user } = useAuth();
+  const { registrations } = useSupabaseData();
+  
+  const pendingRegistrations = registrations.filter(reg => reg.status === 'pending').length;
 
   return (
     <header className={`h-16 border-b border-cyber-teal/20 flex items-center justify-between px-6 ${
