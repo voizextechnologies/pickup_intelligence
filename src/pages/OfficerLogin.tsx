@@ -3,7 +3,7 @@ import { Shield, Zap, Phone, User, ArrowLeft, Mail, Building, UserPlus, Clock } 
 import { Link, useNavigate } from 'react-router-dom';
 import { useTheme } from '../contexts/ThemeContext';
 import { useOfficerAuth } from '../contexts/OfficerAuthContext';
-import { supabase, supabaseAdmin } from '../lib/supabase';
+import { supabase } from '../lib/supabase';
 import toast from 'react-hot-toast';
 
 export const OfficerLogin: React.FC = () => {
@@ -97,7 +97,7 @@ export const OfficerLogin: React.FC = () => {
         const fileName = `${registerData.name.replace(/\s+/g, '_')}_${registerData.mobile.replace(/\D/g, '')}_${Date.now()}.${fileExtension}`;
         const filePath = `identicards/${fileName}`;
 
-        const { data: uploadData, error: uploadError } = await supabase.storage
+        const { data: uploadData, error: uploadError } = await supabaseAdmin.storage
           .from('identicards')
           .upload(filePath, file, {
             cacheControl: '3600',
@@ -109,7 +109,7 @@ export const OfficerLogin: React.FC = () => {
         }
 
         // Get public URL of the uploaded file
-        const { data: publicUrlData } = supabase.storage
+        const { data: publicUrlData } = supabaseAdmin.storage
           .from('identicards')
           .getPublicUrl(filePath);
 
