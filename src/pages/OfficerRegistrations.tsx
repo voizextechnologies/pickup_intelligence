@@ -13,13 +13,19 @@ import { OfficerRegistration } from '../lib/supabase';
 export const OfficerRegistrations: React.FC = () => {
   const { isDark } = useTheme();
   const { user } = useAuth();
-  const { registrations, updateRegistration } = useSupabaseData();
+  const { registrations, updateRegistration, ratePlans, addOfficer } = useSupabaseData();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedRequest, setSelectedRequest] = useState<OfficerRegistration | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [showApproveModal, setShowApproveModal] = useState(false);
+  const [showRejectModal, setShowRejectModal] = useState(false);
   const [rejectionReason, setRejectionReason] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [approvalData, setApprovalData] = useState({
+    plan_id: '',
+    password: ''
+  });
 
   const filteredRegistrations = registrations.filter((reg: OfficerRegistration) => {
     const matchesSearch = reg.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -390,7 +396,7 @@ export const OfficerRegistrations: React.FC = () => {
       </div>
 
       {/* Rejection Modal */}
-      {showModal && selectedRequest && (
+      {showRejectModal && selectedRequest && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <div className={`max-w-md w-full rounded-lg p-6 ${
             isDark ? 'bg-muted-graphite border border-cyber-teal/20' : 'bg-white border border-gray-200'
@@ -415,7 +421,7 @@ export const OfficerRegistrations: React.FC = () => {
             <div className="flex justify-end space-x-3 mt-4">
               <button
                 onClick={() => {
-                  setShowModal(false);
+                  setShowRejectModal(false);
                   setRejectionReason('');
                   setSelectedRequest(null);
                 }}
@@ -426,7 +432,7 @@ export const OfficerRegistrations: React.FC = () => {
                 Cancel
               </button>
               <button
-                onClick={() => handleReject(selectedRequest)}
+                onClick={handleConfirmReject}
                 disabled={!rejectionReason.trim() || isProcessing}
                 className="px-4 py-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-all duration-200 disabled:opacity-50"
               >
@@ -491,7 +497,7 @@ export const OfficerRegistrations: React.FC = () => {
                   ))}
                 </select>
               </div>
-      {/* No Results */}
+
               <div>
                 <label className={`block text-sm font-medium mb-2 ${
                   isDark ? 'text-gray-300' : 'text-gray-700'
@@ -511,7 +517,7 @@ export const OfficerRegistrations: React.FC = () => {
                 />
               </div>
             </div>
-      {filteredRegistrations.length === 0 && (
+
             <div className="flex justify-end space-x-3">
               <button
                 onClick={() => {
@@ -529,18 +535,21 @@ export const OfficerRegistrations: React.FC = () => {
                 onClick={handleConfirmApprove}
                 disabled={!approvalData.plan_id || !approvalData.password.trim() || isProcessing}
                 className="px-4 py-2 bg-green-500/20 text-green-400 rounded-lg hover:bg-green-500/30 transition-all duration-200 disabled:opacity-50"
-                  setShowRejectModal(false);
+              >
                 {isProcessing ? 'Approving...' : 'Confirm Approve'}
               </button>
             </div>
           </div>
         </div>
       )}
+
+      {/* No Results */}
+      {filteredRegistrations.length === 0 && (
         <div className="text-center py-12">
           <UserPlus className={`w-16 h-16 mx-auto mb-4 ${
-      {showRejectModal && selectedRequest && (
+            isDark ? 'text-gray-600' : 'text-gray-400'
           }`} />
-                onClick={handleConfirmReject}
+          <h3 className={`text-lg font-medium mb-2 ${
             isDark ? 'text-white' : 'text-gray-900'
           }`}>
             No Registration Requests
