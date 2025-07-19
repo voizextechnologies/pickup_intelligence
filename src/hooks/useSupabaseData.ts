@@ -156,7 +156,8 @@ export const useSupabaseData = () => {
       }
       
       // Hash the password before storing (in a real app, this should be done on the server)
-      const passwordHash = `$2b$10$${btoa(password || 'defaultpass').slice(0, 53)}`;
+      const passwordToHash = password && password.trim() ? password : 'defaultpass';
+      const passwordHash = `$2b$10$${btoa(passwordToHash).slice(0, 53)}`;
       
       const { data, error } = await supabase
         .from('officers')
@@ -173,7 +174,6 @@ export const useSupabaseData = () => {
       if (error) throw error;
       
       await loadOfficers();
-      toast.success('Officer added successfully!');
       return data;
     } catch (error: any) {
       if (error.message.includes('duplicate key') || error.code === '23505') {

@@ -3,6 +3,7 @@ import { Shield, Zap, Phone, User, ArrowLeft, Mail, Building, UserPlus, Clock } 
 import { Link, useNavigate } from 'react-router-dom';
 import { useTheme } from '../contexts/ThemeContext';
 import { useOfficerAuth } from '../contexts/OfficerAuthContext';
+import { supabase } from '../lib/supabase';
 import toast from 'react-hot-toast';
 
 export const OfficerLogin: React.FC = () => {
@@ -59,10 +60,32 @@ export const OfficerLogin: React.FC = () => {
     setIsSubmitting(true);
     
     try {
-      // Simulate registration API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Submit registration to Supabase
+      const { data, error } = await supabase
+        .from('officer_registrations')
+        .insert([{
+          name: registerData.name,
+          email: registerData.email,
+          mobile: registerData.mobile,
+          station: registerData.station,
+          department: registerData.department,
+          rank: registerData.rank,
+          badge_number: registerData.badge_number,
+          additional_info: registerData.additional_info,
+          status: 'pending'
+        }])
+        .select()
+        .single();
+
+      if (error) {
+        if (error.code === '23505') {
+          toast.error('An officer with this email or mobile number has already registered');
+        } else {
+          throw error;
+        }
+        return;
+      }
       
-      // Mock successful registration
       toast.success('Registration submitted successfully! You will be notified once approved by admin.');
       setActiveTab('login');
       setRegisterData({
@@ -76,6 +99,7 @@ export const OfficerLogin: React.FC = () => {
         additional_info: ''
       });
     } catch (error) {
+      console.error('Registration error:', error);
       toast.error('Registration failed. Please try again.');
     } finally {
       setIsSubmitting(false);

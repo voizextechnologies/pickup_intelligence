@@ -1,7 +1,9 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Bell, Moon, Sun, User } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
+import { useSupabaseData } from '../../hooks/useSupabaseData';
 
 export const Header: React.FC = () => {
   const { isDark, toggleTheme } = useTheme();
@@ -26,12 +28,18 @@ export const Header: React.FC = () => {
 
       <div className="flex items-center space-x-4">
         {/* Notifications */}
-        <button className={`relative p-2 transition-colors ${
+        <Link 
+          to="/admin/registrations"
+          className={`relative p-2 transition-colors ${
           isDark ? 'text-gray-300 hover:text-cyber-teal' : 'text-gray-600 hover:text-cyber-teal'
         }`}>
           <Bell className="w-5 h-5" />
-          <span className="absolute -top-1 -right-1 w-3 h-3 bg-neon-magenta rounded-full" />
-        </button>
+          {pendingRegistrations > 0 && (
+            <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-neon-magenta text-white text-xs rounded-full flex items-center justify-center font-bold">
+              {pendingRegistrations}
+            </span>
+          )}
+        </Link>
 
         {/* Theme Toggle */}
         <button

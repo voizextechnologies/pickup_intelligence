@@ -86,12 +86,11 @@ export const Officers: React.FC = () => {
     try {
       if (editingOfficer) {
         await updateOfficer(editingOfficer.id, formData);
-        toast.success('Officer updated successfully!');
       } else {
         await addOfficer(formData);
-        toast.success('Officer added successfully!');
       }
 
+      toast.success(editingOfficer ? 'Officer updated successfully!' : 'Officer added successfully!');
       setShowAddModal(false);
       setFormData({
         name: '',
@@ -110,7 +109,6 @@ export const Officers: React.FC = () => {
       });
     } catch (error) {
       console.error('Error saving officer:', error);
-      toast.error('Failed to save officer');
     } finally {
       setIsSubmitting(false);
     }

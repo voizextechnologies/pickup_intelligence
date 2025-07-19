@@ -33,14 +33,52 @@ export const OfficerRegistrations: React.FC = () => {
   });
 
   const handleApprove = async (registration: OfficerRegistration) => {
+    setSelectedRequest(registration);
+    setApprovalData({
+      plan_id: '',
+      password: ''
+    });
+    setShowApproveModal(true);
+  };
+
+  const handleConfirmApprove = async () => {
+    if (!selectedRequest || !approvalData.plan_id || !approvalData.password.trim()) {
+      toast.error('Please select a plan and provide a password');
+      return;
+    }
+
     setIsProcessing(true);
     
     try {
-      await updateRegistration(registration.id, {
+      // Create officer account using the same logic as admin "Add Officer"
+      await addOfficer({
+        name: selectedRequest.name,
+        email: selectedRequest.email,
+        mobile: selectedRequest.mobile,
+        telegram_id: `@${selectedRequest.name.toLowerCase().replace(/\s+/g, '')}`,
+        password: approvalData.password,
+        status: 'Active',
+        department: selectedRequest.department,
+        rank: selectedRequest.rank,
+        badge_number: selectedRequest.badge_number,
+        station: selectedRequest.station,
+        plan_id: approvalData.plan_id,
+        credits_remaining: 0, // Will be set by plan
+        total_credits: 0 // Will be set by plan
+      });
+
+      // Update registration status
+      await updateRegistration(selectedRequest.id, {
         status: 'approved',
         reviewed_by: user?.name
       });
+
+      setShowApproveModal(false);
+      setSelectedRequest(null);
+      setApprovalData({ plan_id: '', password: '' });
+      
     } catch (error) {
+      console.error('Approval error:', error);
       toast.error('Failed to approve registration');
     } finally {
       setIsProcessing(false);
@@ -48,25 +86,34 @@ export const OfficerRegistrations: React.FC = () => {
   };
 
   const handleReject = async (registration: OfficerRegistration) => {
+    setSelectedRequest(registration);
+    setRejectionReason('');
+    setShowRejectModal(true);
+  };
+
+  const handleConfirmReject = async () => {
     if (!rejectionReason.trim()) {
       toast.error('Please provide a reason for rejection');
       return;
     }
     
+    if (!selectedRequest) return;
+    
     setIsProcessing(true);
     
     try {
-      await updateRegistration(registration.id, {
+      await updateRegistration(selectedRequest.id, {
         status: 'rejected',
         reviewed_by: user?.name,
         rejection_reason: rejectionReason
       });
       
-      setShowModal(false);
+      setShowRejectModal(false);
       setRejectionReason('');
       setSelectedRequest(null);
       
     } catch (error) {
+      console.error('Rejection error:', error);
       toast.error('Failed to reject registration');
     } finally {
       setIsProcessing(false);
@@ -327,8 +374,7 @@ export const OfficerRegistrations: React.FC = () => {
                   </button>
                   <button
                     onClick={() => {
-                      setSelectedRequest(registration);
-                      setShowModal(true);
+                      handleReject(registration);
                     }}
                     disabled={isProcessing}
                     className="px-4 py-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-all duration-200 flex items-center space-x-2 disabled:opacity-50"
@@ -391,13 +437,110 @@ export const OfficerRegistrations: React.FC = () => {
         </div>
       )}
 
+      {/* Approve Modal */}
+      {showApproveModal && selectedRequest && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className={`max-w-md w-full rounded-lg p-6 ${
+            isDark ? 'bg-muted-graphite border border-cyber-teal/20' : 'bg-white border border-gray-200'
+          }`}>
+            <h3 className={`text-lg font-semibold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+              Approve Registration
+            </h3>
+            
+            <div className="space-y-4 mb-6">
+              <div className={`p-4 rounded-lg border ${
+                isDark ? 'bg-crisp-black/50 border-cyber-teal/20' : 'bg-gray-50 border-gray-200'
+              }`}>
+                <h4 className={`font-medium mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                  Officer Details
+                </h4>
+                <div className="space-y-1 text-sm">
+                  <p><span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Name:</span> {selectedRequest.name}</p>
+                  <p><span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Email:</span> {selectedRequest.email}</p>
+                  <p><span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Mobile:</span> {selectedRequest.mobile}</p>
+                  <p><span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Station:</span> {selectedRequest.station}</p>
+                  {selectedRequest.department && (
+                    <p><span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Department:</span> {selectedRequest.department}</p>
+                  )}
+                  {selectedRequest.rank && (
+                    <p><span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Rank:</span> {selectedRequest.rank}</p>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <label className={`block text-sm font-medium mb-2 ${
+                  isDark ? 'text-gray-300' : 'text-gray-700'
+                }`}>
+                  Select Rate Plan *
+                </label>
+                <select
+                  value={approvalData.plan_id}
+                  onChange={(e) => setApprovalData(prev => ({ ...prev, plan_id: e.target.value }))}
+                  className={`w-full px-3 py-2 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal ${
+                    isDark 
+                      ? 'bg-crisp-black text-white' 
+                      : 'bg-white text-gray-900'
+                  }`}
+                >
+                  <option value="">Choose a plan</option>
+                  {ratePlans.filter(plan => plan.status === 'Active').map(plan => (
+                    <option key={plan.id} value={plan.id}>
+                      {plan.plan_name} ({plan.user_type}) - ₹{plan.monthly_fee}/month - {plan.default_credits} credits
+                    </option>
+                  ))}
+                </select>
+              </div>
       {/* No Results */}
+              <div>
+                <label className={`block text-sm font-medium mb-2 ${
+                  isDark ? 'text-gray-300' : 'text-gray-700'
+                }`}>
+                  Set Initial Password *
+                </label>
+                <input
+                  type="password"
+                  value={approvalData.password}
+                  onChange={(e) => setApprovalData(prev => ({ ...prev, password: e.target.value }))}
+                  placeholder="Enter initial password for officer"
+                  className={`w-full px-3 py-2 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal ${
+                    isDark 
+                      ? 'bg-crisp-black text-white placeholder-gray-500' 
+                      : 'bg-white text-gray-900 placeholder-gray-400'
+                  }`}
+                />
+              </div>
+            </div>
       {filteredRegistrations.length === 0 && (
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => {
+                  setShowApproveModal(false);
+                  setSelectedRequest(null);
+                  setApprovalData({ plan_id: '', password: '' });
+                }}
+                className={`px-4 py-2 rounded-lg transition-colors ${
+                  isDark ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmApprove}
+                disabled={!approvalData.plan_id || !approvalData.password.trim() || isProcessing}
+                className="px-4 py-2 bg-green-500/20 text-green-400 rounded-lg hover:bg-green-500/30 transition-all duration-200 disabled:opacity-50"
+                  setShowRejectModal(false);
+                {isProcessing ? 'Approving...' : 'Confirm Approve'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
         <div className="text-center py-12">
           <UserPlus className={`w-16 h-16 mx-auto mb-4 ${
-            isDark ? 'text-gray-400' : 'text-gray-500'
+      {showRejectModal && selectedRequest && (
           }`} />
-          <h3 className={`text-lg font-medium mb-2 ${
+                onClick={handleConfirmReject}
             isDark ? 'text-white' : 'text-gray-900'
           }`}>
             No Registration Requests
