@@ -23,7 +23,8 @@ export const OfficerLogin: React.FC = () => {
     department: '',
     rank: '',
     badge_number: '',
-    additional_info: ''
+    additional_info: '',
+    identicardFile: null as File | null
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -48,18 +49,76 @@ export const OfficerLogin: React.FC = () => {
     }
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files ? e.target.files[0] : null;
+    if (file) {
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
+      const maxSize = 5 * 1024 * 1024; // 5MB
+
+      if (!allowedTypes.includes(file.type)) {
+        toast.error('Invalid file type. Only JPG, PNG, and PDF are allowed.');
+        setRegisterData(prev => ({ ...prev, identicardFile: null }));
+        e.target.value = ''; // Clear the input
+        return;
+      }
+
+      if (file.size > maxSize) {
+        toast.error('File size exceeds 5MB limit.');
+        setRegisterData(prev => ({ ...prev, identicardFile: null }));
+        e.target.value = ''; // Clear the input
+        return;
+      }
+
+      setRegisterData(prev => ({ ...prev, identicardFile: file }));
+    } else {
+      setRegisterData(prev => ({ ...prev, identicardFile: null }));
+    }
+  };
+
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!registerData.name.trim() || !registerData.station.trim() || 
-        !registerData.email.trim() || !registerData.mobile.trim()) {
-      toast.error('Please fill in all required fields');
+        !registerData.email.trim() || !registerData.mobile.trim() ||
+        !registerData.identicardFile) {
+      toast.error('Please fill in all required fields, including the Identicard upload.');
       return;
     }
     
     setIsSubmitting(true);
     
+    let identicardUrl = null;
     try {
+      // Upload file to Supabase Storage
+      if (registerData.identicardFile) {
+        const file = registerData.identicardFile;
+        const fileExtension = file.name.split('.').pop();
+        // Rename file using officer's name or phone + timestamp to avoid duplicates
+        const fileName = `${registerData.name.replace(/\s+/g, '_')}_${registerData.mobile.replace(/\D/g, '')}_${Date.now()}.${fileExtension}`;
+        const filePath = `identicards/${fileName}`;
+
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('identicards')
+          .upload(filePath, file, {
+            cacheControl: '3600',
+            upsert: false
+          });
+
+        if (uploadError) {
+          throw new Error(`File upload failed: ${uploadError.message}`);
+        }
+
+        // Get public URL of the uploaded file
+        const { data: publicUrlData } = supabase.storage
+          .from('identicards')
+          .getPublicUrl(filePath);
+
+        if (!publicUrlData || !publicUrlData.publicUrl) {
+          throw new Error('Could not get public URL for uploaded file.');
+        }
+        identicardUrl = publicUrlData.publicUrl;
+      }
+
       // Submit registration to Supabase
       const { data, error } = await supabase
         .from('officer_registrations')
@@ -72,6 +131,7 @@ export const OfficerLogin: React.FC = () => {
           rank: registerData.rank,
           badge_number: registerData.badge_number,
           additional_info: registerData.additional_info,
+          identicard_url: identicardUrl,
           status: 'pending'
         }])
         .select()
@@ -96,7 +156,8 @@ export const OfficerLogin: React.FC = () => {
         department: '',
         rank: '',
         badge_number: '',
-        additional_info: ''
+        additional_info: '',
+        identicardFile: null
       });
     } catch (error) {
       console.error('Registration error:', error);
@@ -448,6 +509,33 @@ export const OfficerLogin: React.FC = () => {
                   <label className={`block text-sm font-medium mb-2 ${
                     isDark ? 'text-gray-300' : 'text-gray-700'
                   }`}>
+                    Upload IdentiCard / Official ID Proof *
+                  </label>
+                  <input
+                    type="file"
+                    required
+                    accept=".jpg,.jpeg,.png,.pdf"
+                    onChange={handleFileChange}
+                    className={`w-full px-3 py-2 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-cyber-teal file:text-white hover:file:bg-cyber-teal/80 ${
+                      isDark 
+                        ? 'bg-crisp-black text-white' 
+                        : 'bg-white text-gray-900'
+                    }`}
+                  />
+                  <p className={`text-xs mt-1 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                    Max 5MB. Formats: JPG, PNG, PDF. This document will be reviewed by admin.
+                  </p>
+                  {registerData.identicardFile && (
+                    <p className={`text-xs mt-1 text-green-400`}>
+                      Selected: {registerData.identicardFile.name} ({(registerData.identicardFile.size / 1024 / 1024).toFixed(2)} MB)
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <label className={`block text-sm font-medium mb-2 ${
+                    isDark ? 'text-gray-300' : 'text-gray-700'
+                  }`}>
                     Additional Information
                   </label>
                   <textarea
@@ -475,7 +563,7 @@ export const OfficerLogin: React.FC = () => {
                         Registration Process
                       </p>
                       <p className={`text-xs mt-1 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
-                        Your registration will be reviewed by admin. You'll receive an email notification once approved.
+                        Your registration and uploaded documents will be reviewed by admin. You'll receive an email notification once approved.
                       </p>
                     </div>
                   </div>

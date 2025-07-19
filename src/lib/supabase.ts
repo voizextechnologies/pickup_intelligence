@@ -101,6 +101,7 @@ export interface OfficerRegistration {
   rank?: string;
   badge_number?: string;
   additional_info?: string;
+  identicard_url?: string;
   status: 'pending' | 'approved' | 'rejected';
   reviewed_at?: string;
   reviewed_by?: string;

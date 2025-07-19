@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
   UserPlus, Check, X, Clock, Mail, Phone, Building, Shield, 
-  Eye, Filter, Search, Calendar, Download, AlertCircle, CheckCircle, XCircle 
+  Eye, Filter, Search, Calendar, Download, AlertCircle, CheckCircle, XCircle, FileText, ExternalLink 
 } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -473,6 +473,40 @@ export const OfficerRegistrations: React.FC = () => {
                   )}
                 </div>
               </div>
+                {registration.identicard_url && (
+                  <div className="mt-3">
+                    <span className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                      Identicard / Official ID Proof:
+                    </span>
+                    <div className="flex items-center space-x-2 mt-1">
+                      <FileText className="w-4 h-4 text-cyber-teal" />
+                      <a
+                        href={registration.identicard_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-cyber-teal hover:text-electric-blue transition-colors flex items-center space-x-1 text-sm"
+                      >
+                        <span>View Document</span>
+                        <ExternalLink className="w-3 h-3" />
+                      </a>
+                      {selectedRequest.identicard_url && (
+                        <p className="flex items-center space-x-2">
+                          <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>ID Proof:</span> 
+                          <a
+                            href={selectedRequest.identicard_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-cyber-teal hover:text-electric-blue transition-colors flex items-center space-x-1"
+                          >
+                            <span>View Document</span>
+                            <ExternalLink className="w-3 h-3" />
+                          </a>
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
+
 
               <div>
                 <label className={`block text-sm font-medium mb-2 ${
