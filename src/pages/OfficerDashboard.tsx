@@ -202,7 +202,7 @@ export const OfficerDashboard: React.FC = () => {
       });
 
       if (!response.ok) {
-            consentFlag: "true",
+        const errorData = await response.json();
         throw new Error(errorData.message || `API request failed with status ${response.status}`);
       }
 
