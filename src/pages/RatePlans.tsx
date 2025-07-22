@@ -5,6 +5,7 @@ import { useSupabaseData } from '../hooks/useSupabaseData';
 import toast from 'react-hot-toast';
 
 import { API, RatePlan, PlanAPI } from '../lib/supabase';
+import { formatCredits, formatCurrency } from '../utils/formatters';
 
 export const RatePlans: React.FC = () => {
   const { isDark } = useTheme();
@@ -394,11 +395,11 @@ export const RatePlans: React.FC = () => {
                 <div className="space-y-3 mb-4">
                   <div className="flex justify-between">
                     <span className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Monthly Fee:</span>
-                    <span className={`text-sm font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>₹{plan.monthly_fee}</span>
+                    <span className={`text-sm font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{formatCurrency(plan.monthly_fee)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Default Credits:</span>
-                    <span className={`text-sm font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{plan.default_credits}</span>
+                    <span className={`text-sm font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{formatCredits(plan.default_credits)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Renewal Required:</span>
@@ -545,13 +546,13 @@ export const RatePlans: React.FC = () => {
                         </span>
                       </td>
                       <td className={`px-6 py-4 text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                        ₹{api.global_buy_price}
+                        {formatCurrency(api.global_buy_price)}
                       </td>
                       <td className={`px-6 py-4 text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                        ₹{api.global_sell_price}
+                        {formatCurrency(api.global_sell_price)}
                       </td>
                       <td className={`px-6 py-4 text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                        {api.default_credit_charge}
+                        {formatCredits(api.default_credit_charge)}
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex space-x-2">
