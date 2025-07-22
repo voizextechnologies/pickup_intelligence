@@ -258,13 +258,13 @@ export const useSupabaseData = () => {
       const officer = officers.find(o => o.id === transactionData.officer_id);
       if (officer) {
         const creditChange = transactionData.action === 'Deduction' 
-          ? -Math.abs(transactionData.credits)
-          : Math.abs(transactionData.credits);
+          ? -Math.abs(Number(transactionData.credits))
+          : Math.abs(Number(transactionData.credits));
 
-        const newCreditsRemaining = Math.max(0, officer.credits_remaining + creditChange);
+        const newCreditsRemaining = Math.max(0, Number(officer.credits_remaining) + creditChange);
         const newTotalCredits = ['Renewal', 'Top-up'].includes(transactionData.action)
-          ? officer.total_credits + Math.abs(transactionData.credits)
-          : officer.total_credits;
+          ? Number(officer.total_credits) + Math.abs(Number(transactionData.credits))
+          : Number(officer.total_credits);
 
         await updateOfficer(transactionData.officer_id, {
           credits_remaining: newCreditsRemaining,

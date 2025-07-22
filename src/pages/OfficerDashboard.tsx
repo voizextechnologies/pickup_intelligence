@@ -85,7 +85,7 @@ export const OfficerDashboard: React.FC = () => {
       api.name.toLowerCase().includes('phone prefill v2') || 
       api.name.toLowerCase().includes('phone kyc') ||
       api.name.toLowerCase().includes('phonekyc') ||
-      api.name.toLowerCase().includes('phone prefill')
+    const creditsRequired = Number(phonePrefillAPI.credit_cost) || 1;
     );
 
     if (!phonePrefillAPI) {
@@ -99,7 +99,7 @@ export const OfficerDashboard: React.FC = () => {
     }
 
     // Check if officer has sufficient credits
-    const creditCost = phonePrefillAPI.credit_cost || phonePrefillAPI.default_credit_charge || 1;
+    if (Number(officer.credits_remaining) < creditsRequired) {
     if (officer.credits_remaining < creditCost) {
       toast.error(`Insufficient credits. Required: ${creditCost}, Available: ${officer.credits_remaining}`);
       return;
@@ -110,7 +110,7 @@ export const OfficerDashboard: React.FC = () => {
     setShowResults(false);
 
     try {
-      // Clean phone number - remove any non-digits
+      const newCreditsRemaining = Number(officer.credits_remaining) - creditsRequired;
       const cleanPhoneNumber = searchQuery.replace(/\D/g, '');
       
       // Prepare request payload for Phone Prefill V2
@@ -236,7 +236,7 @@ export const OfficerDashboard: React.FC = () => {
           credits_used: 0,
           status: 'Success'
         });
-      }
+      updateOfficerState({ credits_remaining: Number(officer.credits_remaining) });
 
       toast.success('OSINT search completed!');
     } catch (error) {
