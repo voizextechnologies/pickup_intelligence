@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Edit2, Trash2, Settings, DollarSign, Users, Key, X, Save, ToggleLeft, ToggleRight } from 'lucide-react';
+import { Plus, Edit2, Trash2, Settings, DollarSign, Users, Key, X, Save, ToggleLeft, ToggleRight, RefreshCw, AlertTriangle } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import { useSupabaseData } from '../hooks/useSupabaseData';
 import toast from 'react-hot-toast';
@@ -25,6 +25,7 @@ export const RatePlans: React.FC = () => {
   const [showAPIModal, setShowAPIModal] = useState(false);
   const [editingPlan, setEditingPlan] = useState<any>(null);
   const [editingAPI, setEditingAPI] = useState<API | null>(null);
+  const [showSyncModal, setShowSyncModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [planFormData, setPlanFormData] = useState({
@@ -215,6 +216,59 @@ export const RatePlans: React.FC = () => {
     }
   };
 
+  const handleSyncAllPlans = async () => {
+    if (!window.confirm('This will update all existing rate plans to use the current global API pricing. This action cannot be undone. Continue?')) {
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      // Update all plan_apis with current global API settings
+      for (const plan of ratePlans) {
+        const updatedAPISettings = apis.map(api => ({
+          api_id: api.id,
+          enabled: planAPIs.find(pa => pa.plan_id === plan.id && pa.api_id === api.id)?.enabled || (api.type === 'FREE'),
+          credit_cost: api.default_credit_charge,
+          buy_price: api.global_buy_price,
+          sell_price: api.global_sell_price
+        }));
+
+        await updateRatePlan(plan.id, {}, updatedAPISettings);
+      }
+
+      toast.success('All rate plans have been synced with current API pricing!');
+      setShowSyncModal(false);
+    } catch (error) {
+      toast.error('Failed to sync rate plans');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleSyncSinglePlan = async (planId: string) => {
+    if (!window.confirm('This will update this rate plan to use the current global API pricing. Continue?')) {
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const updatedAPISettings = apis.map(api => ({
+        api_id: api.id,
+        enabled: planAPIs.find(pa => pa.plan_id === planId && pa.api_id === api.id)?.enabled || (api.type === 'FREE'),
+        credit_cost: api.default_credit_charge,
+        buy_price: api.global_buy_price,
+        sell_price: api.global_sell_price
+      }));
+
+      await updateRatePlan(planId, {}, updatedAPISettings);
+      toast.success('Rate plan synced with current API pricing!');
+    } catch (error) {
+      toast.error('Failed to sync rate plan');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const updatePlanAPI = (planIndex: number, apiId: string, field: keyof PlanAPI, value: any) => {
     setPlanFormData(prev => ({
       ...prev,
@@ -291,13 +345,22 @@ export const RatePlans: React.FC = () => {
         <div className="space-y-6">
           {/* Create Plan Button */}
           <div className="flex justify-end">
-            <button 
-              onClick={handleCreatePlan}
-              className="bg-cyber-gradient text-white px-4 py-2 rounded-lg hover:shadow-cyber transition-all duration-200 flex items-center space-x-2"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Create Plan</span>
-            </button>
+            <div className="flex items-center space-x-3">
+              <button 
+                onClick={() => setShowSyncModal(true)}
+                className="bg-electric-blue/20 text-electric-blue px-4 py-2 rounded-lg hover:bg-electric-blue/30 transition-all duration-200 flex items-center space-x-2"
+              >
+                <RefreshCw className="w-4 h-4" />
+                <span>Sync All Plans</span>
+              </button>
+              <button 
+                onClick={handleCreatePlan}
+                className="bg-cyber-gradient text-white px-4 py-2 rounded-lg hover:shadow-cyber transition-all duration-200 flex items-center space-x-2"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Create Plan</span>
+              </button>
+            </div>
           </div>
 
           {/* Plans Grid */}
@@ -368,6 +431,15 @@ export const RatePlans: React.FC = () => {
                     Created: {new Date(plan.created_at).toLocaleDateString()}
                   </span>
                   <div className="flex space-x-2">
+                    <button 
+                      onClick={() => handleSyncSinglePlan(plan.id)}
+                      className={`p-2 rounded transition-colors ${
+                        isDark ? 'text-gray-400 hover:text-electric-blue' : 'text-gray-600 hover:text-electric-blue'
+                      }`}
+                      title="Sync with current API pricing"
+                    >
+                      <RefreshCw className="w-4 h-4" />
+                    </button>
                     <button 
                       onClick={() => handleEditPlan(plan)}
                       className={`p-2 rounded transition-colors ${
@@ -748,6 +820,53 @@ export const RatePlans: React.FC = () => {
               >
                 <Save className="w-4 h-4" />
                 <span>{isSubmitting ? 'Saving...' : editingPlan ? 'Update Plan' : 'Create Plan'}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Sync Confirmation Modal */}
+      {showSyncModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className={`max-w-md w-full rounded-lg p-6 ${
+            isDark ? 'bg-muted-graphite border border-cyber-teal/20' : 'bg-white border border-gray-200'
+          }`}>
+            <div className="flex items-center space-x-3 mb-4">
+              <AlertTriangle className="w-6 h-6 text-yellow-400" />
+              <h3 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                Sync All Rate Plans
+              </h3>
+            </div>
+            
+            <div className="mb-6">
+              <p className={`text-sm mb-3 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                This will update all existing rate plans to use the current global API pricing settings:
+              </p>
+              <ul className={`text-xs space-y-1 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                <li>• Credit costs will be updated to match current API settings</li>
+                <li>• Buy/sell prices will be synchronized</li>
+                <li>• This action cannot be undone</li>
+                <li>• Officers using these plans will see updated credit deductions</li>
+              </ul>
+            </div>
+
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => setShowSyncModal(false)}
+                className={`px-4 py-2 rounded-lg transition-colors ${
+                  isDark ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSyncAllPlans}
+                disabled={isSubmitting}
+                className="px-4 py-2 bg-electric-blue/20 text-electric-blue rounded-lg hover:bg-electric-blue/30 transition-all duration-200 disabled:opacity-50 flex items-center space-x-2"
+              >
+                <RefreshCw className="w-4 h-4" />
+                <span>{isSubmitting ? 'Syncing...' : 'Sync All Plans'}</span>
               </button>
             </div>
           </div>
