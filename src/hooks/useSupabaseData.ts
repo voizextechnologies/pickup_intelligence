@@ -389,7 +389,7 @@ export const useSupabaseData = () => {
           const planAPIData = apiSettings.map(api => ({
             plan_id: id,
             api_id: api.api_id,
-            enabled: api.enabled,
+            enabled: api.enabled, // Ensure these are numbers
             credit_cost: api.credit_cost,
             buy_price: api.buy_price,
             sell_price: api.sell_price
@@ -434,7 +434,7 @@ export const useSupabaseData = () => {
       const { data, error } = await supabase
         .from('apis')
         .insert([{
-          ...apiData,
+          ...apiData, // Ensure these are numbers
           usage_count: 0,
           key_status: apiData.key_status || 'Inactive'
         }])
