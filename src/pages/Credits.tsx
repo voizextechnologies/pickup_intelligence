@@ -3,7 +3,6 @@ import { CreditCard, Plus, Minus, RefreshCw, DollarSign, TrendingUp, Calendar, F
 import { useSupabaseData } from '../hooks/useSupabaseData';
 import { useTheme } from '../contexts/ThemeContext';
 import toast from 'react-hot-toast';
-import { formatCredits } from '../utils/formatters';
 
 export const Credits: React.FC = () => {
   const { transactions, officers, isLoading, addTransaction } = useSupabaseData();
@@ -162,7 +161,7 @@ export const Credits: React.FC = () => {
                 Total Credits Issued
               </p>
               <p className={`text-2xl font-bold mt-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                {formatCredits(totalCreditsIssued)}
+                {totalCreditsIssued.toLocaleString()}
               </p>
               <p className="text-xs mt-1 text-green-400">
                 +15% this month
@@ -183,7 +182,7 @@ export const Credits: React.FC = () => {
                 Credits Used
               </p>
               <p className={`text-2xl font-bold mt-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                {formatCredits(totalCreditsUsed)}
+                {totalCreditsUsed.toLocaleString()}
               </p>
               <p className="text-xs mt-1 text-red-400">
                 85% utilization
@@ -258,7 +257,7 @@ export const Credits: React.FC = () => {
                   {officer.name}
                 </h4>
                 <span className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                  {formatCredits(officer.credits_remaining)}/{formatCredits(officer.total_credits)}
+                  {officer.credits_remaining}/{officer.total_credits}
                 </span>
               </div>
               <div className={`w-full rounded-full h-2 ${
@@ -271,7 +270,7 @@ export const Credits: React.FC = () => {
               </div>
               <div className="flex justify-between mt-2 text-xs">
                 <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>
-                  Used: {formatCredits(officer.total_credits - officer.credits_remaining)}
+                  Used: {officer.total_credits - officer.credits_remaining}
                 </span>
                 <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>
                   {Math.round((officer.credits_remaining / officer.total_credits) * 100)}%
@@ -403,7 +402,7 @@ export const Credits: React.FC = () => {
                     <span className={`text-sm font-bold ${
                       transaction.credits > 0 ? 'text-green-400' : 'text-red-400'
                     }`}>
-                      {transaction.credits > 0 ? '+' : ''}{formatCredits(transaction.credits)}
+                      {transaction.credits > 0 ? '+' : ''}{transaction.credits}
                     </span>
                   </td>
                   <td className={`px-6 py-4 text-sm ${

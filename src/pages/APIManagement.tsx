@@ -5,7 +5,6 @@ import { StatusBadge } from '../components/UI/StatusBadge';
 import { useSupabaseData } from '../hooks/useSupabaseData';
 import { useTheme } from '../contexts/ThemeContext';
 import toast from 'react-hot-toast';
-import { formatCredits, formatCurrency } from '../utils/formatters';
 
 export const APIManagement: React.FC = () => {
   const { apis, isLoading, addAPI, updateAPI, deleteAPI } = useSupabaseData();
@@ -307,7 +306,7 @@ export const APIManagement: React.FC = () => {
                 <div>
                   <span className={`${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Credits:</span>
                   <p className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                    {formatCredits(api.default_credit_charge)}
+                    {api.default_credit_charge}
                   </p>
                 </div>
               </div>
