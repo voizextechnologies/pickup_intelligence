@@ -58,7 +58,7 @@ interface PhonePrefillResult {
 export const OfficerDashboard: React.FC = () => {
   const { isDark } = useTheme();
   const { officer, logout, updateOfficerState } = useOfficerAuth();
-  const { getOfficerEnabledAPIs, addQuery } = useSupabaseData();
+  const { getOfficerEnabledAPIs, addQuery, apis } = useSupabaseData();
   const [activeTab, setActiveTab] = useState<'dashboard' | 'free' | 'pro' | 'tracklink' | 'history' | 'account'>('dashboard');
   const [searchQuery, setSearchQuery] = useState('');
   const [fullNameQuery, setFullNameQuery] = useState('');
@@ -163,48 +163,50 @@ export const OfficerDashboard: React.FC = () => {
     setIsSearching(true);
 
     try {
-      // Mock API response for demonstration
-      const mockResponse: PhonePrefillResult = {
-        name: {
-          fullName: "Ramesh Kumar Singh",
-          firstName: "Ramesh",
-          lastName: "Singh"
-        },
-        alternatePhone: [
-          { serialNo: "1", phoneNumber: "+91 9876543210" },
-          { serialNo: "2", phoneNumber: "+91 8765432109" }
-        ],
-        email: [
-          { serialNo: "1", email: "ramesh.kumar@email.com" },
-          { serialNo: "2", email: "r.kumar@company.com" }
-        ],
-        address: [
-          {
-            Seq: "1",
-            ReportedDate: "2023-01-15",
-            Address: "123 MG Road, Bangalore",
-            State: "Karnataka",
-            Postal: "560001",
-            Type: "Permanent"
-          }
-        ],
-        voterId: [
-          { seq: "1", IdNumber: "ABC1234567", ReportedDate: "2022-03-10" }
-        ],
-        passport: [
-          { seq: "1", passport: "P1234567", ReportedDate: "2021-06-20" }
-        ],
-        drivingLicense: [
-          { seq: "1", IdNumber: "KA01234567890", ReportedDate: "2020-08-15" }
-        ],
-        PAN: [
-          { seq: "1", ReportedDate: "2019-12-05", IdNumber: "ABCDE1234F" }
-        ],
-        income: "5-10 Lakhs",
-        gender: "Male",
-        age: "35",
-        dob: "1988-05-15"
+      // Find Signzy API key
+      const signzyAPI = apis.find(api => 
+        api.name.toLowerCase().includes('phone prefill') || 
+        api.service_provider.toLowerCase().includes('signzy')
+      );
+
+      if (!signzyAPI || !signzyAPI.api_key) {
+        toast.error('Signzy API key not configured. Please contact admin.');
+        return;
+      }
+
+      if (signzyAPI.key_status !== 'Active') {
+        toast.error('Signzy API is currently inactive. Please contact admin.');
+        return;
+      }
+
+      // Prepare request body according to Signzy API documentation
+      const requestBody = {
+        mobileNumber: phoneNumber.replace(/\D/g, ''), // Remove non-digits
+        ...(fullNameQuery.trim() && { fullName: fullNameQuery.trim() }),
+        consent: {
+          consentFlag: true,
+          consentTimestamp: Math.floor(Date.now() / 1000),
+          consentIpAddress: "127.0.0.1", // Placeholder IP
+          consentMessageId: "CM_1"
+        }
       };
+
+      // Make API call to Signzy through proxy
+      const response = await fetch('/api/signzy/api/v3/phonekyc/phone-prefill-v2', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': signzyAPI.api_key
+        },
+        body: JSON.stringify(requestBody)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `API request failed with status ${response.status}`);
+      }
+
+      const result = await response.json();
 
       // Deduct credits and record transaction
       const newCreditsRemaining = officer.credits_remaining - creditsRequired;
@@ -219,9 +221,9 @@ export const OfficerDashboard: React.FC = () => {
         type: 'PRO',
         category: 'Phone Prefill V2',
         input_data: `Phone: ${phoneNumber}${fullNameQuery.trim() ? `, Name: ${fullNameQuery.trim()}` : ''}`,
-        source: 'Signzy API',
-        result_summary: `Found data for ${mockResponse.name.fullName}`,
-        full_result: mockResponse,
+        source: 'Signzy Phone Prefill V2',
+        result_summary: `Phone prefill data retrieved for ${phoneNumber}`,
+        full_result: result,
         credits_used: creditsRequired,
         status: 'Success'
       });
@@ -236,7 +238,7 @@ export const OfficerDashboard: React.FC = () => {
         remarks: `Phone Prefill V2 query for ${phoneNumber}`
       }]);
 
-      setSearchResults(mockResponse);
+      setSearchResults(result);
       toast.success(`Search completed! ${creditsRequired} credits deducted.`);
       
       // Reload recent queries and stats
@@ -245,7 +247,22 @@ export const OfficerDashboard: React.FC = () => {
 
     } catch (error: any) {
       console.error('Phone Prefill V2 API Error:', error);
-      toast.error('Search failed. Please try again.');
+      
+      // Record failed query
+      await addQuery({
+        officer_id: officer.id,
+        officer_name: officer.name,
+        type: 'PRO',
+        category: 'Phone Prefill V2',
+        input_data: `Phone: ${phoneNumber}${fullNameQuery.trim() ? `, Name: ${fullNameQuery.trim()}` : ''}`,
+        source: 'Signzy Phone Prefill V2',
+        result_summary: `Failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        full_result: null,
+        credits_used: 0,
+        status: 'Failed'
+      });
+
+      toast.error(`Phone Prefill V2 failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setIsSearching(false);
     }
