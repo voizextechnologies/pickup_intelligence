@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Phone, Mail, User, CreditCard, History, Shield, Zap, AlertCircle, CheckCircle, Clock, ArrowLeft } from 'lucide-react';
+import { Search, Phone, Mail, User, CreditCard, History, Shield, Zap, AlertCircle, CheckCircle, Clock, ArrowLeft, Link as LinkIcon, Activity } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTheme } from '../contexts/ThemeContext';
 import { useOfficerAuth } from '../contexts/OfficerAuthContext';
+import { useSupabaseData } from '../hooks/useSupabaseData';
 import { supabase } from '../lib/supabase';
 import toast from 'react-hot-toast';
 
@@ -57,16 +58,31 @@ interface PhonePrefillResult {
 export const OfficerDashboard: React.FC = () => {
   const { isDark } = useTheme();
   const { officer, logout, updateOfficerState } = useOfficerAuth();
-  const [searchType, setSearchType] = useState<'osint' | 'pro'>('osint');
+  const { getOfficerEnabledAPIs, addQuery } = useSupabaseData();
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'free' | 'pro' | 'tracklink' | 'history' | 'account'>('dashboard');
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [searchResults, setSearchResults] = useState<any>(null);
   const [recentQueries, setRecentQueries] = useState<any[]>([]);
+  const [todaysQueries, setTodaysQueries] = useState(0);
+  const [successRate, setSuccessRate] = useState(0);
+  const [creditsUsed, setCreditsUsed] = useState(0);
+  const [activeLinks, setActiveLinks] = useState(0);
 
-  // Load recent queries on component mount
+  const tabs = [
+    { id: 'dashboard', name: 'Dashboard', icon: Zap },
+    { id: 'free', name: 'Free Lookups', icon: Search },
+    { id: 'pro', name: 'PRO Lookups', icon: Shield },
+    { id: 'tracklink', name: 'TrackLink', icon: LinkIcon },
+    { id: 'history', name: 'History', icon: History },
+    { id: 'account', name: 'Account', icon: User }
+  ];
+
+  // Load recent queries and calculate stats on component mount
   useEffect(() => {
     if (officer) {
       loadRecentQueries();
+      calculateStats();
     }
   }, [officer]);
 
@@ -88,6 +104,33 @@ export const OfficerDashboard: React.FC = () => {
     }
   };
 
+  const calculateStats = async () => {
+    if (!officer) return;
+
+    try {
+      // Get today's queries
+      const today = new Date().toISOString().split('T')[0];
+      const { data: todayQueries, error: todayError } = await supabase
+        .from('queries')
+        .select('*')
+        .eq('officer_id', officer.id)
+        .gte('created_at', today);
+
+      if (todayError) throw todayError;
+
+      const todayCount = todayQueries?.length || 0;
+      const successCount = todayQueries?.filter(q => q.status === 'Success').length || 0;
+      const usedCredits = todayQueries?.reduce((sum, q) => sum + q.credits_used, 0) || 0;
+
+      setTodaysQueries(todayCount);
+      setSuccessRate(todayCount > 0 ? Math.round((successCount / todayCount) * 100) : 0);
+      setCreditsUsed(usedCredits);
+      setActiveLinks(2); // Mock data for now
+    } catch (error) {
+      console.error('Error calculating stats:', error);
+    }
+  };
+
   const handlePhonePrefillSearch = async (phoneNumber: string) => {
     if (!officer) {
       toast.error('Officer authentication required');
@@ -103,7 +146,7 @@ export const OfficerDashboard: React.FC = () => {
       return;
     }
 
-    // Check credit requirements
+    // Check credit requirements - use the credit_cost from the plan configuration
     const creditsRequired = Number(phonePrefillAPI.credit_cost) || 1;
     
     if (officer.credits_remaining < creditsRequired) {
@@ -158,13 +201,13 @@ export const OfficerDashboard: React.FC = () => {
       };
 
       // Deduct credits and record transaction
-      let newCreditsRemaining = officer.credits_remaining - creditsRequired;
+      const newCreditsRemaining = officer.credits_remaining - creditsRequired;
 
       // Update officer's state locally for immediate UI update
       updateOfficerState({ credits_remaining: newCreditsRemaining });
 
       // Record the query in database
-      await supabase.from('queries').insert([{
+      await addQuery({
         officer_id: officer.id,
         officer_name: officer.name,
         type: 'PRO',
@@ -175,7 +218,7 @@ export const OfficerDashboard: React.FC = () => {
         full_result: mockResponse,
         credits_used: creditsRequired,
         status: 'Success'
-      }]);
+      });
 
       // Record credit transaction
       await supabase.from('credit_transactions').insert([{
@@ -190,35 +233,15 @@ export const OfficerDashboard: React.FC = () => {
       setSearchResults(mockResponse);
       toast.success(`Search completed! ${creditsRequired} credits deducted.`);
       
-      // Reload recent queries
+      // Reload recent queries and stats
       loadRecentQueries();
+      calculateStats();
 
     } catch (error: any) {
       console.error('Phone Prefill V2 API Error:', error);
       toast.error('Search failed. Please try again.');
     } finally {
       setIsSearching(false);
-    }
-  };
-
-  // Get officer's enabled APIs based on their rate plan
-  const getOfficerEnabledAPIs = async (officerId: string) => {
-    try {
-      // This would normally fetch from your database
-      // For now, return mock data
-      return [
-        {
-          id: '1',
-          name: 'Phone Prefill V2',
-          type: 'PRO',
-          credit_cost: 2, // This should come from plan_apis table
-          buy_price: 3,
-          sell_price: 10
-        }
-      ];
-    } catch (error) {
-      console.error('Error fetching enabled APIs:', error);
-      return [];
     }
   };
 
@@ -245,7 +268,7 @@ export const OfficerDashboard: React.FC = () => {
       };
 
       // Record the query (no credits deducted for OSINT)
-      await supabase.from('queries').insert([{
+      await addQuery({
         officer_id: officer.id,
         officer_name: officer.name,
         type: 'OSINT',
@@ -256,13 +279,14 @@ export const OfficerDashboard: React.FC = () => {
         full_result: mockResults,
         credits_used: 0,
         status: 'Success'
-      }]);
+      });
 
       setSearchResults(mockResults);
       toast.success('OSINT search completed!');
       
-      // Reload recent queries
+      // Reload recent queries and stats
       loadRecentQueries();
+      calculateStats();
 
     } catch (error) {
       console.error('OSINT Search Error:', error);
@@ -272,22 +296,25 @@ export const OfficerDashboard: React.FC = () => {
     }
   };
 
-  const handleSearch = async () => {
-    if (!searchQuery.trim()) {
-      toast.error('Please enter a search query');
-      return;
-    }
-
-    if (searchType === 'pro') {
-      // Validate phone number format for PRO search
-      const phoneRegex = /^(\+91|91)?[6-9]\d{9}$/;
-      if (!phoneRegex.test(searchQuery.replace(/\s+/g, ''))) {
-        toast.error('Please enter a valid Indian phone number');
-        return;
-      }
-      await handlePhonePrefillSearch(searchQuery);
-    } else {
-      await handleOSINTSearch(searchQuery);
+  const handleQuickAction = (action: string) => {
+    switch (action) {
+      case 'mobile':
+        setActiveTab('pro');
+        setSearchQuery('');
+        break;
+      case 'email':
+        setActiveTab('free');
+        setSearchQuery('');
+        break;
+      case 'phone':
+        setActiveTab('pro');
+        setSearchQuery('');
+        break;
+      case 'tracklink':
+        setActiveTab('tracklink');
+        break;
+      default:
+        break;
     }
   };
 
@@ -620,19 +647,17 @@ export const OfficerDashboard: React.FC = () => {
                 }`}
               >
                 <ArrowLeft className="w-4 h-4" />
-                <span>Back to Home</span>
               </Link>
-              <div className="h-6 w-px bg-cyber-teal/30" />
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 bg-cyber-gradient rounded-lg flex items-center justify-center">
                   <Zap className="w-6 h-6 text-white" />
                 </div>
                 <div>
                   <h1 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                    Officer Portal
+                    PickMe Intelligence
                   </h1>
                   <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                    Intelligence & Investigation Tools
+                    Officer Portal
                   </p>
                 </div>
               </div>
@@ -644,7 +669,7 @@ export const OfficerDashboard: React.FC = () => {
                   {officer.name}
                 </p>
                 <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                  Credits: {officer.credits_remaining}/{officer.total_credits}
+                  {officer.mobile}
                 </p>
               </div>
               <button
@@ -660,245 +685,543 @@ export const OfficerDashboard: React.FC = () => {
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Dashboard Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className={`border border-cyber-teal/20 rounded-lg p-6 ${
-            isDark ? 'bg-muted-graphite' : 'bg-white'
-          }`}>
-            <div className="flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {/* Officer Profile Section */}
+        <div className={`border border-cyber-teal/20 rounded-lg p-6 mb-6 ${
+          isDark ? 'bg-muted-graphite' : 'bg-white'
+        }`}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="w-16 h-16 bg-cyber-gradient rounded-full flex items-center justify-center">
+                <span className="text-white font-bold text-xl">
+                  {officer.name.charAt(0).toUpperCase()}
+                </span>
+              </div>
               <div>
-                <p className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
-                  Available Credits
-                </p>
-                <p className={`text-2xl font-bold mt-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                  {officer.credits_remaining}
+                <h2 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                  {officer.name}
+                </h2>
+                <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                  {officer.mobile}
                 </p>
               </div>
-              <CreditCard className="w-8 h-8 text-cyber-teal" />
+            </div>
+            <div className="text-right">
+              <p className={`text-lg font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                {officer.credits_remaining} Credits
+              </p>
+              <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                of {officer.total_credits}
+              </p>
             </div>
           </div>
-
-          <div className={`border border-cyber-teal/20 rounded-lg p-6 ${
-            isDark ? 'bg-muted-graphite' : 'bg-white'
-          }`}>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
-                  Total Queries
-                </p>
-                <p className={`text-2xl font-bold mt-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                  {recentQueries.length}
-                </p>
-              </div>
-              <Search className="w-8 h-8 text-electric-blue" />
-            </div>
-          </div>
-
-          <div className={`border border-cyber-teal/20 rounded-lg p-6 ${
-            isDark ? 'bg-muted-graphite' : 'bg-white'
-          }`}>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
-                  Success Rate
-                </p>
-                <p className={`text-2xl font-bold mt-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                  {recentQueries.length > 0 ? Math.round((recentQueries.filter(q => q.status === 'Success').length / recentQueries.length) * 100) : 0}%
-                </p>
-              </div>
-              <CheckCircle className="w-8 h-8 text-green-400" />
-            </div>
-          </div>
-
-          <div className={`border border-cyber-teal/20 rounded-lg p-6 ${
-            isDark ? 'bg-muted-graphite' : 'bg-white'
-          }`}>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
-                  Department
-                </p>
-                <p className={`text-lg font-bold mt-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                  {officer.department || 'N/A'}
-                </p>
-              </div>
-              <Shield className="w-8 h-8 text-neon-magenta" />
+          
+          {/* Credit Progress Bar */}
+          <div className="mt-4">
+            <div className={`w-full rounded-full h-3 ${isDark ? 'bg-crisp-black' : 'bg-gray-200'}`}>
+              <div 
+                className="bg-cyber-gradient h-3 rounded-full transition-all duration-300"
+                style={{ width: `${(officer.credits_remaining / officer.total_credits) * 100}%` }}
+              />
             </div>
           </div>
         </div>
 
-        {/* Search Interface */}
-        <div className={`border border-cyber-teal/20 rounded-lg p-6 mb-8 ${
+        {/* Tab Navigation */}
+        <div className={`border border-cyber-teal/20 rounded-lg mb-6 ${
           isDark ? 'bg-muted-graphite' : 'bg-white'
         }`}>
-          <h2 className={`text-xl font-semibold mb-6 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-            Intelligence Search
-          </h2>
-
-          {/* Search Type Selector */}
-          <div className="flex space-x-4 mb-6">
-            <button
-              onClick={() => setSearchType('osint')}
-              className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-200 ${
-                searchType === 'osint'
-                  ? 'bg-cyber-teal/20 text-cyber-teal border border-cyber-teal/30'
-                  : isDark 
-                    ? 'text-gray-400 hover:text-cyber-teal hover:bg-cyber-teal/10' 
-                    : 'text-gray-600 hover:text-cyber-teal hover:bg-cyber-teal/10'
-              }`}
-            >
-              <Search className="w-4 h-4" />
-              <span>Free OSINT</span>
-              <span className="text-xs bg-green-500/20 text-green-400 px-2 py-1 rounded">FREE</span>
-            </button>
-            <button
-              onClick={() => setSearchType('pro')}
-              className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-200 ${
-                searchType === 'pro'
-                  ? 'bg-neon-magenta/20 text-neon-magenta border border-neon-magenta/30'
-                  : isDark 
-                    ? 'text-gray-400 hover:text-neon-magenta hover:bg-neon-magenta/10' 
-                    : 'text-gray-600 hover:text-neon-magenta hover:bg-neon-magenta/10'
-              }`}
-            >
-              <Phone className="w-4 h-4" />
-              <span>Phone Prefill V2</span>
-              <span className="text-xs bg-neon-magenta/20 text-neon-magenta px-2 py-1 rounded">PRO</span>
-            </button>
+          <div className="flex overflow-x-auto">
+            {tabs.map((tab) => {
+              const Icon = tab.icon;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id as any)}
+                  className={`flex items-center space-x-2 px-6 py-4 border-b-2 transition-all duration-200 whitespace-nowrap ${
+                    activeTab === tab.id
+                      ? 'border-cyber-teal text-cyber-teal bg-cyber-teal/10'
+                      : `border-transparent ${isDark ? 'text-gray-400 hover:text-cyber-teal' : 'text-gray-600 hover:text-cyber-teal'}`
+                  }`}
+                >
+                  <Icon className="w-4 h-4" />
+                  <span className="font-medium">{tab.name}</span>
+                </button>
+              );
+            })}
           </div>
+        </div>
 
-          {/* Search Input */}
-          <div className="flex space-x-4">
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={searchType === 'pro' ? 'Enter phone number (e.g., +91 9876543210)' : 'Enter search query (name, email, etc.)'}
-              className={`flex-1 px-4 py-3 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal focus:border-transparent ${
-                isDark 
-                  ? 'bg-crisp-black text-white placeholder-gray-500' 
-                  : 'bg-white text-gray-900 placeholder-gray-400'
-              }`}
-            />
-            <button
-              onClick={handleSearch}
-              disabled={isSearching}
-              className="px-6 py-3 bg-cyber-gradient text-white rounded-lg hover:shadow-cyber transition-all duration-200 disabled:opacity-50 flex items-center space-x-2"
-            >
-              {isSearching ? (
-                <>
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  <span>Searching...</span>
-                </>
-              ) : (
-                <>
-                  <Search className="w-5 h-5" />
-                  <span>Search</span>
-                </>
-              )}
-            </button>
-          </div>
+        {/* Tab Content */}
+        {activeTab === 'dashboard' && (
+          <div className="space-y-6">
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              <div className={`border border-cyber-teal/20 rounded-lg p-6 ${
+                isDark ? 'bg-muted-graphite' : 'bg-white'
+              }`}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                      Today's Queries
+                    </p>
+                    <p className={`text-2xl font-bold mt-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                      {todaysQueries}
+                    </p>
+                  </div>
+                  <Search className="w-8 h-8 text-cyber-teal" />
+                </div>
+              </div>
 
-          {searchType === 'pro' && (
-            <div className={`mt-4 p-4 rounded-lg ${
-              isDark ? 'bg-neon-magenta/10 border border-neon-magenta/30' : 'bg-pink-50 border border-pink-200'
-            }`}>
-              <div className="flex items-start space-x-3">
-                <AlertCircle className="w-5 h-5 text-neon-magenta mt-0.5" />
-                <div>
-                  <p className={`text-sm font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                    PRO Search - Credits Required
-                  </p>
-                  <p className={`text-xs mt-1 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
-                    This search will deduct 2 credits from your account. You have {officer.credits_remaining} credits remaining.
-                  </p>
+              <div className={`border border-cyber-teal/20 rounded-lg p-6 ${
+                isDark ? 'bg-muted-graphite' : 'bg-white'
+              }`}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                      Success Rate
+                    </p>
+                    <p className={`text-2xl font-bold mt-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                      {successRate}%
+                    </p>
+                  </div>
+                  <CheckCircle className="w-8 h-8 text-green-400" />
+                </div>
+              </div>
+
+              <div className={`border border-cyber-teal/20 rounded-lg p-6 ${
+                isDark ? 'bg-muted-graphite' : 'bg-white'
+              }`}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                      Credits Used
+                    </p>
+                    <p className={`text-2xl font-bold mt-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                      {creditsUsed}
+                    </p>
+                  </div>
+                  <CreditCard className="w-8 h-8 text-neon-magenta" />
+                </div>
+              </div>
+
+              <div className={`border border-cyber-teal/20 rounded-lg p-6 ${
+                isDark ? 'bg-muted-graphite' : 'bg-white'
+              }`}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                      Active Links
+                    </p>
+                    <p className={`text-2xl font-bold mt-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                      {activeLinks}
+                    </p>
+                  </div>
+                  <LinkIcon className="w-8 h-8 text-electric-blue" />
                 </div>
               </div>
             </div>
-          )}
-        </div>
 
-        {/* Search Results */}
-        {searchResults && (
-          <div className="mb-8">
-            <h3 className={`text-xl font-semibold mb-6 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-              Search Results
-            </h3>
-            {searchType === 'pro' ? renderPhonePrefillResults(searchResults) : renderOSINTResults(searchResults)}
+            {/* Quick Actions */}
+            <div className={`border border-cyber-teal/20 rounded-lg p-6 ${
+              isDark ? 'bg-muted-graphite' : 'bg-white'
+            }`}>
+              <h3 className={`text-lg font-semibold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                Quick Actions
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <button
+                  onClick={() => handleQuickAction('mobile')}
+                  className={`p-6 rounded-lg border border-cyber-teal/20 transition-all duration-200 hover:shadow-cyber ${
+                    isDark ? 'bg-crisp-black/50 hover:bg-cyber-teal/10' : 'bg-gray-50 hover:bg-cyber-teal/10'
+                  }`}
+                >
+                  <Phone className="w-8 h-8 text-cyber-teal mx-auto mb-3" />
+                  <p className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                    Mobile Check
+                  </p>
+                </button>
+
+                <button
+                  onClick={() => handleQuickAction('email')}
+                  className={`p-6 rounded-lg border border-cyber-teal/20 transition-all duration-200 hover:shadow-cyber ${
+                    isDark ? 'bg-crisp-black/50 hover:bg-cyber-teal/10' : 'bg-gray-50 hover:bg-cyber-teal/10'
+                  }`}
+                >
+                  <Mail className="w-8 h-8 text-cyber-teal mx-auto mb-3" />
+                  <p className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                    Email Check
+                  </p>
+                </button>
+
+                <button
+                  onClick={() => handleQuickAction('phone')}
+                  className={`p-6 rounded-lg border border-neon-magenta/20 transition-all duration-200 hover:shadow-neon ${
+                    isDark ? 'bg-crisp-black/50 hover:bg-neon-magenta/10' : 'bg-gray-50 hover:bg-neon-magenta/10'
+                  }`}
+                >
+                  <Shield className="w-8 h-8 text-neon-magenta mx-auto mb-3" />
+                  <p className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                    Phone Prefill
+                  </p>
+                </button>
+
+                <button
+                  onClick={() => handleQuickAction('tracklink')}
+                  className={`p-6 rounded-lg border border-electric-blue/20 transition-all duration-200 hover:shadow-electric ${
+                    isDark ? 'bg-crisp-black/50 hover:bg-electric-blue/10' : 'bg-gray-50 hover:bg-electric-blue/10'
+                  }`}
+                >
+                  <LinkIcon className="w-8 h-8 text-electric-blue mx-auto mb-3" />
+                  <p className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                    TrackLink
+                  </p>
+                </button>
+              </div>
+            </div>
+
+            {/* Recent Activity */}
+            <div className={`border border-cyber-teal/20 rounded-lg p-6 ${
+              isDark ? 'bg-muted-graphite' : 'bg-white'
+            }`}>
+              <h3 className={`text-lg font-semibold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                Recent Activity
+              </h3>
+              
+              {recentQueries.length > 0 ? (
+                <div className="space-y-3">
+                  {recentQueries.slice(0, 5).map((query) => (
+                    <div key={query.id} className={`flex items-center justify-between p-3 rounded-lg ${
+                      isDark ? 'bg-crisp-black/50' : 'bg-gray-50'
+                    }`}>
+                      <div className="flex items-center space-x-3">
+                        <span className={`text-xs px-2 py-1 rounded ${
+                          query.type === 'PRO' 
+                            ? 'bg-neon-magenta/20 text-neon-magenta' 
+                            : 'bg-cyber-teal/20 text-cyber-teal'
+                        }`}>
+                          {query.category}
+                        </span>
+                        <span className={`text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                          {query.input_data}
+                        </span>
+                      </div>
+                      <span className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                        {new Date(query.created_at).toLocaleTimeString()}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <Activity className={`w-12 h-12 mx-auto mb-4 ${isDark ? 'text-gray-400' : 'text-gray-500'}`} />
+                  <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                    No recent activity. Start your first search.
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
         )}
 
-        {/* Recent Queries */}
-        <div className={`border border-cyber-teal/20 rounded-lg p-6 ${
-          isDark ? 'bg-muted-graphite' : 'bg-white'
-        }`}>
-          <h3 className={`text-xl font-semibold mb-6 flex items-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
-            <History className="w-5 h-5 mr-2 text-cyber-teal" />
-            Recent Queries
-          </h3>
-          
-          {recentQueries.length > 0 ? (
-            <div className="space-y-4">
-              {recentQueries.map((query) => (
-                <div key={query.id} className={`p-4 rounded-lg border ${
-                  isDark ? 'bg-crisp-black/50 border-cyber-teal/10' : 'bg-gray-50 border-gray-200'
-                }`}>
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center space-x-3">
-                      <span className={`text-xs px-2 py-1 rounded ${
-                        query.type === 'PRO' 
-                          ? 'bg-neon-magenta/20 text-neon-magenta' 
-                          : 'bg-cyber-teal/20 text-cyber-teal'
-                      }`}>
-                        {query.type}
-                      </span>
-                      <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                        {query.category}
-                      </span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      {query.status === 'Success' ? (
-                        <CheckCircle className="w-4 h-4 text-green-400" />
-                      ) : query.status === 'Failed' ? (
-                        <AlertCircle className="w-4 h-4 text-red-400" />
-                      ) : (
-                        <Clock className="w-4 h-4 text-yellow-400" />
-                      )}
-                      <span className={`text-xs ${
-                        query.status === 'Success' ? 'text-green-400' :
-                        query.status === 'Failed' ? 'text-red-400' : 'text-yellow-400'
-                      }`}>
-                        {query.status}
-                      </span>
-                    </div>
-                  </div>
-                  <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
-                    Query: {query.input_data}
-                  </p>
-                  <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                    Result: {query.result_summary}
-                  </p>
-                  <div className="flex justify-between items-center mt-2">
-                    <span className={`text-xs ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>
-                      {new Date(query.created_at).toLocaleString()}
-                    </span>
-                    <span className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                      Credits: {query.credits_used}
-                    </span>
+        {activeTab === 'free' && (
+          <div className="space-y-6">
+            <div className={`border border-cyber-teal/20 rounded-lg p-6 ${
+              isDark ? 'bg-muted-graphite' : 'bg-white'
+            }`}>
+              <h3 className={`text-lg font-semibold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                Free OSINT Lookups
+              </h3>
+              <div className="flex space-x-4 mb-6">
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Enter search query (name, email, etc.)"
+                  className={`flex-1 px-4 py-3 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal focus:border-transparent ${
+                    isDark 
+                      ? 'bg-crisp-black text-white placeholder-gray-500' 
+                      : 'bg-white text-gray-900 placeholder-gray-400'
+                  }`}
+                />
+                <button
+                  onClick={() => handleOSINTSearch(searchQuery)}
+                  disabled={isSearching || !searchQuery.trim()}
+                  className="px-6 py-3 bg-cyber-gradient text-white rounded-lg hover:shadow-cyber transition-all duration-200 disabled:opacity-50 flex items-center space-x-2"
+                >
+                  {isSearching ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <span>Searching...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Search className="w-5 h-5" />
+                      <span>Search</span>
+                    </>
+                  )}
+                </button>
+              </div>
+              
+              <div className={`p-4 rounded-lg ${
+                isDark ? 'bg-cyber-teal/10 border border-cyber-teal/30' : 'bg-blue-50 border border-blue-200'
+              }`}>
+                <div className="flex items-start space-x-3">
+                  <Search className="w-5 h-5 text-cyber-teal mt-0.5" />
+                  <div>
+                    <p className={`text-sm font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                      Free OSINT Search
+                    </p>
+                    <p className={`text-xs mt-1 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                      Search public records, social media, and web presence. No credits required.
+                    </p>
                   </div>
                 </div>
-              ))}
+              </div>
             </div>
-          ) : (
-            <div className="text-center py-8">
-              <History className={`w-12 h-12 mx-auto mb-4 ${isDark ? 'text-gray-400' : 'text-gray-500'}`} />
-              <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                No queries performed yet. Start your first search above.
+
+            {searchResults && activeTab === 'free' && renderOSINTResults(searchResults)}
+          </div>
+        )}
+
+        {activeTab === 'pro' && (
+          <div className="space-y-6">
+            <div className={`border border-cyber-teal/20 rounded-lg p-6 ${
+              isDark ? 'bg-muted-graphite' : 'bg-white'
+            }`}>
+              <h3 className={`text-lg font-semibold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                PRO Lookups - Phone Prefill V2
+              </h3>
+              <div className="flex space-x-4 mb-6">
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Enter phone number (e.g., +91 9876543210)"
+                  className={`flex-1 px-4 py-3 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal focus:border-transparent ${
+                    isDark 
+                      ? 'bg-crisp-black text-white placeholder-gray-500' 
+                      : 'bg-white text-gray-900 placeholder-gray-400'
+                  }`}
+                />
+                <button
+                  onClick={() => handlePhonePrefillSearch(searchQuery)}
+                  disabled={isSearching || !searchQuery.trim()}
+                  className="px-6 py-3 bg-cyber-gradient text-white rounded-lg hover:shadow-cyber transition-all duration-200 disabled:opacity-50 flex items-center space-x-2"
+                >
+                  {isSearching ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <span>Searching...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Phone className="w-5 h-5" />
+                      <span>Search</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
+              <div className={`p-4 rounded-lg ${
+                isDark ? 'bg-neon-magenta/10 border border-neon-magenta/30' : 'bg-pink-50 border border-pink-200'
+              }`}>
+                <div className="flex items-start space-x-3">
+                  <AlertCircle className="w-5 h-5 text-neon-magenta mt-0.5" />
+                  <div>
+                    <p className={`text-sm font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                      PRO Search - Credits Required
+                    </p>
+                    <p className={`text-xs mt-1 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                      This search will deduct credits based on your plan configuration. You have {officer.credits_remaining} credits remaining.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {searchResults && activeTab === 'pro' && renderPhonePrefillResults(searchResults)}
+          </div>
+        )}
+
+        {activeTab === 'tracklink' && (
+          <div className={`border border-cyber-teal/20 rounded-lg p-6 ${
+            isDark ? 'bg-muted-graphite' : 'bg-white'
+          }`}>
+            <h3 className={`text-lg font-semibold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+              TrackLink
+            </h3>
+            <div className="text-center py-12">
+              <LinkIcon className={`w-16 h-16 mx-auto mb-4 ${isDark ? 'text-gray-400' : 'text-gray-500'}`} />
+              <p className={`text-lg font-medium mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                TrackLink Coming Soon
+              </p>
+              <p className={`${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                Advanced link tracking and analysis features will be available here.
               </p>
             </div>
-          )}
-        </div>
+          </div>
+        )}
+
+        {activeTab === 'history' && (
+          <div className={`border border-cyber-teal/20 rounded-lg p-6 ${
+            isDark ? 'bg-muted-graphite' : 'bg-white'
+          }`}>
+            <h3 className={`text-lg font-semibold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+              Query History
+            </h3>
+            
+            {recentQueries.length > 0 ? (
+              <div className="space-y-4">
+                {recentQueries.map((query) => (
+                  <div key={query.id} className={`p-4 rounded-lg border ${
+                    isDark ? 'bg-crisp-black/50 border-cyber-teal/10' : 'bg-gray-50 border-gray-200'
+                  }`}>
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center space-x-3">
+                        <span className={`text-xs px-2 py-1 rounded ${
+                          query.type === 'PRO' 
+                            ? 'bg-neon-magenta/20 text-neon-magenta' 
+                            : 'bg-cyber-teal/20 text-cyber-teal'
+                        }`}>
+                          {query.type}
+                        </span>
+                        <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                          {query.category}
+                        </span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        {query.status === 'Success' ? (
+                          <CheckCircle className="w-4 h-4 text-green-400" />
+                        ) : query.status === 'Failed' ? (
+                          <AlertCircle className="w-4 h-4 text-red-400" />
+                        ) : (
+                          <Clock className="w-4 h-4 text-yellow-400" />
+                        )}
+                        <span className={`text-xs ${
+                          query.status === 'Success' ? 'text-green-400' :
+                          query.status === 'Failed' ? 'text-red-400' : 'text-yellow-400'
+                        }`}>
+                          {query.status}
+                        </span>
+                      </div>
+                    </div>
+                    <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                      Query: {query.input_data}
+                    </p>
+                    <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                      Result: {query.result_summary}
+                    </p>
+                    <div className="flex justify-between items-center mt-2">
+                      <span className={`text-xs ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>
+                        {new Date(query.created_at).toLocaleString()}
+                      </span>
+                      <span className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                        Credits: {query.credits_used}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <History className={`w-16 h-16 mx-auto mb-4 ${isDark ? 'text-gray-400' : 'text-gray-500'}`} />
+                <p className={`text-lg font-medium mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                  No Query History
+                </p>
+                <p className={`${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                  Your search history will appear here once you start performing queries.
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'account' && (
+          <div className={`border border-cyber-teal/20 rounded-lg p-6 ${
+            isDark ? 'bg-muted-graphite' : 'bg-white'
+          }`}>
+            <h3 className={`text-lg font-semibold mb-6 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+              Account Information
+            </h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <div>
+                  <label className={`text-sm font-medium ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                    Full Name
+                  </label>
+                  <p className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                    {officer.name}
+                  </p>
+                </div>
+                <div>
+                  <label className={`text-sm font-medium ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                    Mobile Number
+                  </label>
+                  <p className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                    {officer.mobile}
+                  </p>
+                </div>
+                <div>
+                  <label className={`text-sm font-medium ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                    Email Address
+                  </label>
+                  <p className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                    {officer.email}
+                  </p>
+                </div>
+                <div>
+                  <label className={`text-sm font-medium ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                    Department
+                  </label>
+                  <p className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                    {officer.department || 'N/A'}
+                  </p>
+                </div>
+              </div>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className={`text-sm font-medium ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                    Rank
+                  </label>
+                  <p className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                    {officer.rank || 'N/A'}
+                  </p>
+                </div>
+                <div>
+                  <label className={`text-sm font-medium ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                    Badge Number
+                  </label>
+                  <p className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                    {officer.badge_number || 'N/A'}
+                  </p>
+                </div>
+                <div>
+                  <label className={`text-sm font-medium ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                    Credits Remaining
+                  </label>
+                  <p className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                    {officer.credits_remaining} / {officer.total_credits}
+                  </p>
+                </div>
+                <div>
+                  <label className={`text-sm font-medium ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                    Account Status
+                  </label>
+                  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                    officer.status === 'Active' 
+                      ? 'bg-green-500/20 text-green-400' 
+                      : 'bg-red-500/20 text-red-400'
+                  }`}>
+                    {officer.status}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

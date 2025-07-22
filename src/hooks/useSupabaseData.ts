@@ -520,6 +520,7 @@ export const useSupabaseData = () => {
     // Return the actual API details with plan-specific pricing
     return officerPlanAPIs.map(planAPI => {
       const api = apis.find(a => a.id === planAPI.api_id);
+      if (!api) return null;
       return {
         ...api,
         credit_cost: planAPI.credit_cost,
