@@ -61,6 +61,7 @@ export const OfficerDashboard: React.FC = () => {
   const { getOfficerEnabledAPIs, addQuery } = useSupabaseData();
   const [activeTab, setActiveTab] = useState<'dashboard' | 'free' | 'pro' | 'tracklink' | 'history' | 'account'>('dashboard');
   const [searchQuery, setSearchQuery] = useState('');
+  const [fullNameQuery, setFullNameQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [searchResults, setSearchResults] = useState<any>(null);
   const [recentQueries, setRecentQueries] = useState<any[]>([]);
@@ -132,6 +133,11 @@ export const OfficerDashboard: React.FC = () => {
   };
 
   const handlePhonePrefillSearch = async (phoneNumber: string) => {
+    if (!phoneNumber.trim()) {
+      toast.error('Please enter a phone number');
+      return;
+    }
+
     if (!officer) {
       toast.error('Officer authentication required');
       return;
@@ -212,7 +218,7 @@ export const OfficerDashboard: React.FC = () => {
         officer_name: officer.name,
         type: 'PRO',
         category: 'Phone Prefill V2',
-        input_data: phoneNumber,
+        input_data: `Phone: ${phoneNumber}${fullNameQuery.trim() ? `, Name: ${fullNameQuery.trim()}` : ''}`,
         source: 'Signzy API',
         result_summary: `Found data for ${mockResponse.name.fullName}`,
         full_result: mockResponse,
@@ -992,7 +998,265 @@ export const OfficerDashboard: React.FC = () => {
               <h3 className={`text-lg font-semibold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
                 PRO Lookups - Phone Prefill V2
               </h3>
-              <div className="flex space-x-4 mb-6">
+              <div className="space-y-4 mb-6">
+                <div>
+                  <label className={`block text-sm font-medium mb-2 ${
+                    isDark ? 'text-gray-300' : 'text-gray-700'
+                  }`}>
+                    Phone Number *
+                  </label>
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Enter phone number (e.g., +91 9876543210)"
+                    className={`w-full px-4 py-3 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal focus:border-transparent ${
+                      isDark 
+                        ? 'bg-crisp-black text-white placeholder-gray-500' 
+                        : 'bg-white text-gray-900 placeholder-gray-400'
+                    }`}
+                  />
+                </div>
+                <div>
+                  <label className={`block text-sm font-medium mb-2 ${
+                    isDark ? 'text-gray-300' : 'text-gray-700'
+                  }`}>
+                    Full Name (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={fullNameQuery}
+                    onChange={(e) => setFullNameQuery(e.target.value)}
+                    placeholder="Enter full name for better accuracy (optional)"
+                    className={`w-full px-4 py-3 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal focus:border-transparent ${
+                      isDark 
+                        ? 'bg-crisp-black text-white placeholder-gray-500' 
+                        : 'bg-white text-gray-900 placeholder-gray-400'
+                    }`}
+                  />
+                </div>
+                <button
+                  onClick={() => handlePhonePrefillSearch(searchQuery)}
+                  disabled={isSearching || !searchQuery.trim()}
+                  className="w-full px-6 py-3 bg-cyber-gradient text-white rounded-lg hover:shadow-cyber transition-all duration-200 disabled:opacity-50 flex items-center justify-center space-x-2"
+                >
+                  {isSearching ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <span>Searching...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Phone className="w-5 h-5" />
+                      <span>Search Phone Prefill V2</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
+              <div className={`p-4 rounded-lg ${
+                isDark ? 'bg-neon-magenta/10 border border-neon-magenta/30' : 'bg-pink-50 border border-pink-200'
+              }`}>
+                <div className="flex items-start space-x-3">
+                  <AlertCircle className="w-5 h-5 text-neon-magenta mt-0.5" />
+                  <div>
+                    <p className={`text-sm font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                      PRO Search - Credits Required
+                    </p>
+                    <p className={`text-xs mt-1 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                      This search will deduct credits based on your plan configuration. You have {officer.credits_remaining} credits remaining.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {searchResults && activeTab === 'pro' && renderPhonePrefillResults(searchResults)}
+          </div>
+        )}
+
+        {activeTab === 'tracklink' && (
+          <div className={`border border-cyber-teal/20 rounded-lg p-6 ${
+            isDark ? 'bg-muted-graphite' : 'bg-white'
+          }`}>
+            <h3 className={`text-lg font-semibold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+              TrackLink
+            </h3>
+            <div className="text-center py-12">
+              <LinkIcon className={`w-16 h-16 mx-auto mb-4 ${isDark ? 'text-gray-400' : 'text-gray-500'}`} />
+              <p className={`text-lg font-medium mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                TrackLink Coming Soon
+              </p>
+              <p className={`${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                Advanced link tracking and analysis features will be available here.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'history' && (
+          <div className={`border border-cyber-teal/20 rounded-lg p-6 ${
+            isDark ? 'bg-muted-graphite' : 'bg-white'
+          }`}>
+            <h3 className={`text-lg font-semibold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+              Query History
+            </h3>
+            
+            {recentQueries.length > 0 ? (
+              <div className="space-y-4">
+                {recentQueries.map((query) => (
+                  <div key={query.id} className={`p-4 rounded-lg border ${
+                    isDark ? 'bg-crisp-black/50 border-cyber-teal/10' : 'bg-gray-50 border-gray-200'
+                  }`}>
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center space-x-3">
+                        <span className={`text-xs px-2 py-1 rounded ${
+                          query.type === 'PRO' 
+                            ? 'bg-neon-magenta/20 text-neon-magenta' 
+                            : 'bg-cyber-teal/20 text-cyber-teal'
+                        }`}>
+                          {query.type}
+                        </span>
+                        <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                          {query.category}
+                        </span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        {query.status === 'Success' ? (
+                          <CheckCircle className="w-4 h-4 text-green-400" />
+                        ) : query.status === 'Failed' ? (
+                          <AlertCircle className="w-4 h-4 text-red-400" />
+                        ) : (
+                          <Clock className="w-4 h-4 text-yellow-400" />
+                        )}
+                        <span className={`text-xs ${
+                          query.status === 'Success' ? 'text-green-400' :
+                          query.status === 'Failed' ? 'text-red-400' : 'text-yellow-400'
+                        }`}>
+                          {query.status}
+                        </span>
+                      </div>
+                    </div>
+                    <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                      Query: {query.input_data}
+                    </p>
+                    <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                      Result: {query.result_summary}
+                    </p>
+                    <div className="flex justify-between items-center mt-2">
+                      <span className={`text-xs ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>
+                        {new Date(query.created_at).toLocaleString()}
+                      </span>
+                      <span className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                        Credits: {query.credits_used}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <History className={`w-16 h-16 mx-auto mb-4 ${isDark ? 'text-gray-400' : 'text-gray-500'}`} />
+                <p className={`text-lg font-medium mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                  No Query History
+                </p>
+                <p className={`${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                  Your search history will appear here once you start performing queries.
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'account' && (
+          <div className={`border border-cyber-teal/20 rounded-lg p-6 ${
+            isDark ? 'bg-muted-graphite' : 'bg-white'
+          }`}>
+            <h3 className={`text-lg font-semibold mb-6 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+              Account Information
+            </h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <div>
+                  <label className={`text-sm font-medium ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                    Full Name
+                  </label>
+                  <p className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                    {officer.name}
+                  </p>
+                </div>
+                <div>
+                  <label className={`text-sm font-medium ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                    Mobile Number
+                  </label>
+                  <p className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                    {officer.mobile}
+                  </p>
+                </div>
+                <div>
+                  <label className={`text-sm font-medium ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                    Email Address
+                  </label>
+                  <p className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                    {officer.email}
+                  </p>
+                </div>
+                <div>
+                  <label className={`text-sm font-medium ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                    Department
+                  </label>
+                  <p className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                    {officer.department || 'N/A'}
+                  </p>
+                </div>
+              </div>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className={`text-sm font-medium ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                    Rank
+                  </label>
+                  <p className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                    {officer.rank || 'N/A'}
+                  </p>
+                </div>
+                <div>
+                  <label className={`text-sm font-medium ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                    Badge Number
+                  </label>
+                  <p className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                    {officer.badge_number || 'N/A'}
+                  </p>
+                </div>
+                <div>
+                  <label className={`text-sm font-medium ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                    Credits Remaining
+                  </label>
+                  <p className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                    {officer.credits_remaining} / {officer.total_credits}
+                  </p>
+                </div>
+                <div>
+                  <label className={`text-sm font-medium ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                    Account Status
+                  </label>
+                  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                    officer.status === 'Active' 
+                      ? 'bg-green-500/20 text-green-400' 
+                      : 'bg-red-500/20 text-red-400'
+                  }`}>
+                    {officer.status}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
                 <input
                   type="text"
                   value={searchQuery}
