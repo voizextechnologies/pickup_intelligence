@@ -50,8 +50,8 @@ export interface Officer {
   badge_number?: string;
   station?: string;
   plan_id?: string;
-  credits_remaining: number; // Now supports decimals
-  total_credits: number; // Now supports decimals
+  credits_remaining: number;
+  total_credits: number;
   total_queries: number;
   last_active: string;
   registered_on: string;
@@ -64,7 +64,7 @@ export interface CreditTransaction {
   officer_id: string;
   officer_name: string;
   action: 'Renewal' | 'Deduction' | 'Top-up' | 'Refund';
-  credits: number; // Now supports decimals
+  credits: number;
   payment_mode: string;
   remarks?: string;
   created_at: string;
@@ -80,9 +80,6 @@ export interface APIKey {
   last_used?: string;
   created_at: string;
   updated_at: string;
-  default_credit_charge: number; // Now supports decimals
-  global_buy_price: number; // Now supports decimals
-  global_sell_price: number; // Now supports decimals
 }
 
 export interface Query {
@@ -140,8 +137,8 @@ export interface RatePlan {
   id: string;
   plan_name: string;
   user_type: 'Police' | 'Private' | 'Custom';
-  monthly_fee: number; // Now supports decimals
-  default_credits: number; // Now supports decimals
+  monthly_fee: number;
+  default_credits: number;
   renewal_required: boolean;
   topup_allowed: boolean;
   status: 'Active' | 'Inactive';
@@ -154,9 +151,9 @@ export interface PlanAPI {
   plan_id: string;
   api_id: string;
   enabled: boolean;
-  credit_cost: number; // Now supports decimals
-  buy_price: number; // Now supports decimals
-  sell_price: number; // Now supports decimals
+  credit_cost: number;
+  buy_price: number;
+  sell_price: number;
   created_at: string;
   updated_at: string;
 }

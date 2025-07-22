@@ -504,10 +504,9 @@ export const Credits: React.FC = () => {
                 <input
                   type="number"
                   required
-                  min="0"
-                  step="0.01"
-                  value={formData.credits || ''}
-                  onChange={(e) => setFormData(prev => ({ ...prev, credits: parseFloat(e.target.value) || 0 }))}
+                  min="1"
+                  value={formData.credits}
+                  onChange={(e) => setFormData(prev => ({ ...prev, credits: parseInt(e.target.value) || 0 }))}
                   className={`w-full px-3 py-2 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal ${
                     isDark 
                       ? 'bg-crisp-black text-white placeholder-gray-500' 

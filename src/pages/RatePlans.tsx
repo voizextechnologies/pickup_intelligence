@@ -353,7 +353,7 @@ export const RatePlans: React.FC = () => {
 
                 <div className="mb-4">
                   <p className={`text-xs mb-2 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                    Default Credits: {(planFormData.monthly_fee / 10).toFixed(1)} (₹10 = 1 credit)
+                    Enabled APIs: {getPlanAPIs(plan.id).filter(api => api.enabled).length} of {apis.length}
                   </p>
                   <div className={`w-full rounded-full h-2 ${isDark ? 'bg-crisp-black' : 'bg-gray-200'}`}>
                     <div 
@@ -677,9 +677,8 @@ export const RatePlans: React.FC = () => {
                             </label>
                             <input
                               type="number"
-                              step="0.01"
-                              value={planAPI.credit_cost || ''}
-                              onChange={(e) => updatePlanAPI(index, planAPI.api_id, 'credit_cost', parseFloat(e.target.value) || 0)}
+                              value={planAPI.credit_cost}
+                              onChange={(e) => updatePlanAPI(index, planAPI.api_id, 'credit_cost', parseInt(e.target.value) || 0)}
                               className={`w-full px-2 py-1 text-sm border border-cyber-teal/30 rounded focus:outline-none focus:ring-1 focus:ring-cyber-teal ${
                                 isDark 
                                   ? 'bg-crisp-black text-white' 
@@ -695,9 +694,8 @@ export const RatePlans: React.FC = () => {
                             </label>
                             <input
                               type="number"
-                              step="0.01"
-                              value={planAPI.buy_price || ''}
-                              onChange={(e) => updatePlanAPI(index, planAPI.api_id, 'buy_price', parseFloat(e.target.value) || 0)}
+                              value={planAPI.buy_price}
+                              onChange={(e) => updatePlanAPI(index, planAPI.api_id, 'buy_price', parseInt(e.target.value) || 0)}
                               className={`w-full px-2 py-1 text-sm border border-cyber-teal/30 rounded focus:outline-none focus:ring-1 focus:ring-cyber-teal ${
                                 isDark 
                                   ? 'bg-crisp-black text-white' 
@@ -713,14 +711,8 @@ export const RatePlans: React.FC = () => {
                             </label>
                             <input
                               type="number"
-                              step="0.01"
-                              value={planAPI.sell_price || ''}
-                              onChange={(e) => updatePlanAPI(index, planAPI.api_id, 'sell_price', parseFloat(e.target.value) || 0)}
-                              onBlur={(e) => {
-                                const sellPrice = parseFloat(e.target.value) || 0;
-                                const creditCost = sellPrice / 10;
-                                updatePlanAPI(index, planAPI.api_id, 'credit_cost', creditCost);
-                              }}
+                              value={planAPI.sell_price}
+                              onChange={(e) => updatePlanAPI(index, planAPI.api_id, 'sell_price', parseInt(e.target.value) || 0)}
                               className={`w-full px-2 py-1 text-sm border border-cyber-teal/30 rounded focus:outline-none focus:ring-1 focus:ring-cyber-teal ${
                                 isDark 
                                   ? 'bg-crisp-black text-white' 

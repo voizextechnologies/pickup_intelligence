@@ -258,13 +258,13 @@ export const useSupabaseData = () => {
       const officer = officers.find(o => o.id === transactionData.officer_id);
       if (officer) {
         const creditChange = transactionData.action === 'Deduction' 
-          ? -Math.abs(Number(transactionData.credits))
-          : Math.abs(Number(transactionData.credits));
+          ? -Math.abs(transactionData.credits)
+          : Math.abs(transactionData.credits);
 
-        const newCreditsRemaining = Math.max(0, Number(officer.credits_remaining) + creditChange);
+        const newCreditsRemaining = Math.max(0, officer.credits_remaining + creditChange);
         const newTotalCredits = ['Renewal', 'Top-up'].includes(transactionData.action)
-          ? Number(officer.total_credits) + Math.abs(Number(transactionData.credits))
-          : Number(officer.total_credits);
+          ? officer.total_credits + Math.abs(transactionData.credits)
+          : officer.total_credits;
 
         await updateOfficer(transactionData.officer_id, {
           credits_remaining: newCreditsRemaining,
@@ -520,7 +520,6 @@ export const useSupabaseData = () => {
     // Return the actual API details with plan-specific pricing
     return officerPlanAPIs.map(planAPI => {
       const api = apis.find(a => a.id === planAPI.api_id);
-      if (!api) return null;
       return {
         ...api,
         credit_cost: planAPI.credit_cost,

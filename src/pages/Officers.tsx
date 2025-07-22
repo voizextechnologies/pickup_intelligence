@@ -736,10 +736,9 @@ export const Officers: React.FC = () => {
                   <input
                     type="number"
                     min="0"
-                    step="0.01"
                     disabled={!!formData.plan_id}
-                    value={formData.credits_remaining || ''}
-                    onChange={(e) => setFormData(prev => ({ ...prev, credits_remaining: parseFloat(e.target.value) || 0 }))}
+                    value={formData.credits_remaining}
+                    onChange={(e) => setFormData(prev => ({ ...prev, credits_remaining: parseInt(e.target.value) || 0 }))}
                     className={`w-full px-3 py-2 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal ${
                       isDark 
                         ? 'bg-crisp-black text-white placeholder-gray-500' 
@@ -763,10 +762,9 @@ export const Officers: React.FC = () => {
                   <input
                     type="number"
                     min="0"
-                    step="0.01"
                     disabled={!!formData.plan_id}
-                    value={formData.total_credits || ''}
-                    onChange={(e) => setFormData(prev => ({ ...prev, total_credits: parseFloat(e.target.value) || 0 }))}
+                    value={formData.total_credits}
+                    onChange={(e) => setFormData(prev => ({ ...prev, total_credits: parseInt(e.target.value) || 0 }))}
                     className={`w-full px-3 py-2 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal ${
                       isDark 
                         ? 'bg-crisp-black text-white placeholder-gray-500' 
