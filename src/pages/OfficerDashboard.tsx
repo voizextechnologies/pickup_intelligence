@@ -153,7 +153,7 @@ export const OfficerDashboard: React.FC = () => {
       setShowResults(true);
 
       // Deduct credits and record transaction
-      const newCreditsRemaining = officer.credits_remaining - creditsRequired;
+      let newCreditsRemaining = officer.credits_remaining - creditsRequired;
       
       // Update officer's state locally for immediate UI update
       updateOfficerState({ credits_remaining: newCreditsRemaining });

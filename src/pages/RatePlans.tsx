@@ -343,9 +343,6 @@ export const RatePlans: React.FC = () => {
                       {plan.renewal_required ? 'Yes' : 'No'}
                     </span>
                   </div>
-                    step="0.01"
-                    value={planFormData.monthly_fee || ''}
-                    onChange={(e) => setPlanFormData(prev => ({ ...prev, monthly_fee: parseFloat(e.target.value) || 0 }))}
                     <span className={`text-sm ${plan.topup_allowed ? 'text-green-400' : 'text-red-400'}`}>
                       {plan.topup_allowed ? 'Yes' : 'No'}
                     </span>
