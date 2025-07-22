@@ -4,6 +4,7 @@ import { StatusBadge } from '../components/UI/StatusBadge';
 import { useSupabaseData } from '../hooks/useSupabaseData';
 import { useTheme } from '../contexts/ThemeContext';
 import { format } from 'date-fns';
+import { formatCredits } from '../utils/formatters';
 
 export const Dashboard: React.FC = () => {
   const { dashboardStats, officers, queries, liveRequests, isLoading } = useSupabaseData();
@@ -135,7 +136,7 @@ export const Dashboard: React.FC = () => {
                 Credits Used
               </p>
               <p className={`text-2xl font-bold mt-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                {dashboardStats?.total_credits_used || 0}
+                {formatCredits(dashboardStats?.total_credits_used || 0)}
               </p>
               <p className="text-xs mt-1 text-green-400">
                 ₹48,760 revenue
