@@ -7,7 +7,7 @@ import { format } from 'date-fns';
 import { formatCredits } from '../utils/formatters';
 
 export const Dashboard: React.FC = () => {
-  const { dashboardStats, officers, queries, liveRequests, isLoading } = useSupabaseData();
+  const { dashboardStats, officers, queries, liveRequests, apis, isLoading } = useSupabaseData();
   const { isDark } = useTheme();
 
   if (isLoading) {
@@ -178,7 +178,7 @@ export const Dashboard: React.FC = () => {
                 Active APIs
               </p>
               <p className={`text-2xl font-bold mt-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                12
+                {apis.filter(api => api.key_status === 'Active').length}
               </p>
               <p className="text-xs mt-1 text-green-400">
                 All operational
