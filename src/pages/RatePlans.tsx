@@ -715,7 +715,18 @@ export const RatePlans: React.FC = () => {
                               type="number"
                               step="0.01"
                               value={planAPI.sell_price || ''}
-                              onChange={(e) => updatePlanAPI(index, planAPI.api_id, 'sell_price', parseFloat(e.target.value) || 0)}
+                              onChange={(e) => {
+                                const newSellPrice = parseFloat(e.target.value) || 0;
+                                const newCreditCost = newSellPrice / 10;
+                                setPlanFormData(prev => ({
+                                  ...prev,
+                                  apis: prev.apis.map(api => 
+                                    api.api_id === planAPI.api_id 
+                                      ? { ...api, sell_price: newSellPrice, credit_cost: newCreditCost }
+                                      : api
+                                  )
+                                }));
+                              }}
                               className={`w-full px-2 py-1 text-sm border border-cyber-teal/30 rounded focus:outline-none focus:ring-1 focus:ring-cyber-teal ${
                                 isDark 
                                   ? 'bg-crisp-black text-white' 
