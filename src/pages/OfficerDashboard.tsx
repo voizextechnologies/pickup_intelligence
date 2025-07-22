@@ -31,6 +31,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useSupabaseData } from '../hooks/useSupabaseData';
 import { PhonePrefillV2Response, PhonePrefillV2Request } from '../types';
 import toast from 'react-hot-toast';
+import { formatCredits } from '../utils/formatters';
 
 export const OfficerDashboard: React.FC = () => {
   const { officer, logout, updateOfficerState } = useOfficerAuth();
@@ -313,7 +314,7 @@ export const OfficerDashboard: React.FC = () => {
                 Today's Queries
               </p>
               <p className={`text-2xl font-bold mt-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                {todayQueries}
+                {formatCredits(todayQueries)}
               </p>
             </div>
             <Search className="w-8 h-8 text-cyber-teal" />
@@ -329,7 +330,7 @@ export const OfficerDashboard: React.FC = () => {
                 Success Rate
               </p>
               <p className={`text-2xl font-bold mt-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                {successRate}%
+                {formatCredits(successRate)}%
               </p>
             </div>
             <CheckCircle className="w-8 h-8 text-green-400" />
@@ -345,7 +346,7 @@ export const OfficerDashboard: React.FC = () => {
                 Credits Used
               </p>
               <p className={`text-2xl font-bold mt-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                {creditsUsed}
+                {formatCredits(creditsUsed)}
               </p>
             </div>
             <CreditCard className="w-8 h-8 text-neon-magenta" />
@@ -1258,10 +1259,10 @@ export const OfficerDashboard: React.FC = () => {
           <div className="flex items-center space-x-4">
             <div className="text-right">
               <p className={`text-lg font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                {officer.credits_remaining} Credits
+                {formatCredits(officer.credits_remaining)} Credits
               </p>
               <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                of {officer.total_credits} {/* Changed to number for decimal support */}
+                of {formatCredits(officer.total_credits)} {/* Changed to number for decimal support */}
               </p>
             </div>
             <div className={`w-full rounded-full h-2 ${isDark ? 'bg-crisp-black' : 'bg-gray-200'} w-24`}>
