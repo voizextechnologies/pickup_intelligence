@@ -716,11 +716,6 @@ export const RatePlans: React.FC = () => {
                               step="0.01"
                               value={planAPI.sell_price || ''}
                               onChange={(e) => updatePlanAPI(index, planAPI.api_id, 'sell_price', parseFloat(e.target.value) || 0)}
-                              onBlur={(e) => {
-                                const sellPrice = parseFloat(e.target.value) || 0;
-                                const creditCost = sellPrice / 10;
-                                updatePlanAPI(index, planAPI.api_id, 'credit_cost', creditCost);
-                              }}
                               className={`w-full px-2 py-1 text-sm border border-cyber-teal/30 rounded focus:outline-none focus:ring-1 focus:ring-cyber-teal ${
                                 isDark 
                                   ? 'bg-crisp-black text-white' 
