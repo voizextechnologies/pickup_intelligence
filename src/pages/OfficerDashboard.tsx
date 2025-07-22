@@ -637,7 +637,7 @@ export const OfficerDashboard: React.FC = () => {
       <header className={`border-b border-cyber-teal/20 ${
         isDark ? 'bg-muted-graphite' : 'bg-white'
       }`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
               <Link
@@ -685,7 +685,7 @@ export const OfficerDashboard: React.FC = () => {
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="px-4 sm:px-6 lg:px-8 py-6">
         {/* Officer Profile Section */}
         <div className={`border border-cyber-teal/20 rounded-lg p-6 mb-6 ${
           isDark ? 'bg-muted-graphite' : 'bg-white'
