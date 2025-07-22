@@ -493,15 +493,9 @@ export const useSupabaseData = () => {
   // Query Management
   const addQuery = async (queryData: Omit<Query, 'id' | 'created_at'>) => {
     try {
-      // Ensure credits_used is an integer to prevent database type errors
-      const queryDataWithRoundedCredits = {
-        ...queryData,
-        credits_used: Math.round(queryData.credits_used)
-      };
-
       const { data, error } = await supabase
         .from('queries')
-        .insert([queryDataWithRoundedCredits])
+        .insert([queryData])
         .select()
         .single();
 

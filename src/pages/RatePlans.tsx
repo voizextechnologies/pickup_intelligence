@@ -715,18 +715,7 @@ export const RatePlans: React.FC = () => {
                               type="number"
                               step="0.01"
                               value={planAPI.sell_price || ''}
-                              onChange={(e) => {
-                                const newSellPrice = parseFloat(e.target.value) || 0;
-                                const newCreditCost = newSellPrice / 10;
-                                setPlanFormData(prev => ({
-                                  ...prev,
-                                  apis: prev.apis.map(api => 
-                                    api.api_id === planAPI.api_id 
-                                      ? { ...api, sell_price: newSellPrice, credit_cost: newCreditCost }
-                                      : api
-                                  )
-                                }));
-                              }}
+                              onChange={(e) => updatePlanAPI(index, planAPI.api_id, 'sell_price', parseFloat(e.target.value) || 0)}
                               className={`w-full px-2 py-1 text-sm border border-cyber-teal/30 rounded focus:outline-none focus:ring-1 focus:ring-cyber-teal ${
                                 isDark 
                                   ? 'bg-crisp-black text-white' 
@@ -873,17 +862,8 @@ export const RatePlans: React.FC = () => {
                   </label>
                   <input
                     type="number"
-                    step="0.01"
                     value={apiFormData.global_sell_price}
-                    onChange={(e) => {
-                      const newSellPrice = parseFloat(e.target.value) || 0;
-                      const newCreditCharge = newSellPrice / 10;
-                      setAPIFormData(prev => ({ 
-                        ...prev, 
-                        global_sell_price: newSellPrice,
-                        default_credit_charge: newCreditCharge
-                      }));
-                    }}
+                    onChange={(e) => setAPIFormData(prev => ({ ...prev, global_sell_price: parseInt(e.target.value) || 0 }))}
                     className={`w-full px-3 py-2 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal ${
                       isDark 
                         ? 'bg-crisp-black text-white' 
@@ -901,17 +881,14 @@ export const RatePlans: React.FC = () => {
                 </label>
                 <input
                   type="number"
-                  readOnly
                   value={apiFormData.default_credit_charge}
+                  onChange={(e) => setAPIFormData(prev => ({ ...prev, default_credit_charge: parseInt(e.target.value) || 0 }))}
                   className={`w-full px-3 py-2 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal ${
                     isDark 
-                      ? 'bg-crisp-black text-white bg-opacity-50' 
-                      : 'bg-gray-100 text-gray-900'
+                      ? 'bg-crisp-black text-white' 
+                      : 'bg-white text-gray-900'
                   }`}
                 />
-                <p className={`text-xs mt-1 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                  Automatically calculated as Sell Price ÷ 10
-                </p>
               </div>
 
               <div>

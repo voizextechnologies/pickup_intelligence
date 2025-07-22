@@ -10,12 +10,12 @@ export default defineConfig({
   server: {
     proxy: {
       '/api/signzy': {
-        target: 'https://api-preproduction.signzy.app',
+        target: 'https://api.signzy.app',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/signzy/, ''),
         secure: true,
         headers: {
-          'Origin': 'https://api-preproduction.signzy.app'
+          'Origin': 'https://api.signzy.app'
         }
       },
     },

@@ -58,10 +58,9 @@ interface PhonePrefillResult {
 export const OfficerDashboard: React.FC = () => {
   const { isDark } = useTheme();
   const { officer, logout, updateOfficerState } = useOfficerAuth();
-  const { getOfficerEnabledAPIs, addQuery, apis } = useSupabaseData();
+  const { getOfficerEnabledAPIs, addQuery } = useSupabaseData();
   const [activeTab, setActiveTab] = useState<'dashboard' | 'free' | 'pro' | 'tracklink' | 'history' | 'account'>('dashboard');
   const [searchQuery, setSearchQuery] = useState('');
-  const [fullNameQuery, setFullNameQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [searchResults, setSearchResults] = useState<any>(null);
   const [recentQueries, setRecentQueries] = useState<any[]>([]);
@@ -133,11 +132,6 @@ export const OfficerDashboard: React.FC = () => {
   };
 
   const handlePhonePrefillSearch = async (phoneNumber: string) => {
-    if (!phoneNumber.trim()) {
-      toast.error('Please enter a phone number');
-      return;
-    }
-
     if (!officer) {
       toast.error('Officer authentication required');
       return;
@@ -163,50 +157,48 @@ export const OfficerDashboard: React.FC = () => {
     setIsSearching(true);
 
     try {
-      // Find Signzy API key
-      const signzyAPI = apis.find(api => 
-        api.name.toLowerCase().includes('phone prefill') || 
-        api.service_provider.toLowerCase().includes('signzy')
-      );
-
-      if (!signzyAPI || !signzyAPI.api_key) {
-        toast.error('Signzy API key not configured. Please contact admin.');
-        return;
-      }
-
-      if (signzyAPI.key_status !== 'Active') {
-        toast.error('Signzy API is currently inactive. Please contact admin.');
-        return;
-      }
-
-      // Prepare request body according to Signzy API documentation
-      const requestBody = {
-        mobileNumber: phoneNumber.replace(/\D/g, ''), // Remove non-digits
-        ...(fullNameQuery.trim() && { fullName: fullNameQuery.trim() }),
-        consent: {
-          consentFlag: true,
-          consentTimestamp: Math.floor(Date.now() / 1000),
-          consentIpAddress: "127.0.0.1", // Placeholder IP
-          consentMessageId: "CM_1"
-        }
-      };
-
-      // Make API call to Signzy through proxy
-      const response = await fetch('/api/signzy/api/v3/phonekyc/phone-prefill-v2', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer YOUR_SIGNZY_API_KEY_HERE' // Replace with actual Signzy API key
+      // Mock API response for demonstration
+      const mockResponse: PhonePrefillResult = {
+        name: {
+          fullName: "Ramesh Kumar Singh",
+          firstName: "Ramesh",
+          lastName: "Singh"
         },
-        body: JSON.stringify(requestBody)
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || `API request failed with status ${response.status}`);
-      }
-
-      const result = await response.json();
+        alternatePhone: [
+          { serialNo: "1", phoneNumber: "+91 9876543210" },
+          { serialNo: "2", phoneNumber: "+91 8765432109" }
+        ],
+        email: [
+          { serialNo: "1", email: "ramesh.kumar@email.com" },
+          { serialNo: "2", email: "r.kumar@company.com" }
+        ],
+        address: [
+          {
+            Seq: "1",
+            ReportedDate: "2023-01-15",
+            Address: "123 MG Road, Bangalore",
+            State: "Karnataka",
+            Postal: "560001",
+            Type: "Permanent"
+          }
+        ],
+        voterId: [
+          { seq: "1", IdNumber: "ABC1234567", ReportedDate: "2022-03-10" }
+        ],
+        passport: [
+          { seq: "1", passport: "P1234567", ReportedDate: "2021-06-20" }
+        ],
+        drivingLicense: [
+          { seq: "1", IdNumber: "KA01234567890", ReportedDate: "2020-08-15" }
+        ],
+        PAN: [
+          { seq: "1", ReportedDate: "2019-12-05", IdNumber: "ABCDE1234F" }
+        ],
+        income: "5-10 Lakhs",
+        gender: "Male",
+        age: "35",
+        dob: "1988-05-15"
+      };
 
       // Deduct credits and record transaction
       const newCreditsRemaining = officer.credits_remaining - creditsRequired;
@@ -220,10 +212,10 @@ export const OfficerDashboard: React.FC = () => {
         officer_name: officer.name,
         type: 'PRO',
         category: 'Phone Prefill V2',
-        input_data: `Phone: ${phoneNumber}${fullNameQuery.trim() ? `, Name: ${fullNameQuery.trim()}` : ''}`,
-        source: 'Signzy Phone Prefill V2',
-        result_summary: `Phone prefill data retrieved for ${phoneNumber}`,
-        full_result: result,
+        input_data: phoneNumber,
+        source: 'Signzy API',
+        result_summary: `Found data for ${mockResponse.name.fullName}`,
+        full_result: mockResponse,
         credits_used: creditsRequired,
         status: 'Success'
       });
@@ -238,7 +230,7 @@ export const OfficerDashboard: React.FC = () => {
         remarks: `Phone Prefill V2 query for ${phoneNumber}`
       }]);
 
-      setSearchResults(result);
+      setSearchResults(mockResponse);
       toast.success(`Search completed! ${creditsRequired} credits deducted.`);
       
       // Reload recent queries and stats
@@ -247,22 +239,7 @@ export const OfficerDashboard: React.FC = () => {
 
     } catch (error: any) {
       console.error('Phone Prefill V2 API Error:', error);
-      
-      // Record failed query
-      await addQuery({
-        officer_id: officer.id,
-        officer_name: officer.name,
-        type: 'PRO',
-        category: 'Phone Prefill V2',
-        input_data: `Phone: ${phoneNumber}${fullNameQuery.trim() ? `, Name: ${fullNameQuery.trim()}` : ''}`,
-        source: 'Signzy Phone Prefill V2',
-        result_summary: `Failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        full_result: null,
-        credits_used: 0,
-        status: 'Failed'
-      });
-
-      toast.error(`Phone Prefill V2 failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      toast.error('Search failed. Please try again.');
     } finally {
       setIsSearching(false);
     }
@@ -1015,47 +992,22 @@ export const OfficerDashboard: React.FC = () => {
               <h3 className={`text-lg font-semibold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
                 PRO Lookups - Phone Prefill V2
               </h3>
-              <div className="space-y-4 mb-6">
-                <div>
-                  <label className={`block text-sm font-medium mb-2 ${
-                    isDark ? 'text-gray-300' : 'text-gray-700'
-                  }`}>
-                    Phone Number *
-                  </label>
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Enter phone number (e.g., +91 9876543210)"
-                    className={`w-full px-4 py-3 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal focus:border-transparent ${
-                      isDark 
-                        ? 'bg-crisp-black text-white placeholder-gray-500' 
-                        : 'bg-white text-gray-900 placeholder-gray-400'
-                    }`}
-                  />
-                </div>
-                <div>
-                  <label className={`block text-sm font-medium mb-2 ${
-                    isDark ? 'text-gray-300' : 'text-gray-700'
-                  }`}>
-                    Full Name (Optional)
-                  </label>
-                  <input
-                    type="text"
-                    value={fullNameQuery}
-                    onChange={(e) => setFullNameQuery(e.target.value)}
-                    placeholder="Enter full name for better accuracy (optional)"
-                    className={`w-full px-4 py-3 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal focus:border-transparent ${
-                      isDark 
-                        ? 'bg-crisp-black text-white placeholder-gray-500' 
-                        : 'bg-white text-gray-900 placeholder-gray-400'
-                    }`}
-                  />
-                </div>
+              <div className="flex space-x-4 mb-6">
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Enter phone number (e.g., +91 9876543210)"
+                  className={`flex-1 px-4 py-3 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal focus:border-transparent ${
+                    isDark 
+                      ? 'bg-crisp-black text-white placeholder-gray-500' 
+                      : 'bg-white text-gray-900 placeholder-gray-400'
+                  }`}
+                />
                 <button
                   onClick={() => handlePhonePrefillSearch(searchQuery)}
                   disabled={isSearching || !searchQuery.trim()}
-                  className="w-full px-6 py-3 bg-cyber-gradient text-white rounded-lg hover:shadow-cyber transition-all duration-200 disabled:opacity-50 flex items-center justify-center space-x-2"
+                  className="px-6 py-3 bg-cyber-gradient text-white rounded-lg hover:shadow-cyber transition-all duration-200 disabled:opacity-50 flex items-center space-x-2"
                 >
                   {isSearching ? (
                     <>
@@ -1065,7 +1017,7 @@ export const OfficerDashboard: React.FC = () => {
                   ) : (
                     <>
                       <Phone className="w-5 h-5" />
-                      <span>Search Phone Prefill V2</span>
+                      <span>Search</span>
                     </>
                   )}
                 </button>

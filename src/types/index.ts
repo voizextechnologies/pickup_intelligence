@@ -56,15 +56,6 @@ export interface LiveRequest {
 }
 
 // Updated Phone Prefill V2 API Response Types
-export interface SignzyErrorResponse {
-  error: {
-    statusCode: number;
-    status: string;
-    message: string;
-    id: string;
-  };
-}
-
 export interface PhonePrefillV2Response {
   response: {
     alternatePhone: Array<{
@@ -103,19 +94,17 @@ export interface PhonePrefillV2Response {
       ReportedDate: string;
       IdNumber: string;
     }>;
-    name?: {
+    name: {
       fullName: string;
       firstName: string;
       lastName: string;
     };
-    income?: string;
-    gender?: string;
-    age?: string;
-    dob?: string;
+    income: string;
+    gender: string;
+    age: string;
+    dob: string;
   };
 }
-
-export type SignzyPhonePrefillAPIResult = PhonePrefillV2Response | SignzyErrorResponse;
 
 export interface PhonePrefillV2Request {
   mobileNumber: string;
