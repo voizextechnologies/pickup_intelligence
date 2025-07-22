@@ -94,15 +94,15 @@ export interface PhonePrefillV2Response {
       ReportedDate: string;
       IdNumber: string;
     }>;
-    name: {
+    name?: {
       fullName: string;
       firstName: string;
       lastName: string;
     };
-    income: string;
-    gender: string;
-    age: string;
-    dob: string;
+    income?: string;
+    gender?: string;
+    age?: string;
+    dob?: string;
   };
 }
 
