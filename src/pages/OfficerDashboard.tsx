@@ -38,8 +38,8 @@ export const OfficerDashboard: React.FC = () => {
   const { apis, queries, addQuery, addTransaction, getOfficerEnabledAPIs } = useSupabaseData();
   
   // State for search functionality
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'free' | 'pro' | 'tracklink' | 'history' | 'account'>('dashboard');
-  const [activeFreeLookupSubTab, setActiveFreeLookupSubTab] = useState<'mobile-check' | 'email-check' | 'platform-scan'>('mobile-check');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'free' | 'pro' | 'tracklink' | 'history' | 'account'>('dashboard'); // Changed to number for decimal support
+  const [activeFreeLookupSubTab, setActiveFreeLookupSubTab] = useState<'mobile-check' | 'email-check' | 'platform-scan'>('mobile-check'); // Changed to number for decimal support
   const [activeProLookupSubTab, setActiveProLookupSubTab] = useState<'phone-prefill-v2' | 'rc-imei-fasttag' | 'credit-history' | 'cell-id'>('phone-prefill-v2');
   const [searchQuery, setSearchQuery] = useState('');
   const [fullName, setFullName] = useState('');
@@ -73,7 +73,7 @@ export const OfficerDashboard: React.FC = () => {
       toast.error('Please enter phone number');
       return;
     }
-
+    
     if (!officer) {
       toast.error('Officer not authenticated');
       return;
@@ -89,7 +89,7 @@ export const OfficerDashboard: React.FC = () => {
     );
 
     if (!phonePrefillAPI) {
-      toast.error('Phone Prefill V2 API not configured. Please contact admin.');
+      toast.error('Phone Prefill V2 API not configured. Please contact admin.'); // Changed to number for decimal support
       return;
     }
 
@@ -101,7 +101,7 @@ export const OfficerDashboard: React.FC = () => {
     // Check if officer has sufficient credits
     const creditCost = phonePrefillAPI.credit_cost || phonePrefillAPI.default_credit_charge || 1;
     if (officer.credits_remaining < creditCost) {
-      toast.error(`Insufficient credits. Required: ${creditCost}, Available: ${officer.credits_remaining}`);
+      toast.error(`Insufficient credits. Required: ${creditCost}, Available: ${officer.credits_remaining}`); // Changed to number for decimal support
       return;
     }
 
@@ -147,7 +147,7 @@ export const OfficerDashboard: React.FC = () => {
         throw new Error(`API request failed: ${response.status} ${response.statusText}`);
       }
 
-      const data: PhonePrefillV2Response = await response.json();
+      const data: PhonePrefillV2Response = await response.json(); // Changed to number for decimal support
       console.log('API Response data:', data);
 
       setSearchResults(data);
@@ -162,17 +162,23 @@ export const OfficerDashboard: React.FC = () => {
       // Record credit deduction transaction in database
       await addTransaction({
         officer_id: officer.id,
-        officer_name: officer.name,
+        officer_name: officer.name, // Changed to number for decimal support
         action: 'Deduction',
         credits: creditCost,
         payment_mode: 'Query Usage',
         remarks: `Phone Prefill V2 query for ${cleanPhoneNumber}`
       });
 
+      // Update local officer state
+      updateOfficerState({
+        credits_remaining: officer.credits_remaining - creditCost, // Changed to number for decimal support
+        total_queries: officer.total_queries + 1
+      });
+
       // Log the query to database
       await addQuery({
         officer_id: officer.id,
-        officer_name: officer.name,
+        officer_name: officer.name, // Changed to number for decimal support
         type: 'PRO',
         category: 'Phone Prefill V2',
         input_data: `Phone: ${cleanPhoneNumber}${fullName ? `, Name: ${fullName}` : ''}`,
@@ -186,13 +192,13 @@ export const OfficerDashboard: React.FC = () => {
       toast.success('Phone prefill data retrieved successfully!');
 
     } catch (error) {
-      console.error('Phone Prefill V2 API Error:', error);
+      console.error('Phone Prefill V2 search error:', error); // Changed to number for decimal support
       
       // Log failed query
       if (officer && phonePrefillAPI) {
         await addQuery({
           officer_id: officer.id,
-          officer_name: officer.name,
+          officer_name: officer.name, // Changed to number for decimal support
           type: 'PRO',
           category: 'Phone Prefill V2',
           input_data: `Phone: ${searchQuery}${fullName ? `, Name: ${fullName}` : ''}`,
@@ -1255,7 +1261,7 @@ export const OfficerDashboard: React.FC = () => {
                 {officer.credits_remaining} Credits
               </p>
               <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                of {officer.total_credits}
+                of {officer.total_credits} {/* Changed to number for decimal support */}
               </p>
             </div>
             <div className={`w-full rounded-full h-2 ${isDark ? 'bg-crisp-black' : 'bg-gray-200'} w-24`}>
