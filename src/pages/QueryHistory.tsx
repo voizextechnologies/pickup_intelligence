@@ -5,6 +5,7 @@ import { useSupabaseData } from '../hooks/useSupabaseData';
 import { useTheme } from '../contexts/ThemeContext';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
+import { formatCredits } from '../utils/formatters';
 
 export const QueryHistory: React.FC = () => {
   const { queries, isLoading } = useSupabaseData();
@@ -164,7 +165,7 @@ export const QueryHistory: React.FC = () => {
                 Credits Used
               </p>
               <p className={`text-2xl font-bold mt-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                {queries.reduce((sum, q) => sum + q.credits_used, 0)}
+                {formatCredits(queries.reduce((sum, q) => sum + q.credits_used, 0))}
               </p>
             </div>
             <Clock className="w-8 h-8 text-electric-blue" />
@@ -337,7 +338,7 @@ export const QueryHistory: React.FC = () => {
                   <td className={`px-6 py-4 text-sm ${
                     isDark ? 'text-white' : 'text-gray-900'
                   }`}>
-                    {query.credits_used}
+                    {formatCredits(query.credits_used)}
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center space-x-2">
