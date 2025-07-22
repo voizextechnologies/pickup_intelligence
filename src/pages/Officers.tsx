@@ -4,6 +4,7 @@ import { StatusBadge } from '../components/UI/StatusBadge';
 import { useSupabaseData } from '../hooks/useSupabaseData';
 import { useTheme } from '../contexts/ThemeContext';
 import toast from 'react-hot-toast';
+import { formatCredits } from '../utils/formatters';
 
 export const Officers: React.FC = () => {
   const { officers, ratePlans, isLoading, addOfficer, updateOfficer, deleteOfficer } = useSupabaseData();
@@ -290,7 +291,7 @@ export const Officers: React.FC = () => {
                 Total Credits
               </p>
               <p className={`text-2xl font-bold mt-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                {officers.reduce((sum, o) => sum + o.credits_remaining, 0)}
+                {formatCredits(officers.reduce((sum, o) => sum + o.credits_remaining, 0))}
               </p>
             </div>
             <Download className="w-8 h-8 text-electric-blue" />
@@ -391,7 +392,7 @@ export const Officers: React.FC = () => {
                 <div className="flex justify-between text-sm">
                   <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Credits:</span>
                   <span className={isDark ? 'text-white' : 'text-gray-900'}>
-                    {officer.credits_remaining}/{officer.total_credits}
+                    {formatCredits(officer.credits_remaining)}/{formatCredits(officer.total_credits)}
                   </span>
                 </div>
               </div>
