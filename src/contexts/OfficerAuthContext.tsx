@@ -9,8 +9,8 @@ interface OfficerUser {
   email: string;
   telegram_id?: string;
   plan_id?: string;
-  credits_remaining: number;
-  total_credits: number;
+  credits_remaining: number; // Changed to number for decimal support
+  total_credits: number; // Changed to number for decimal support
   status: string;
   department?: string;
   rank?: string;

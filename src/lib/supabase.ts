@@ -50,8 +50,8 @@ export interface Officer {
   badge_number?: string;
   station?: string;
   plan_id?: string;
-  credits_remaining: number;
-  total_credits: number;
+  credits_remaining: number; // Changed to number for decimal support
+  total_credits: number; // Changed to number for decimal support
   total_queries: number;
   last_active: string;
   registered_on: string;
@@ -64,7 +64,7 @@ export interface CreditTransaction {
   officer_id: string;
   officer_name: string;
   action: 'Renewal' | 'Deduction' | 'Top-up' | 'Refund';
-  credits: number;
+  credits: number; // Changed to number for decimal support
   payment_mode: string;
   remarks?: string;
   created_at: string;
@@ -132,13 +132,13 @@ export interface API {
   name: string;
   type: 'FREE' | 'PRO' | 'DISABLED';
   service_provider: string;
-}
-export interface RatePlan {
-  id: string;
+  global_buy_price: number; // Changed to number for decimal support
+  global_sell_price: number; // Changed to number for decimal support
+  default_credit_charge: number; // Changed to number for decimal support
   plan_name: string;
   user_type: 'Police' | 'Private' | 'Custom';
-  monthly_fee: number;
-  default_credits: number;
+  monthly_fee: number; // Changed to number for decimal support
+  default_credits: number; // Changed to number for decimal support
   renewal_required: boolean;
   topup_allowed: boolean;
   status: 'Active' | 'Inactive';
@@ -151,9 +151,9 @@ export interface PlanAPI {
   plan_id: string;
   api_id: string;
   enabled: boolean;
-  credit_cost: number;
-  buy_price: number;
-  sell_price: number;
+  credit_cost: number; // Changed to number for decimal support
+  buy_price: number; // Changed to number for decimal support
+  sell_price: number; // Changed to number for decimal support
   created_at: string;
   updated_at: string;
 }

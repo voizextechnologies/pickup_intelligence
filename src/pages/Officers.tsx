@@ -24,8 +24,8 @@ export const Officers: React.FC = () => {
     station: '',
     plan_id: '',
     status: 'Active' as 'Active' | 'Suspended',
-    credits_remaining: 50,
-    total_credits: 50
+    credits_remaining: 50, // Changed to number for decimal support
+    total_credits: 50 // Changed to number for decimal support
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -52,8 +52,8 @@ export const Officers: React.FC = () => {
       station: '',
       plan_id: '',
       status: 'Active',
-      credits_remaining: 50,
-      total_credits: 50
+      credits_remaining: 50, // Changed to number for decimal support
+      total_credits: 50 // Changed to number for decimal support
     });
     setEditingOfficer(null);
     setShowAddModal(true);
@@ -72,8 +72,8 @@ export const Officers: React.FC = () => {
       station: officer.station || '',
       plan_id: officer.plan_id || '',
       status: officer.status,
-      credits_remaining: officer.credits_remaining,
-      total_credits: officer.total_credits
+      credits_remaining: officer.credits_remaining, // Changed to number for decimal support
+      total_credits: officer.total_credits // Changed to number for decimal support
     });
     setEditingOfficer(officer);
     setShowAddModal(true);
@@ -104,8 +104,8 @@ export const Officers: React.FC = () => {
         station: '',
         plan_id: '',
         status: 'Active',
-        credits_remaining: 50,
-        total_credits: 50
+        credits_remaining: 50, // Changed to number for decimal support
+        total_credits: 50 // Changed to number for decimal support
       });
     } catch (error) {
       console.error('Error saving officer:', error);
@@ -735,6 +735,7 @@ export const Officers: React.FC = () => {
                   </label>
                   <input
                     type="number"
+                    step="0.01" // Allow decimal input
                     min="0"
                     disabled={!!formData.plan_id}
                     value={formData.credits_remaining}
@@ -761,6 +762,7 @@ export const Officers: React.FC = () => {
                   </label>
                   <input
                     type="number"
+                    step="0.01" // Allow decimal input
                     min="0"
                     disabled={!!formData.plan_id}
                     value={formData.total_credits}

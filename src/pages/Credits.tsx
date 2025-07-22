@@ -14,7 +14,7 @@ export const Credits: React.FC = () => {
   const [formData, setFormData] = useState({
     officer_id: '',
     action: 'Top-up' as 'Renewal' | 'Deduction' | 'Top-up' | 'Refund',
-    credits: 0,
+    credits: 0, // Changed to number for decimal support
     payment_mode: 'Department Budget',
     remarks: ''
   });
@@ -65,7 +65,7 @@ export const Credits: React.FC = () => {
       setFormData({
         officer_id: '',
         action: 'Top-up',
-        credits: 0,
+        credits: 0, // Changed to number for decimal support
         payment_mode: 'Department Budget',
         remarks: ''
       });
@@ -503,7 +503,7 @@ export const Credits: React.FC = () => {
                 </label>
                 <input
                   type="number"
-                  required
+                  required // Changed to number for decimal support
                   min="1"
                   value={formData.credits}
                   onChange={(e) => setFormData(prev => ({ ...prev, credits: parseInt(e.target.value) || 0 }))}

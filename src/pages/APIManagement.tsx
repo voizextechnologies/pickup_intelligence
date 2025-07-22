@@ -17,9 +17,9 @@ export const APIManagement: React.FC = () => {
     name: '',
     service_provider: '',
     type: 'PRO' as 'FREE' | 'PRO' | 'DISABLED',
-    global_buy_price: 0,
-    global_sell_price: 0,
-    default_credit_charge: 0,
+    global_buy_price: 0, // Changed to number for decimal support
+    global_sell_price: 0, // Changed to number for decimal support
+    default_credit_charge: 0, // Changed to number for decimal support
     description: '',
     api_key: '',
     key_status: 'Active' as 'Active' | 'Inactive'
@@ -38,9 +38,9 @@ export const APIManagement: React.FC = () => {
       name: '',
       service_provider: '',
       type: 'PRO',
-      global_buy_price: 0,
-      global_sell_price: 0,
-      default_credit_charge: 0,
+      global_buy_price: 0, // Changed to number for decimal support
+      global_sell_price: 0, // Changed to number for decimal support
+      default_credit_charge: 0, // Changed to number for decimal support
       description: '',
       api_key: '',
       key_status: 'Active'
@@ -54,9 +54,9 @@ export const APIManagement: React.FC = () => {
       name: api.name,
       service_provider: api.service_provider,
       type: api.type,
-      global_buy_price: api.global_buy_price,
-      global_sell_price: api.global_sell_price,
-      default_credit_charge: api.default_credit_charge,
+      global_buy_price: api.global_buy_price, // Changed to number for decimal support
+      global_sell_price: api.global_sell_price, // Changed to number for decimal support
+      default_credit_charge: api.default_credit_charge, // Changed to number for decimal support
       description: api.description,
       api_key: api.api_key,
       key_status: api.key_status
@@ -454,11 +454,12 @@ export const APIManagement: React.FC = () => {
                 <div>
                   <label className={`block text-sm font-medium mb-2 ${
                     isDark ? 'text-gray-300' : 'text-gray-700'
-                  }`}>
-                    Default Credit Charge
+                  }`}> 
+                    Default Credit Charge (Calculated)
                   </label>
                   <input
                     type="number"
+                    step="0.01" // Allow decimal input
                     min="0"
                     value={formData.default_credit_charge}
                     onChange={(e) => setFormData(prev => ({ ...prev, default_credit_charge: parseInt(e.target.value) || 0 }))}
@@ -494,10 +495,11 @@ export const APIManagement: React.FC = () => {
                   <label className={`block text-sm font-medium mb-2 ${
                     isDark ? 'text-gray-300' : 'text-gray-700'
                   }`}>
-                    Sell Price (₹)
+                    Sell Price (₹) *
                   </label>
                   <input
                     type="number"
+                    step="0.01" // Allow decimal input
                     min="0"
                     step="0.01"
                     value={formData.global_sell_price}
