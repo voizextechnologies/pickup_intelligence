@@ -343,8 +343,9 @@ export const RatePlans: React.FC = () => {
                       {plan.renewal_required ? 'Yes' : 'No'}
                     </span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Top-up Allowed:</span>
+                    step="0.01"
+                    value={planFormData.monthly_fee || ''}
+                    onChange={(e) => setPlanFormData(prev => ({ ...prev, monthly_fee: parseFloat(e.target.value) || 0 }))}
                     <span className={`text-sm ${plan.topup_allowed ? 'text-green-400' : 'text-red-400'}`}>
                       {plan.topup_allowed ? 'Yes' : 'No'}
                     </span>
@@ -353,7 +354,7 @@ export const RatePlans: React.FC = () => {
 
                 <div className="mb-4">
                   <p className={`text-xs mb-2 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                    Enabled APIs: {getPlanAPIs(plan.id).filter(api => api.enabled).length} of {apis.length}
+                    Default Credits: {(planFormData.monthly_fee / 10).toFixed(1)} (₹10 = 1 credit)
                   </p>
                   <div className={`w-full rounded-full h-2 ${isDark ? 'bg-crisp-black' : 'bg-gray-200'}`}>
                     <div 
@@ -677,8 +678,9 @@ export const RatePlans: React.FC = () => {
                             </label>
                             <input
                               type="number"
-                              value={planAPI.credit_cost}
-                              onChange={(e) => updatePlanAPI(index, planAPI.api_id, 'credit_cost', parseInt(e.target.value) || 0)}
+                              step="0.01"
+                              value={planAPI.credit_cost || ''}
+                              onChange={(e) => updatePlanAPI(index, planAPI.api_id, 'credit_cost', parseFloat(e.target.value) || 0)}
                               className={`w-full px-2 py-1 text-sm border border-cyber-teal/30 rounded focus:outline-none focus:ring-1 focus:ring-cyber-teal ${
                                 isDark 
                                   ? 'bg-crisp-black text-white' 
@@ -694,8 +696,9 @@ export const RatePlans: React.FC = () => {
                             </label>
                             <input
                               type="number"
-                              value={planAPI.buy_price}
-                              onChange={(e) => updatePlanAPI(index, planAPI.api_id, 'buy_price', parseInt(e.target.value) || 0)}
+                              step="0.01"
+                              value={planAPI.buy_price || ''}
+                              onChange={(e) => updatePlanAPI(index, planAPI.api_id, 'buy_price', parseFloat(e.target.value) || 0)}
                               className={`w-full px-2 py-1 text-sm border border-cyber-teal/30 rounded focus:outline-none focus:ring-1 focus:ring-cyber-teal ${
                                 isDark 
                                   ? 'bg-crisp-black text-white' 
@@ -711,8 +714,9 @@ export const RatePlans: React.FC = () => {
                             </label>
                             <input
                               type="number"
-                              value={planAPI.sell_price}
-                              onChange={(e) => updatePlanAPI(index, planAPI.api_id, 'sell_price', parseInt(e.target.value) || 0)}
+                              step="0.01"
+                              value={planAPI.sell_price || ''}
+                              onChange={(e) => updatePlanAPI(index, planAPI.api_id, 'sell_price', parseFloat(e.target.value) || 0)}
                               className={`w-full px-2 py-1 text-sm border border-cyber-teal/30 rounded focus:outline-none focus:ring-1 focus:ring-cyber-teal ${
                                 isDark 
                                   ? 'bg-crisp-black text-white' 

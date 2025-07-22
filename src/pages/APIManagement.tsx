@@ -460,8 +460,9 @@ export const APIManagement: React.FC = () => {
                   <input
                     type="number"
                     min="0"
-                    value={formData.default_credit_charge}
-                    onChange={(e) => setFormData(prev => ({ ...prev, default_credit_charge: parseInt(e.target.value) || 0 }))}
+                    step="0.01"
+                    value={formData.default_credit_charge || ''}
+                    onChange={(e) => setFormData(prev => ({ ...prev, default_credit_charge: parseFloat(e.target.value) || 0 }))}
                     className={`w-full px-3 py-2 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal ${
                       isDark 
                         ? 'bg-crisp-black text-white' 
@@ -480,7 +481,7 @@ export const APIManagement: React.FC = () => {
                     type="number"
                     min="0"
                     step="0.01"
-                    value={formData.global_buy_price}
+                    value={formData.global_buy_price || ''}
                     onChange={(e) => setFormData(prev => ({ ...prev, global_buy_price: parseFloat(e.target.value) || 0 }))}
                     className={`w-full px-3 py-2 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal ${
                       isDark 
@@ -500,7 +501,7 @@ export const APIManagement: React.FC = () => {
                     type="number"
                     min="0"
                     step="0.01"
-                    value={formData.global_sell_price}
+                    value={formData.global_sell_price || ''}
                     onChange={(e) => setFormData(prev => ({ ...prev, global_sell_price: parseFloat(e.target.value) || 0 }))}
                     className={`w-full px-3 py-2 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal ${
                       isDark 
