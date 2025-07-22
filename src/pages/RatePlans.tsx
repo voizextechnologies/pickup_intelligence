@@ -343,6 +343,8 @@ export const RatePlans: React.FC = () => {
                       {plan.renewal_required ? 'Yes' : 'No'}
                     </span>
                   </div>
+                  <div className="flex justify-between">
+                    <span className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Top-up Allowed:</span>
                     <span className={`text-sm ${plan.topup_allowed ? 'text-green-400' : 'text-red-400'}`}>
                       {plan.topup_allowed ? 'Yes' : 'No'}
                     </span>
