@@ -196,13 +196,13 @@ export const OfficerDashboard: React.FC = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': signzyAPI.api_key
+          'Authorization': 'Bearer YOUR_SIGNZY_API_KEY_HERE' // Replace with actual Signzy API key
         },
         body: JSON.stringify(requestBody)
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
+            consentFlag: "true",
         throw new Error(errorData.message || `API request failed with status ${response.status}`);
       }
 
