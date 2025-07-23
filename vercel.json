@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/signzy/(.*)",
+      "destination": "https://api-preproduction.signzy.app/$1"
+    }
+  ]
+}
