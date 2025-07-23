@@ -314,7 +314,7 @@ export const OfficerDashboard: React.FC = () => {
                 Today's Queries
               </p>
               <p className={`text-2xl font-bold mt-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                {formatCredits(todayQueries)}
+                {formatCredits(todayQueries, 0)}
               </p>
             </div>
             <Search className="w-8 h-8 text-cyber-teal" />
