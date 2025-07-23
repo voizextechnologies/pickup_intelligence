@@ -39,9 +39,9 @@ export const OfficerDashboard: React.FC = () => {
   const { apis, queries, addQuery, addTransaction, getOfficerEnabledAPIs } = useSupabaseData();
   
   // State for search functionality
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'free' | 'pro' | 'tracklink' | 'history' | 'account'>('dashboard'); // Changed to number for decimal support
-  const [activeFreeLookupSubTab, setActiveFreeLookupSubTab] = useState<'mobile-check' | 'email-check' | 'platform-scan'>('mobile-check'); // Changed to number for decimal support
-  const [activeProLookupSubTab, setActiveProLookupSubTab] = useState<'phone-prefill-v2' | 'rc-imei-fasttag' | 'credit-history' | 'cell-id'>('phone-prefill-v2');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'free' | 'pro' | 'tracklink' | 'history' | 'account'>('dashboard');
+  const [activeFreeLookupSubTab, setActiveFreeLookupSubTab] = useState<'mobile-check' | 'email-check' | 'platform-scan'>('mobile-check');
+  const [activeProLookupSubTab, setActiveProLookupSubTab] = useState<'phone-prefill-v2' | 'rc' | 'imei' | 'fasttag' | 'credit-history' | 'cell-id'>('rc');
   const [searchQuery, setSearchQuery] = useState('');
   const [fullName, setFullName] = useState('');
   const [isSearching, setIsSearching] = useState(false);
@@ -90,7 +90,7 @@ export const OfficerDashboard: React.FC = () => {
     );
 
     if (!phonePrefillAPI) {
-      toast.error('Phone Prefill V2 API not configured. Please contact admin.'); // Changed to number for decimal support
+      toast.error('Phone Prefill V2 API not configured. Please contact admin.');
       return;
     }
 
@@ -102,7 +102,7 @@ export const OfficerDashboard: React.FC = () => {
     // Check if officer has sufficient credits
     const creditCost = phonePrefillAPI.credit_cost || phonePrefillAPI.default_credit_charge || 1;
     if (officer.credits_remaining < creditCost) {
-      toast.error(`Insufficient credits. Required: ${creditCost}, Available: ${officer.credits_remaining}`); // Changed to number for decimal support
+      toast.error(`Insufficient credits. Required: ${creditCost}, Available: ${officer.credits_remaining}`);
       return;
     }
 
@@ -148,7 +148,7 @@ export const OfficerDashboard: React.FC = () => {
         throw new Error(`API request failed: ${response.status} ${response.statusText}`);
       }
 
-      const data: PhonePrefillV2Response = await response.json(); // Changed to number for decimal support
+      const data: PhonePrefillV2Response = await response.json();
       console.log('API Response data:', data);
 
       setSearchResults(data);
@@ -163,7 +163,7 @@ export const OfficerDashboard: React.FC = () => {
       // Record credit deduction transaction in database
       await addTransaction({
         officer_id: officer.id,
-        officer_name: officer.name, // Changed to number for decimal support
+        officer_name: officer.name,
         action: 'Deduction',
         credits: creditCost,
         payment_mode: 'Query Usage',
@@ -172,14 +172,14 @@ export const OfficerDashboard: React.FC = () => {
 
       // Update local officer state
       updateOfficerState({
-        credits_remaining: officer.credits_remaining - creditCost, // Changed to number for decimal support
+        credits_remaining: officer.credits_remaining - creditCost,
         total_queries: officer.total_queries + 1
       });
 
       // Log the query to database
       await addQuery({
         officer_id: officer.id,
-        officer_name: officer.name, // Changed to number for decimal support
+        officer_name: officer.name,
         type: 'PRO',
         category: 'Phone Prefill V2',
         input_data: `Phone: ${cleanPhoneNumber}${fullName ? `, Name: ${fullName}` : ''}`,
@@ -193,13 +193,13 @@ export const OfficerDashboard: React.FC = () => {
       toast.success('Phone prefill data retrieved successfully!');
 
     } catch (error) {
-      console.error('Phone Prefill V2 search error:', error); // Changed to number for decimal support
+      console.error('Phone Prefill V2 search error:', error);
       
       // Log failed query
       if (officer && phonePrefillAPI) {
         await addQuery({
           officer_id: officer.id,
-          officer_name: officer.name, // Changed to number for decimal support
+          officer_name: officer.name,
           type: 'PRO',
           category: 'Phone Prefill V2',
           input_data: `Phone: ${searchQuery}${fullName ? `, Name: ${fullName}` : ''}`,
@@ -617,9 +617,9 @@ export const OfficerDashboard: React.FC = () => {
             <span className="font-medium">Phone Prefill V2</span>
           </button>
           <button
-            onClick={() => setActiveProLookupSubTab('rc-imei-fasttag')}
+            onClick={() => setActiveProLookupSubTab('rc')}
             className={`flex items-center space-x-2 py-2 px-4 rounded-lg transition-all duration-200 ${
-              activeProLookupSubTab === 'rc-imei-fasttag'
+              activeProLookupSubTab === 'rc'
                 ? 'bg-cyber-teal/20 text-cyber-teal border border-cyber-teal/30'
                 : isDark 
                   ? 'text-gray-400 hover:text-cyber-teal hover:bg-cyber-teal/10' 
@@ -627,7 +627,33 @@ export const OfficerDashboard: React.FC = () => {
             }`}
           >
             <Car className="w-4 h-4" />
-            <span className="font-medium">RC / IMEI / FastTag</span>
+            <span className="font-medium">RC</span>
+          </button>
+          <button
+            onClick={() => setActiveProLookupSubTab('imei')}
+            className={`flex items-center space-x-2 py-2 px-4 rounded-lg transition-all duration-200 ${
+              activeProLookupSubTab === 'imei'
+                ? 'bg-cyber-teal/20 text-cyber-teal border border-cyber-teal/30'
+                : isDark 
+                  ? 'text-gray-400 hover:text-cyber-teal hover:bg-cyber-teal/10' 
+                  : 'text-gray-600 hover:text-cyber-teal hover:bg-cyber-teal/10'
+            }`}
+          >
+            <Smartphone className="w-4 h-4" />
+            <span className="font-medium">IMEI</span>
+          </button>
+          <button
+            onClick={() => setActiveProLookupSubTab('fasttag')}
+            className={`flex items-center space-x-2 py-2 px-4 rounded-lg transition-all duration-200 ${
+              activeProLookupSubTab === 'fasttag'
+                ? 'bg-cyber-teal/20 text-cyber-teal border border-cyber-teal/30'
+                : isDark 
+                  ? 'text-gray-400 hover:text-cyber-teal hover:bg-cyber-teal/10' 
+                  : 'text-gray-600 hover:text-cyber-teal hover:bg-cyber-teal/10'
+            }`}
+          >
+            <Car className="w-4 h-4" />
+            <span className="font-medium">FastTag</span>
           </button>
           <button
             onClick={() => setActiveProLookupSubTab('credit-history')}
@@ -1025,12 +1051,12 @@ export const OfficerDashboard: React.FC = () => {
     </div>
       )}
 
-      {activeProLookupSubTab === 'rc-imei-fasttag' && (
+      {(activeProLookupSubTab === 'rc' || activeProLookupSubTab === 'imei' || activeProLookupSubTab === 'fasttag') && (
         <div className={`border border-cyber-teal/20 rounded-lg p-6 ${
           isDark ? 'bg-muted-graphite' : 'bg-white'
         }`}>
           <h2 className={`text-xl font-semibold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-            RC / IMEI / FastTag Verification
+            {activeProLookupSubTab === 'rc' ? 'RC Verification' : activeProLookupSubTab === 'imei' ? 'IMEI Verification' : 'FastTag Verification'}
           </h2>
           <div className="text-center py-12">
             <Car className={`w-16 h-16 mx-auto mb-4 ${isDark ? 'text-gray-400' : 'text-gray-500'}`} />
@@ -1038,7 +1064,7 @@ export const OfficerDashboard: React.FC = () => {
               Coming Soon
             </h3>
             <p className={isDark ? 'text-gray-400' : 'text-gray-600'}>
-              RC, IMEI, and FastTag verification services will be available soon.
+              {activeProLookupSubTab === 'rc' ? 'RC' : activeProLookupSubTab === 'imei' ? 'IMEI' : 'FastTag'} verification services will be available soon.
             </p>
           </div>
         </div>
@@ -1057,7 +1083,7 @@ export const OfficerDashboard: React.FC = () => {
               Credit History
             </h3>
             <p className={isDark ? 'text-gray-400' : 'text-gray-600'}>
-              Your credit transaction history will be displayed here.
+              Your credit transaction history will be available soon.
             </p>
           </div>
         </div>
@@ -1262,7 +1288,7 @@ export const OfficerDashboard: React.FC = () => {
                 {formatCredits(officer.credits_remaining)} Credits
               </p>
               <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                of {formatCredits(officer.total_credits)} {/* Changed to number for decimal support */}
+                of {formatCredits(officer.total_credits)}
               </p>
             </div>
             <div className={`w-full rounded-full h-2 ${isDark ? 'bg-crisp-black' : 'bg-gray-200'} w-24`}>
