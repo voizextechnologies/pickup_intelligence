@@ -42,8 +42,6 @@ export const OfficerDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'free' | 'pro' | 'tracklink' | 'history' | 'account'>('dashboard'); // Changed to number for decimal support
   const [activeFreeLookupSubTab, setActiveFreeLookupSubTab] = useState<'mobile-check' | 'email-check' | 'platform-scan'>('mobile-check'); // Changed to number for decimal support
   const [activeProLookupSubTab, setActiveProLookupSubTab] = useState<'phone-prefill-v2' | 'rc-imei-fasttag' | 'credit-history' | 'cell-id'>('phone-prefill-v2');
-  const [activeLookupTab, setActiveLookupTab] = useState<'rc' | 'imei' | 'fasttag'>('rc');
-
   const [searchQuery, setSearchQuery] = useState('');
   const [fullName, setFullName] = useState('');
   const [isSearching, setIsSearching] = useState(false);
