@@ -48,6 +48,12 @@ export const OfficerDashboard: React.FC = () => {
   const [searchResults, setSearchResults] = useState<PhonePrefillV2Response | null>(null);
   const [showResults, setShowResults] = useState(false);
 
+  // RC Search states
+  const [vehicleNumber, setVehicleNumber] = useState('');
+  const [rcSearchData, setRcSearchData] = useState<any>(null);
+  const [rcSearchLoading, setRcSearchLoading] = useState(false);
+  const [rcSearchError, setRcSearchError] = useState<string | null>(null);
+
   // Get client IP address (simplified approach)
   const [clientIP, setClientIP] = useState('127.0.0.1');
 
@@ -214,6 +220,115 @@ export const OfficerDashboard: React.FC = () => {
       toast.error(error instanceof Error ? error.message : 'Failed to retrieve phone prefill data');
     } finally {
       setIsSearching(false);
+    }
+  };
+
+  const handleRCSearch = async () => {
+    if (!vehicleNumber.trim()) {
+      toast.error('Please enter a vehicle registration number');
+      return;
+    }
+
+    if (!officer) {
+      toast.error('Officer information not available');
+      return;
+    }
+
+    // Find the RC API configuration
+    const rcAPI = apis.find(api => api.name.toLowerCase().includes('vehicle rc') || api.name.toLowerCase().includes('rc search'));
+    if (!rcAPI || rcAPI.key_status !== 'Active') {
+      toast.error('Vehicle RC search service is not available');
+      return;
+    }
+
+    // Check if officer has sufficient credits
+    const creditCost = rcAPI.default_credit_charge;
+    if (officer.credits_remaining < creditCost) {
+      toast.error('Insufficient credits for this search');
+      return;
+    }
+
+    setRcSearchLoading(true);
+    setRcSearchError(null);
+    setRcSearchData(null);
+
+    try {
+      const response = await fetch('/api/signzy/api/v3/vehicle/detailedsearches', {
+        method: 'POST',
+        headers: {
+          'Authorization': rcAPI.api_key,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          vehicleNumber: vehicleNumber.toUpperCase(),
+          blacklistCheck: true,
+          signzyID: officer.id,
+          splitAddress: true
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to fetch vehicle details');
+      }
+
+      if (data.result) {
+        setRcSearchData(data.result);
+        
+        // Log successful query
+        await addQuery({
+          officer_id: officer.id,
+          officer_name: officer.name,
+          type: 'PRO',
+          category: 'Vehicle RC',
+          input_data: vehicleNumber.toUpperCase(),
+          source: 'Signzy Vehicle RC API',
+          result_summary: `Vehicle found: ${data.result.regNo} - ${data.result.owner}`,
+          full_result: data.result,
+          credits_used: creditCost,
+          status: 'Success'
+        });
+
+        // Deduct credits
+        await addTransaction({
+          officer_id: officer.id,
+          officer_name: officer.name,
+          action: 'Deduction',
+          credits: creditCost,
+          payment_mode: 'Query Usage',
+          remarks: `Vehicle RC search for ${vehicleNumber.toUpperCase()}`
+        });
+
+        // Update officer credits in context
+        updateOfficerState({
+          credits_remaining: officer.credits_remaining - creditCost
+        });
+
+        toast.success('Vehicle details retrieved successfully!');
+      } else {
+        throw new Error('No vehicle data found');
+      }
+    } catch (error: any) {
+      const errorMessage = error.message || 'Failed to search vehicle details';
+      setRcSearchError(errorMessage);
+      
+      // Log failed query
+      await addQuery({
+        officer_id: officer.id,
+        officer_name: officer.name,
+        type: 'PRO',
+        category: 'Vehicle RC',
+        input_data: vehicleNumber.toUpperCase(),
+        source: 'Signzy Vehicle RC API',
+        result_summary: `Search failed: ${errorMessage}`,
+        credits_used: 0,
+        status: 'Failed'
+      });
+
+      toast.error(errorMessage);
+    } finally {
+      setRcSearchLoading(false);
     }
   };
 
@@ -1051,12 +1166,227 @@ export const OfficerDashboard: React.FC = () => {
     </div>
       )}
 
-      {(activeProLookupSubTab === 'rc' || activeProLookupSubTab === 'imei' || activeProLookupSubTab === 'fasttag') && (
+      {/* RC Search Content */}
+      {activeProLookupSubTab === 'rc' && (
+        <div className="space-y-6">
+          <div className={`p-6 rounded-lg border ${
+            isDark ? 'bg-crisp-black/50 border-cyber-teal/20' : 'bg-gray-50 border-gray-200'
+          }`}>
+            <div className="flex items-center space-x-3 mb-4">
+              <Car className="w-6 h-6 text-neon-magenta" />
+              <h4 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                Vehicle RC Search
+              </h4>
+            </div>
+            <p className={`text-sm mb-6 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+              Get detailed vehicle registration and owner information using vehicle registration number
+            </p>
+
+            <div className="space-y-4">
+              <div>
+                <label className={`block text-sm font-medium mb-2 ${
+                  isDark ? 'text-gray-300' : 'text-gray-700'
+                }`}>
+                  Vehicle Registration Number *
+                </label>
+                <input
+                  type="text"
+                  value={vehicleNumber}
+                  onChange={(e) => setVehicleNumber(e.target.value.toUpperCase())}
+                  placeholder="e.g., KA01JZ4031"
+                  className={`w-full px-4 py-3 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal font-mono ${
+                    isDark 
+                      ? 'bg-crisp-black text-white placeholder-gray-500' 
+                      : 'bg-white text-gray-900 placeholder-gray-400'
+                  }`}
+                />
+              </div>
+
+              <button
+                onClick={handleRCSearch}
+                disabled={rcSearchLoading || !vehicleNumber.trim()}
+                className="w-full py-3 px-4 bg-neon-magenta text-white font-medium rounded-lg hover:bg-neon-magenta/80 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+              >
+                {rcSearchLoading ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <span>Searching...</span>
+                  </>
+                ) : (
+                  <>
+                    <Search className="w-5 h-5" />
+                    <span>Search Vehicle Details</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* Error Display */}
+          {rcSearchError && (
+            <div className="p-4 rounded-lg border border-red-500/30 bg-red-500/10">
+              <div className="flex items-center space-x-2">
+                <XCircle className="w-5 h-5 text-red-400" />
+                <span className="text-red-400 font-medium">Search Failed</span>
+              </div>
+              <p className="text-red-400 text-sm mt-2">{rcSearchError}</p>
+            </div>
+          )}
+
+          {/* Results Display */}
+          {rcSearchData && (
+            <div className={`p-6 rounded-lg border ${
+              isDark ? 'bg-muted-graphite border-cyber-teal/20' : 'bg-white border-gray-200'
+            }`}>
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center space-x-3">
+                  <CheckCircle className="w-6 h-6 text-green-400" />
+                  <h4 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                    Vehicle Details Found
+                  </h4>
+                </div>
+                <button
+                  onClick={() => copyToClipboard(JSON.stringify(rcSearchData, null, 2))}
+                  className="flex items-center space-x-2 px-3 py-1 bg-cyber-teal/20 text-cyber-teal rounded-lg hover:bg-cyber-teal/30 transition-colors"
+                >
+                  <Copy className="w-4 h-4" />
+                  <span className="text-sm">Copy Data</span>
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Basic Vehicle Information */}
+                <div className="space-y-4">
+                  <h5 className={`font-semibold text-cyber-teal`}>Basic Information</h5>
+                  <div className="space-y-3">
+                    <div>
+                      <span className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Registration Number:</span>
+                      <p className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{rcSearchData.regNo}</p>
+                    </div>
+                    <div>
+                      <span className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Owner Name:</span>
+                      <p className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{rcSearchData.owner}</p>
+                    </div>
+                    <div>
+                      <span className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Father's Name:</span>
+                      <p className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{rcSearchData.ownerFatherName}</p>
+                    </div>
+                    <div>
+                      <span className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Vehicle Class:</span>
+                      <p className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{rcSearchData.class}</p>
+                    </div>
+                    <div>
+                      <span className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Status:</span>
+                      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                        rcSearchData.status === 'ACTIVE' 
+                          ? 'bg-green-500/20 text-green-400' 
+                          : 'bg-red-500/20 text-red-400'
+                      }`}>
+                        {rcSearchData.status}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Vehicle Specifications */}
+                <div className="space-y-4">
+                  <h5 className={`font-semibold text-cyber-teal`}>Vehicle Specifications</h5>
+                  <div className="space-y-3">
+                    <div>
+                      <span className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Manufacturer:</span>
+                      <p className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{rcSearchData.vehicleManufacturerName}</p>
+                    </div>
+                    <div>
+                      <span className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Model:</span>
+                      <p className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{rcSearchData.model}</p>
+                    </div>
+                    <div>
+                      <span className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Color:</span>
+                      <p className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{rcSearchData.vehicleColour}</p>
+                    </div>
+                    <div>
+                      <span className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Fuel Type:</span>
+                      <p className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{rcSearchData.type}</p>
+                    </div>
+                    <div>
+                      <span className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Engine Number:</span>
+                      <p className={`font-medium font-mono ${isDark ? 'text-white' : 'text-gray-900'}`}>{rcSearchData.engine}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Registration Details */}
+                <div className="space-y-4">
+                  <h5 className={`font-semibold text-cyber-teal`}>Registration Details</h5>
+                  <div className="space-y-3">
+                    <div>
+                      <span className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Registration Date:</span>
+                      <p className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{rcSearchData.regDate}</p>
+                    </div>
+                    <div>
+                      <span className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>RC Expiry Date:</span>
+                      <p className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{rcSearchData.rcExpiryDate}</p>
+                    </div>
+                    <div>
+                      <span className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Registration Authority:</span>
+                      <p className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{rcSearchData.regAuthority}</p>
+                    </div>
+                    <div>
+                      <span className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Tax Valid Upto:</span>
+                      <p className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{rcSearchData.vehicleTaxUpto}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Insurance Details */}
+                <div className="space-y-4">
+                  <h5 className={`font-semibold text-cyber-teal`}>Insurance Details</h5>
+                  <div className="space-y-3">
+                    <div>
+                      <span className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Insurance Company:</span>
+                      <p className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{rcSearchData.vehicleInsuranceCompanyName || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <span className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Insurance Valid Upto:</span>
+                      <p className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{rcSearchData.vehicleInsuranceUpto || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <span className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Policy Number:</span>
+                      <p className={`font-medium font-mono ${isDark ? 'text-white' : 'text-gray-900'}`}>{rcSearchData.vehicleInsurancePolicyNumber || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <span className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Financer:</span>
+                      <p className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{rcSearchData.rcFinancer || 'N/A'}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Address Information */}
+              <div className="mt-6 pt-6 border-t border-cyber-teal/20">
+                <h5 className={`font-semibold text-cyber-teal mb-4`}>Address Information</h5>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <span className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Present Address:</span>
+                    <p className={`font-medium mt-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>{rcSearchData.presentAddress}</p>
+                  </div>
+                  <div>
+                    <span className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Permanent Address:</span>
+                    <p className={`font-medium mt-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>{rcSearchData.permanentAddress}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {(activeProLookupSubTab === 'imei' || activeProLookupSubTab === 'fasttag') && (
         <div className={`border border-cyber-teal/20 rounded-lg p-6 ${
           isDark ? 'bg-muted-graphite' : 'bg-white'
         }`}>
           <h2 className={`text-xl font-semibold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-            {activeProLookupSubTab === 'rc' ? 'RC Verification' : activeProLookupSubTab === 'imei' ? 'IMEI Verification' : 'FastTag Verification'}
+            {activeProLookupSubTab === 'imei' ? 'IMEI Verification' : 'FastTag Verification'}
           </h2>
           <div className="text-center py-12">
             <Car className={`w-16 h-16 mx-auto mb-4 ${isDark ? 'text-gray-400' : 'text-gray-500'}`} />
@@ -1064,7 +1394,7 @@ export const OfficerDashboard: React.FC = () => {
               Coming Soon
             </h3>
             <p className={isDark ? 'text-gray-400' : 'text-gray-600'}>
-              {activeProLookupSubTab === 'rc' ? 'RC' : activeProLookupSubTab === 'imei' ? 'IMEI' : 'FastTag'} verification services will be available soon.
+              {activeProLookupSubTab === 'imei' ? 'IMEI' : 'FastTag'} verification services will be available soon.
             </p>
           </div>
         </div>
