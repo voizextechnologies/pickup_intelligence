@@ -324,74 +324,73 @@ export const OfficerOsintPro: React.FC = () => {
         </div>
       </div>
 
-      <div className={`rounded-xl p-6 shadow-xl transition-all duration-300 ${
-        isDark 
-          ? 'bg-gray-800/90 border border-cyber-teal/30 hover:shadow-cyber-teal/20' 
-          : 'bg-white border border-cyber-teal/10 hover:shadow-cyber-teal/10'
+      <div className={`p-4 border border-cyber-teal/20 rounded-lg ${
+        isDark ? 'bg-muted-graphite' : 'bg-white'
       }`}>
-        <h3 className={`text-xl font-semibold mb-4 ${
+        <h3 className={`text-lg font-semibold mb-3 ${
           isDark ? 'text-white' : 'text-gray-900'
         }`}>Search Results</h3>
         {isSearching && (
-          <div className="flex items-center justify-center py-6">
-            <div className="w-8 h-8 border-4 border-cyber-teal border-t-transparent rounded-full animate-spin" />
-            <span className={`ml-4 text-lg ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+          <div className="flex items-center justify-center py-4">
+            <div className="w-6 h-6 border-2 border-cyber-teal border-t-transparent rounded-full animate-spin" />
+            <span className={`ml-2 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
               Searching...
             </span>
           </div>
         )}
 
         {!isSearching && searchResults && (
-          <div className={`p-6 rounded-lg border-2 ${
+          <div className={`p-4 rounded-lg border ${
             searchError 
-              ? (isDark ? 'bg-red-900/20 border-red-500/40' : 'bg-red-50 border-red-200') 
-              : (isDark ? 'bg-green-900/20 border-green-500/40' : 'bg-green-50 border-green-200')
+              ? (isDark ? 'bg-red-900/10 border-red-500/30' : 'bg-red-50 border-red-200') 
+              : (isDark ? 'bg-green-900/10 border-green-500/30' : 'bg-green-50 border-green-200')
           }`}>
             {searchError ? (
-              <div className="flex items-center space-x-3">
-                <XCircle className="w-6 h-6 text-red-400" />
-                <div>
-                  <p className="text-red-400 font-semibold text-lg">Search Failed</p>
-                  <p className={`text-sm ${isDark ? 'text-red-300' : 'text-red-500'}`}>
-                    {searchError}
-                  </p>
-                </div>
+              <div className="flex items-center space-x-2">
+                <XCircle className="w-5 h-5 text-red-400" />
+                <p className={`text-red-400 font-medium ${isDark ? 'text-red-300' : 'text-red-600'}`}>
+                  {searchError}
+                </p>
               </div>
             ) : (
               <>
-                <div className="flex items-center space-x-3 mb-4">
-                  <CheckCircle className="w-6 h-6 text-green-400" />
-                  <p className="text-green-400 font-semibold text-lg">Search Successful</p>
+                <div className="flex items-center space-x-2 mb-2">
+                  <CheckCircle className="w-5 h-5 text-green-400" />
+                  <p className={`text-green-400 font-medium ${isDark ? 'text-green-300' : 'text-green-600'}`}>
+                    Search Successful
+                  </p>
                 </div>
 
                 {typeof searchResults === 'object' && searchResults.message ? (
-                  <p className={`text-yellow-400 text-sm font-medium`}>{searchResults.message}</p>
+                  <p className={`text-yellow-400 ${isDark ? 'text-yellow-300' : 'text-yellow-600'}`}>
+                    {searchResults.message}
+                  </p>
                 ) : (
-                  <div className="space-y-6">
+                  <div className="space-y-4">
                     {Object.entries(searchResults).map(([dbName, dbInfo]: [string, any]) => (
-                      <div key={dbName} className="border-b border-cyber-teal/20 pb-4 last:border-b-0">
-                        <h4 className={`text-lg font-medium mb-3 ${
-                          isDark ? 'text-green-300' : 'text-green-500'
+                      <div key={dbName} className="border-b border-cyber-teal/20 pb-3 last:border-b-0">
+                        <h4 className={`text-md font-medium mb-2 ${
+                          isDark ? 'text-green-300' : 'text-green-600'
                         }`}>📁 {dbName}</h4>
-                        <div className="space-y-3">
+                        <div className="space-y-2">
                           {dbInfo.Data && dbInfo.Data.length > 0 ? (
                             dbInfo.Data.map((record: any, recordIndex: number) => (
-                              <div key={recordIndex} className="pl-4 border-l-2 border-gray-500">
+                              <div key={recordIndex} className="pl-3 border-l border-gray-500">
                                 {Object.entries(record).map(([field, value]: [string, any]) => (
                                   <p key={field} className="text-sm">
                                     <span className={`font-medium ${
-                                      isDark ? 'text-green-300' : 'text-green-500'
+                                      isDark ? 'text-green-300' : 'text-green-600'
                                     }`}>• {field}:</span> {String(value)}
                                   </p>
                                 ))}
-                                <hr className={`my-3 ${
+                                <hr className={`my-2 ${
                                   isDark ? 'border-gray-700' : 'border-gray-200'
                                 }`} />
                               </div>
                             ))
                           ) : (
                             <p className={`text-sm ${
-                              isDark ? 'text-gray-400' : 'text-gray-500'
+                              isDark ? 'text-gray-400' : 'text-gray-600'
                             }`}>No data found for this database.</p>
                           )}
                         </div>
@@ -405,9 +404,9 @@ export const OfficerOsintPro: React.FC = () => {
         )}
 
         {!isSearching && !searchResults && !searchError && (
-          <p className={`text-sm font-medium ${
-            isDark ? 'text-gray-400' : 'text-gray-600'
-          }`}>Results will appear here after you perform a search.</p>
+          <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+            Results will appear here after you perform a search.
+          </p>
         )}
       </div>
     </div>
