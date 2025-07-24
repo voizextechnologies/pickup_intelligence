@@ -135,7 +135,7 @@ export const OfficerOsintPro: React.FC = () => {
         } finally {
           setIsSearching(false);
         }
-        const officerEnabledAPIs = getOfficerEnabledAPIs(officer.id);
+        
         const osintProMobileAPI = officerEnabledAPIs.find(api =>
           api.name.toLowerCase().includes('osint pro mobile check')
         );
