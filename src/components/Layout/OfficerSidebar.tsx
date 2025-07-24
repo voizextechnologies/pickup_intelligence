@@ -71,7 +71,7 @@ export const OfficerSidebar: React.FC = () => {
           <div className="flex justify-between text-xs mb-1">
             <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Credits</span>
             <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>
-              {officer.credits_remaining.toFixed(3)}/{officer.total_credits.toFixed(3)}
+              {officer.credits_remaining.toFixed(3)}/{officer.total_credits}
             </span>
           </div>
           <div className={`w-full rounded-full h-2 ${isDark ? 'bg-crisp-black' : 'bg-gray-200'}`}>
