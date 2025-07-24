@@ -112,74 +112,88 @@ export const OfficerProLookups: React.FC = () => {
       toast.error('Please enter a phone number');
       return;
     }
+    
+    if (!officer) {
+      toast.error('Officer not authenticated');
+      return;
+    }
+
+    // Get officer's enabled APIs with plan-specific pricing
+    const enabledAPIs = getOfficerEnabledAPIs(officer.id);
+    const phonePrefillAPI = enabledAPIs.find(api => 
+      api.name.toLowerCase().includes('phone prefill v2') || 
+      api.name.toLowerCase().includes('phone kyc') ||
+      api.name.toLowerCase().includes('phonekyc') ||
+      api.name.toLowerCase().includes('phone prefill')
+    );
+
+    if (!phonePrefillAPI) {
+      toast.error('Phone Prefill V2 API not configured. Please contact admin.');
+      return;
+    }
+
+    if (phonePrefillAPI.key_status !== 'Active') {
+      toast.error('Phone Prefill V2 API is currently inactive');
+      return;
+    }
+
+    // Check if officer has sufficient credits
+    const creditCost = phonePrefillAPI.credit_cost || phonePrefillAPI.default_credit_charge || 1;
+    if (officer.credits_remaining < creditCost) {
+      toast.error(`Insufficient credits. Required: ${creditCost}, Available: ${officer.credits_remaining}`);
+      return;
+    }
 
     setIsSearching(true);
-    setSearchError(null);
     setSearchResults(null);
+    setSearchError(null);
 
     try {
-      if (!officer) {
-        throw new Error('Officer not authenticated');
-      }
-
-      // Get officer's enabled APIs with plan-specific pricing
-      const enabledAPIs = getOfficerEnabledAPIs(officer.id);
-      const phonePrefillAPI = enabledAPIs.find(api =>
-        api.name.toLowerCase().includes('phone prefill v2') ||
-        api.name.toLowerCase().includes('phone kyc') ||
-        api.name.toLowerCase().includes('phonekyc') ||
-        api.name.toLowerCase().includes('phone prefill')
-      );
-
-      if (!phonePrefillAPI) {
-        throw new Error('Phone Prefill V2 API not configured for your plan. Please contact admin.');
-      }
-
-      if (phonePrefillAPI.key_status !== 'Active') {
-        throw new Error('Phone Prefill V2 API is currently inactive. Please contact admin.');
-      }
-
-      const creditCost = phonePrefillAPI.credit_cost || phonePrefillAPI.default_credit_charge || 1;
-      if (officer.credits_remaining < creditCost) {
-        throw new Error(`Insufficient credits. Required: ${creditCost}, Available: ${officer.credits_remaining}`);
-      }
-
       // Clean phone number - remove any non-digits
       const cleanPhoneNumber = phoneNumber.replace(/\D/g, '');
-
+      
+      // Prepare request payload for Phone Prefill V2
       const requestPayload = {
         mobileNumber: cleanPhoneNumber,
         consent: {
           consentFlag: true,
           consentTimestamp: Math.floor(Date.now() / 1000), // Convert to seconds
-          consentIpAddress: '127.0.0.1', // Placeholder: In a real app, this would be the client's IP from a backend
+          consentIpAddress: '127.0.0.1',
           consentMessageId: `CM_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
         }
       };
-      
+
+      console.log('Making API request with payload:', requestPayload);
+      console.log('Using API key:', phonePrefillAPI.api_key);
+
+      // Make direct API call to Signzy
       const response = await fetch('/api/signzy/api/v3/phonekyc/phone-prefill-v2', {
         method: 'POST',
         headers: {
-          'Authorization': phoneAPI.api_key,
-          'x-client-unique-id': officer.email,
           'Content-Type': 'application/json',
+          'Authorization': phonePrefillAPI.api_key
         },
         body: JSON.stringify(requestPayload)
       });
 
+      console.log('API Response status:', response.status);
+
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorText = await response.text();
+        console.error('API Error Response:', errorText);
+        throw new Error(`API request failed: ${response.status} ${response.statusText}`);
       }
 
-      const data = await response.json(); // Assuming data is PhonePrefillV2Response
-      
-      setSearchResults(data.response); // Assuming the actual data is nested under 'response'
-      
+      const data = await response.json();
+      console.log('API Response data:', data);
+
+      setSearchResults(data.response);
+
       // Deduct credits and record transaction
       const newCreditsRemaining = officer.credits_remaining - creditCost;
       
       // Update officer's state locally for immediate UI update
-      updateOfficerState({ credits_remaining: newCreditsRemaining, total_queries: officer.total_queries + 1 });
+      updateOfficerState({ credits_remaining: newCreditsRemaining });
 
       // Record credit deduction transaction in database
       await addTransaction({
@@ -197,32 +211,35 @@ export const OfficerProLookups: React.FC = () => {
         officer_name: officer.name,
         type: 'PRO',
         category: 'Phone Prefill V2',
-        input_data: cleanPhoneNumber,
+        input_data: `Phone: ${cleanPhoneNumber}`,
         source: 'Signzy Phone Prefill V2',
-        result_summary: `Phone details found for ${data.response.name?.fullName || 'Unknown'}`,
-        full_result: data.response,
+        result_summary: `Found data for ${data.response.name?.fullName || 'Unknown'}`,
+        full_result: data,
         credits_used: creditCost,
         status: 'Success'
       });
+
+      toast.success('Phone prefill data retrieved successfully!');
+
+    } catch (error) {
+      console.error('Phone Prefill V2 search error:', error);
+      setSearchError(error instanceof Error ? error.message : 'Unknown error');
       
-      toast.success('Phone details retrieved successfully!');
-    } catch (error: any) {
-      console.error('Phone Search Error:', error);
-      setSearchError(error.message || 'Failed to retrieve phone prefill data');
-      toast.error(error.message || 'Failed to retrieve phone prefill data');
-      
-      // Log failed query (no credits deducted for failed queries)
+      // Log failed query
       await addQuery({
         officer_id: officer.id,
         officer_name: officer.name,
         type: 'PRO',
         category: 'Phone Prefill V2',
-        input_data: phoneNumber, // Use original input for logging
+        input_data: `Phone: ${phoneNumber}`,
         source: 'Signzy Phone Prefill V2',
-        result_summary: `Search failed: ${error.message}`,
-        credits_used: 0,
+        result_summary: `Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        full_result: null,
+        credits_used: 0, // No credits deducted for failed queries
         status: 'Failed'
       });
+
+      toast.error(error instanceof Error ? error.message : 'Failed to retrieve phone prefill data');
     } finally {
       setIsSearching(false);
     }
