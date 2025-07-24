@@ -1,21 +1,27 @@
 import React, { useState } from 'react';
-import { Shield, Database, Phone, Car, CreditCard, FileText, Search, Smartphone, MapPin } from 'lucide-react';
+import { Shield, Database, Phone, Car, CreditCard, FileText, Search, Smartphone, MapPin, Copy, Download, AlertCircle, CheckCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
-import { useOfficerAuth, OfficerUser } from '../../contexts/OfficerAuthContext';
+import { useOfficerAuth } from '../../contexts/OfficerAuthContext';
 import { useSupabaseData } from '../../hooks/useSupabaseData';
 import toast from 'react-hot-toast';
 
 export const OfficerProLookups: React.FC = () => {
   const { isDark } = useTheme();
   const { officer, updateOfficerState } = useOfficerAuth();
-  const { apis, addQuery } = useSupabaseData();
-  const { addTransaction, getOfficerEnabledAPIs } = useSupabaseData(); // Destructure addTransaction and getOfficerEnabledAPIs
-  const [activeTab, setActiveTab] = useState<'phone-prefill-v2' | 'rc' | 'imei' | 'fasttag' | 'credit-history' | 'cell-id'>('phone-prefill-v2'); // Keep this line
+  const { apis, addQuery, addTransaction, getOfficerEnabledAPIs } = useSupabaseData();
+  const [activeTab, setActiveTab] = useState<'phone-prefill-v2' | 'rc' | 'imei' | 'fasttag' | 'credit-history' | 'cell-id'>('phone-prefill-v2');
   const [rcNumber, setRcNumber] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [searchResults, setSearchResults] = useState<any>(null);
   const [searchError, setSearchError] = useState<string | null>(null);
+  const [expandedSections, setExpandedSections] = useState({
+    personal: true,
+    contact: true,
+    addresses: true,
+    documents: true,
+    raw: false,
+  });
 
   const handleRCSearch = async () => {
     if (!rcNumber.trim()) {
@@ -23,7 +29,6 @@ export const OfficerProLookups: React.FC = () => {
       return;
     }
 
-    // Find RC API
     const rcAPI = apis.find(api => api.name.toLowerCase().includes('vehicle') && api.key_status === 'Active');
     
     if (!rcAPI) {
@@ -63,11 +68,9 @@ export const OfficerProLookups: React.FC = () => {
       if (data.result) {
         setSearchResults(data.result);
         
-        // Deduct credits
         const newCredits = officer.credits_remaining - rcAPI.default_credit_charge;
         updateOfficerState({ credits_remaining: newCredits });
         
-        // Log the query
         await addQuery({
           officer_id: officer.id,
           officer_name: officer.name,
@@ -90,7 +93,6 @@ export const OfficerProLookups: React.FC = () => {
       setSearchError(error.message || 'Search failed');
       toast.error('Search failed. Please try again.');
       
-      // Log failed query
       await addQuery({
         officer_id: officer.id,
         officer_name: officer.name,
@@ -118,7 +120,6 @@ export const OfficerProLookups: React.FC = () => {
       return;
     }
 
-    // Get officer's enabled APIs with plan-specific pricing
     const enabledAPIs = getOfficerEnabledAPIs(officer.id);
     const phonePrefillAPI = enabledAPIs.find(api => 
       api.name.toLowerCase().includes('phone prefill v2') || 
@@ -137,7 +138,6 @@ export const OfficerProLookups: React.FC = () => {
       return;
     }
 
-    // Check if officer has sufficient credits
     const creditCost = phonePrefillAPI.credit_cost || phonePrefillAPI.default_credit_charge || 1;
     if (officer.credits_remaining < creditCost) {
       toast.error(`Insufficient credits. Required: ${creditCost}, Available: ${officer.credits_remaining}`);
@@ -149,15 +149,12 @@ export const OfficerProLookups: React.FC = () => {
     setSearchError(null);
 
     try {
-      // Clean phone number - remove any non-digits
       const cleanPhoneNumber = phoneNumber.replace(/\D/g, '');
-      
-      // Prepare request payload for Phone Prefill V2
       const requestPayload = {
         mobileNumber: cleanPhoneNumber,
         consent: {
           consentFlag: true,
-          consentTimestamp: Math.floor(Date.now() / 1000), // Convert to seconds
+          consentTimestamp: Math.floor(Date.now() / 1000),
           consentIpAddress: '127.0.0.1',
           consentMessageId: `CM_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
         }
@@ -166,7 +163,6 @@ export const OfficerProLookups: React.FC = () => {
       console.log('Making API request with payload:', requestPayload);
       console.log('Using API key:', phonePrefillAPI.api_key);
 
-      // Make direct API call to Signzy
       const response = await fetch('/api/signzy/api/v3/phonekyc/phone-prefill-v2', {
         method: 'POST',
         headers: {
@@ -189,13 +185,9 @@ export const OfficerProLookups: React.FC = () => {
 
       setSearchResults(data.response);
 
-      // Deduct credits and record transaction
       const newCreditsRemaining = officer.credits_remaining - creditCost;
-      
-      // Update officer's state locally for immediate UI update
       updateOfficerState({ credits_remaining: newCreditsRemaining });
 
-      // Record credit deduction transaction in database
       await addTransaction({
         officer_id: officer.id,
         officer_name: officer.name,
@@ -205,7 +197,6 @@ export const OfficerProLookups: React.FC = () => {
         remarks: `Phone Prefill V2 query for ${cleanPhoneNumber}`
       });
 
-      // Log the query to database
       await addQuery({
         officer_id: officer.id,
         officer_name: officer.name,
@@ -220,12 +211,10 @@ export const OfficerProLookups: React.FC = () => {
       });
 
       toast.success('Phone prefill data retrieved successfully!');
-
     } catch (error) {
       console.error('Phone Prefill V2 search error:', error);
       setSearchError(error instanceof Error ? error.message : 'Unknown error');
       
-      // Log failed query
       await addQuery({
         officer_id: officer.id,
         officer_name: officer.name,
@@ -235,7 +224,7 @@ export const OfficerProLookups: React.FC = () => {
         source: 'Signzy Phone Prefill V2',
         result_summary: `Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
         full_result: null,
-        credits_used: 0, // No credits deducted for failed queries
+        credits_used: 0,
         status: 'Failed'
       });
 
@@ -245,184 +234,547 @@ export const OfficerProLookups: React.FC = () => {
     }
   };
 
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast.success('Copied to clipboard!');
+  };
+
+  const formatPhoneNumber = (phone: string) => {
+    const cleaned = phone.replace(/^0+/, '');
+    if (cleaned.length === 10) {
+      return `+91 ${cleaned}`;
+    }
+    return phone;
+  };
+
+  const toggleSection = (section: keyof typeof expandedSections) => {
+    setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
+  };
+
   const renderPhonePrefillV2 = () => (
     <div className={`border border-cyber-teal/20 rounded-lg p-6 ${
       isDark ? 'bg-muted-graphite' : 'bg-white'
-    }`}>
-      <div className="flex items-center space-x-3 mb-4">
-        <Phone className="w-6 h-6 text-neon-magenta" />
-        <h3 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-          Phone Prefill V2
-        </h3>
+    } shadow-md hover:shadow-cyber transition-shadow duration-300`}>
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center space-x-3">
+          <Phone className="w-6 h-6 text-neon-magenta" />
+          <h3 className={`text-xl font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+            Phone Prefill V2
+          </h3>
+        </div>
+        <div className="flex items-center space-x-2">
+          <Shield className="w-5 h-5 text-neon-magenta" />
+          <span className="text-xs bg-neon-magenta/20 text-neon-magenta px-2 py-1 rounded">PREMIUM</span>
+        </div>
       </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+
+      {/* Input Form */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div className="md:col-span-2">
+          <label className={`block text-sm font-medium mb-2 ${
+            isDark ? 'text-gray-300' : 'text-gray-700'
+          }`}>Phone Number *</label>
           <input
             type="tel"
             value={phoneNumber}
             onChange={(e) => setPhoneNumber(e.target.value)}
             placeholder="Enter phone number (e.g., +91 9876543210)"
             className={`w-full px-4 py-3 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal ${
-              isDark 
-                ? 'bg-crisp-black text-white placeholder-gray-500' 
-                : 'bg-white text-gray-900 placeholder-gray-400'
+              isDark ? 'bg-crisp-black text-white placeholder-gray-500' : 'bg-white text-gray-900 placeholder-gray-400'
             }`}
           />
         </div>
-        <button
-          onClick={handlePhonePrefill}
-          disabled={isSearching || !phoneNumber.trim()}
-          className="px-6 py-3 bg-neon-magenta/20 text-neon-magenta border border-neon-magenta/30 rounded-lg hover:bg-neon-magenta/30 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
-        >
-          {isSearching ? (
-            <>
-              <div className="w-4 h-4 border-2 border-neon-magenta border-t-transparent rounded-full animate-spin" />
-              <span>Searching...</span>
-            </>
-          ) : (
-            <>
-              <Phone className="w-4 h-4" />
-              <span>Search Phone</span>
-            </>
-          )}
-        </button>
+        <div className="flex items-end">
+          <button
+            onClick={handlePhonePrefill}
+            disabled={isSearching || !phoneNumber.trim()}
+            className="w-full py-3 px-4 bg-cyber-gradient text-white font-medium rounded-lg hover:shadow-cyber transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+          >
+            {isSearching ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <span>Searching...</span>
+              </>
+            ) : (
+              <>
+                <Phone className="w-4 h-4" />
+                <span>Search Phone</span>
+              </>
+            )}
+          </button>
+        </div>
       </div>
+      <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'} mb-6`}>
+        * Required. Consumes {apis.find(api => api.name.toLowerCase().includes('phone prefill v2'))?.credit_cost || 1} credits per query.
+      </p>
 
+      {/* Error Display */}
       {searchError && (
-        <div className={`p-4 rounded-lg border ${
+        <div className={`p-4 rounded-lg border flex items-center space-x-3 ${
           isDark ? 'bg-red-500/10 border-red-500/30' : 'bg-red-50 border-red-200'
-        }`}>
-          <p className="text-red-400 text-sm">{searchError}</p>
+        } mb-6`}>
+          <AlertCircle className="w-5 h-5 text-red-400" />
+          <div>
+            <p className="text-red-400 text-sm font-medium">Error</p>
+            <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+              {searchError}
+              {searchError.includes('Insufficient credits') ? (
+                <span> Contact admin to top up your credits.</span>
+              ) : searchError.includes('API request failed') ? (
+                <span> Please try again or check your network connection.</span>
+              ) : (
+                <span> Please try again or contact support.</span>
+              )}
+            </p>
+          </div>
         </div>
       )}
 
-      {searchResults && searchResults.name && (
-        <div className={`p-4 rounded-lg border ${
+      {/* Search Results */}
+      {searchResults && (
+        <div className={`p-6 rounded-lg border ${
           isDark ? 'bg-green-500/10 border-green-500/30' : 'bg-green-50 border-green-200'
         }`}>
-          <h4 className="text-green-400 font-medium mb-4">Phone Details Found</h4>
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center space-x-3">
+              <CheckCircle className="w-5 h-5 text-green-400" />
+              <h4 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                Phone Details Found
+              </h4>
+            </div>
+            <div className="flex items-center space-x-2">
+              <span className={`text-xs px-2 py-1 rounded ${
+                isDark ? 'bg-green-500/20 text-green-400' : 'bg-green-100 text-green-600'
+              }`}>
+                Verified {new Date().toLocaleDateString()}
+              </span>
+            </div>
+          </div>
+
+          {/* Summary Card */}
+          <div className={`p-4 rounded-lg mb-6 border ${
+            isDark ? 'bg-crisp-black/50 border-cyber-teal/10' : 'bg-white border-gray-200'
+          }`}>
+            <h5 className={`text-sm font-medium mb-3 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+              Overview
+            </h5>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
               <div>
-                <p><span className="text-green-400">Full Name:</span> {searchResults.name.fullName}</p>
-                <p><span className="text-green-400">First Name:</span> {searchResults.name.firstName}</p>
-                <p><span className="text-green-400">Last Name:</span> {searchResults.name.lastName}</p>
-                <p><span className="text-green-400">Age:</span> {searchResults.age}</p>
-                <p><span className="text-green-400">Gender:</span> {searchResults.gender}</p>
-                <p><span className="text-green-400">DOB:</span> {searchResults.dob}</p>
-                <p><span className="text-green-400">Income:</span> {searchResults.income}</p>
+                <p className={isDark ? 'text-gray-400' : 'text-gray-600'}>Total Phones</p>
+                <p className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                  {searchResults.alternatePhone?.length || 0}
+                </p>
               </div>
               <div>
-                <p><span className="text-green-400">Alternate Phones Count:</span> {searchResults.alternatePhone?.length || 0}</p>
-                <p><span className="text-green-400">Emails Count:</span> {searchResults.email?.length || 0}</p>
-                <p><span className="text-green-400">Addresses Count:</span> {searchResults.address?.length || 0}</p>
-                <p><span className="text-green-400">Voter IDs Count:</span> {searchResults.voterId?.length || 0}</p>
-                <p><span className="text-green-400">Passports Count:</span> {searchResults.passport?.length || 0}</p>
-                <p><span className="text-green-400">Driving Licenses Count:</span> {searchResults.drivingLicense?.length || 0}</p>
-                <p><span className="text-green-400">PAN Cards Count:</span> {searchResults.PAN?.length || 0}</p>
+                <p className={isDark ? 'text-gray-400' : 'text-gray-600'}>Total Emails</p>
+                <p className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                  {searchResults.email?.length || 0}
+                </p>
+              </div>
+              <div>
+                <p className={isDark ? 'text-gray-400' : 'text-gray-600'}>Total Addresses</p>
+                <p className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                  {searchResults.address?.length || 0}
+                </p>
+              </div>
+              <div>
+                <p className={isDark ? 'text-gray-400' : 'text-gray-600'}>Total Documents</p>
+                <p className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                  {(searchResults.PAN?.length || 0) + (searchResults.voterId?.length || 0) + 
+                  (searchResults.drivingLicense?.length || 0) + (searchResults.passport?.length || 0)}
+                </p>
               </div>
             </div>
+          </div>
 
-            {searchResults.alternatePhone && searchResults.alternatePhone.length > 0 && (
-              <div>
-                <h5 className="text-green-400 font-medium mb-2">Alternate Phone Numbers</h5>
-                <div className="space-y-1">
-                  {searchResults.alternatePhone.map((phone: any, index: number) => (
-                    <p key={index} className="text-sm">
-                      <span className="text-green-400">#{phone.serialNo}:</span> {phone.phoneNumber}
-                    </p>
-                  ))}
+          {/* Personal Information */}
+          {searchResults.name && (
+            <div className="mb-6">
+              <button
+                onClick={() => toggleSection('personal')}
+                className={`w-full flex items-center justify-between p-4 rounded-lg border ${
+                  isDark ? 'bg-crisp-black/50 border-cyber-teal/10' : 'bg-gray-50 border-gray-200'
+                }`}
+              >
+                <h5 className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                  Personal Information
+                </h5>
+                {expandedSections.personal ? (
+                  <ChevronUp className="w-5 h-5 text-cyber-teal" />
+                ) : (
+                  <ChevronDown className="w-5 h-5 text-cyber-teal" />
+                )}
+              </button>
+              {expandedSections.personal && (
+                <div className={`p-4 mt-2 rounded-lg border ${
+                  isDark ? 'bg-muted-graphite border-cyber-teal/10' : 'bg-white border-gray-200'
+                }`}>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <div className="flex justify-between items-center">
+                      <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Full Name:</span>
+                      <div className="flex items-center space-x-2">
+                        <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                          {searchResults.name.fullName || 'N/A'}
+                        </span>
+                        {searchResults.name.fullName && (
+                          <button
+                            onClick={() => copyToClipboard(searchResults.name.fullName)}
+                            className="p-1 text-cyber-teal hover:text-electric-blue transition-colors"
+                            title="Copy Full Name"
+                          >
+                            <Copy className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>First Name:</span>
+                      <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                        {searchResults.name.firstName || 'N/A'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Last Name:</span>
+                      <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                        {searchResults.name.lastName || 'N/A'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Age:</span>
+                      <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                        {searchResults.age || 'N/A'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Gender:</span>
+                      <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                        {searchResults.gender || 'N/A'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>DOB:</span>
+                      <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                        {searchResults.dob || 'N/A'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Income:</span>
+                      <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                        {searchResults.income || 'N/A'}
+                      </span>
+                    </div>
+                  </div>
                 </div>
+              )}
+            </div>
+          )}
+
+          {/* Contact Information */}
+          {(searchResults.alternatePhone?.length > 0 || searchResults.email?.length > 0) && (
+            <div className="mb-6">
+              <button
+                onClick={() => toggleSection('contact')}
+                className={`w-full flex items-center justify-between p-4 rounded-lg border ${
+                  isDark ? 'bg-crisp-black/50 border-cyber-teal/10' : 'bg-gray-50 border-gray-200'
+                }`}
+              >
+                <h5 className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                  Contact Information
+                </h5>
+                {expandedSections.contact ? (
+                  <ChevronUp className="w-5 h-5 text-cyber-teal" />
+                ) : (
+                  <ChevronDown className="w-5 h-5 text-cyber-teal" />
+                )}
+              </button>
+              {expandedSections.contact && (
+                <div className={`p-4 mt-2 rounded-lg border ${
+                  isDark ? 'bg-muted-graphite border-cyber-teal/10' : 'bg-white border-gray-200'
+                }`}>
+                  {searchResults.alternatePhone?.length > 0 && (
+                    <div className="mb-4">
+                      <h6 className={`text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                        Alternate Phone Numbers
+                      </h6>
+                      <div className="space-y-2">
+                        {searchResults.alternatePhone.map((phone: any, index: number) => (
+                          <div key={index} className="flex items-center justify-between text-sm">
+                            <span className={isDark ? 'text-white' : 'text-gray-900'}>
+                              #{phone.serialNo}: {formatPhoneNumber(phone.phoneNumber)}
+                            </span>
+                            <button
+                              onClick={() => copyToClipboard(phone.phoneNumber)}
+                              className="p-1 text-cyber-teal hover:text-electric-blue transition-colors"
+                              title="Copy Phone Number"
+                            >
+                              <Copy className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {searchResults.email?.length > 0 && (
+                    <div>
+                      <h6 className={`text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                        Email Addresses
+                      </h6>
+                      <div className="space-y-2">
+                        {searchResults.email.map((email: any, index: number) => (
+                          <div key={index} className="flex items-center justify-between text-sm">
+                            <span className={isDark ? 'text-white' : 'text-gray-900'}>
+                              #{email.serialNo}: {email.email}
+                            </span>
+                            <button
+                              onClick={() => copyToClipboard(email.email)}
+                              className="p-1 text-cyber-teal hover:text-electric-blue transition-colors"
+                              title="Copy Email"
+                            >
+                              <Copy className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Address History */}
+          {searchResults.address?.length > 0 && (
+            <div className="mb-6">
+              <button
+                onClick={() => toggleSection('addresses')}
+                className={`w-full flex items-center justify-between p-4 rounded-lg border ${
+                  isDark ? 'bg-crisp-black/50 border-cyber-teal/10' : 'bg-gray-50 border-gray-200'
+                }`}
+              >
+                <h5 className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                  Address History
+                </h5>
+                {expandedSections.addresses ? (
+                  <ChevronUp className="w-5 h-5 text-cyber-teal" />
+                ) : (
+                  <ChevronDown className="w-5 h-5 text-cyber-teal" />
+                )}
+              </button>
+              {expandedSections.addresses && (
+                <div className={`p-4 mt-2 rounded-lg border ${
+                  isDark ? 'bg-muted-graphite border-cyber-teal/10' : 'bg-white border-gray-200'
+                }`}>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {searchResults.address.map((address: any, index: number) => (
+                      <div key={index} className={`p-3 rounded border ${
+                        isDark ? 'bg-crisp-black/50 border-cyber-teal/10' : 'bg-gray-50 border-gray-200'
+                      }`}>
+                        <div className="flex justify-between items-start mb-2">
+                          <span className={`text-sm font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                            Address #{address.Seq}
+                          </span>
+                          <span className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                            Reported: {address.ReportedDate || 'N/A'}
+                          </span>
+                        </div>
+                        <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                          {address.Address} ({address.Type})
+                        </p>
+                        <div className="flex justify-between mt-2 text-xs">
+                          <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>
+                            State: {address.State}
+                          </span>
+                          <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>
+                            Postal: {address.Postal}
+                          </span>
+                        </div>
+                        <button
+                          onClick={() => copyToClipboard(`${address.Address}, ${address.State} - ${address.Postal}`)}
+                          className="mt-2 p-1 text-cyber-teal hover:text-electric-blue transition-colors"
+                          title="Copy Address"
+                        >
+                          <Copy className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Identity Documents */}
+          {(searchResults.PAN?.length > 0 || searchResults.voterId?.length > 0 || 
+            searchResults.drivingLicense?.length > 0 || searchResults.passport?.length > 0) && (
+            <div className="mb-6">
+              <button
+                onClick={() => toggleSection('documents')}
+                className={`w-full flex items-center justify-between p-4 rounded-lg border ${
+                  isDark ? 'bg-crisp-black/50 border-cyber-teal/10' : 'bg-gray-50 border-gray-200'
+                }`}
+              >
+                <h5 className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                  Identity Documents
+                </h5>
+                {expandedSections.documents ? (
+                  <ChevronUp className="w-5 h-5 text-cyber-teal" />
+                ) : (
+                  <ChevronDown className="w-5 h-5 text-cyber-teal" />
+                )}
+              </button>
+              {expandedSections.documents && (
+                <div className={`p-4 mt-2 rounded-lg border ${
+                  isDark ? 'bg-muted-graphite border-cyber-teal/10' : 'bg-white border-gray-200'
+                }`}>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
+                    {searchResults.PAN?.length > 0 && (
+                      <div>
+                        <h6 className={`text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                          PAN Cards
+                        </h6>
+                        {searchResults.PAN.map((item: any, index: number) => (
+                          <div key={index} className="flex items-center justify-between mb-2">
+                            <span className={isDark ? 'text-white' : 'text-gray-900'}>
+                              #{item.seq}: {item.IdNumber}
+                            </span>
+                            <button
+                              onClick={() => copyToClipboard(item.IdNumber)}
+                              className="p-1 text-cyber-teal hover:text-electric-blue transition-colors"
+                              title="Copy PAN"
+                            >
+                              <Copy className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {searchResults.voterId?.length > 0 && (
+                      <div>
+                        <h6 className={`text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                          Voter IDs
+                        </h6>
+                        {searchResults.voterId.map((item: any, index: number) => (
+                          <div key={index} className="flex items-center justify-between mb-2">
+                            <span className={isDark ? 'text-white' : 'text-gray-900'}>
+                              #{item.seq}: {item.IdNumber}
+                            </span>
+                            <button
+                              onClick={() => copyToClipboard(item.IdNumber)}
+                              className="p-1 text-cyber-teal hover:text-electric-blue transition-colors"
+                              title="Copy Voter ID"
+                            >
+                              <Copy className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {searchResults.drivingLicense?.length > 0 && (
+                      <div>
+                        <h6 className={`text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                          Driving Licenses
+                        </h6>
+                        {searchResults.drivingLicense.map((item: any, index: number) => (
+                          <div key={index} className="flex items-center justify-between mb-2">
+                            <span className={isDark ? 'text-white' : 'text-gray-900'}>
+                              #{item.seq}: {item.IdNumber}
+                            </span>
+                            <button
+                              onClick={() => copyToClipboard(item.IdNumber)}
+                              className="p-1 text-cyber-teal hover:text-electric-blue transition-colors"
+                              title="Copy Driving License"
+                            >
+                              <Copy className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {searchResults.passport?.length > 0 && (
+                      <div>
+                        <h6 className={`text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                          Passports
+                        </h6>
+                        {searchResults.passport.map((item: any, index: number) => (
+                          <div key={index} className="flex items-center justify-between mb-2">
+                            <span className={isDark ? 'text-white' : 'text-gray-900'}>
+                              #{item.seq}: {item.passport}
+                            </span>
+                            <button
+                              onClick={() => copyToClipboard(item.passport)}
+                              className="p-1 text-cyber-teal hover:text-electric-blue transition-colors"
+                              title="Copy Passport"
+                            >
+                              <Copy className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Raw JSON Response */}
+          <div className="mb-6">
+            <button
+              onClick={() => toggleSection('raw')}
+              className={`w-full flex items-center justify-between p-4 rounded-lg border ${
+                isDark ? 'bg-crisp-black/50 border-cyber-teal/10' : 'bg-gray-50 border-gray-200'
+              }`}
+            >
+              <h5 className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                Raw JSON Response
+              </h5>
+              {expandedSections.raw ? (
+                <ChevronUp className="w-5 h-5 text-cyber-teal" />
+              ) : (
+                <ChevronDown className="w-5 h-5 text-cyber-teal" />
+              )}
+            </button>
+            {expandedSections.raw && (
+              <div className={`mt-2 p-4 rounded-lg border ${
+                isDark ? 'bg-crisp-black text-white' : 'bg-gray-100 text-gray-800'
+              } overflow-x-auto`}>
+                <pre className="text-xs">
+                  <code>{JSON.stringify(searchResults, null, 2)}</code>
+                </pre>
               </div>
             )}
+          </div>
 
-            {searchResults.email && searchResults.email.length > 0 && (
-              <div>
-                <h5 className="text-green-400 font-medium mb-2">Email Addresses</h5>
-                <div className="space-y-1">
-                  {searchResults.email.map((email: any, index: number) => (
-                    <p key={index} className="text-sm">
-                      <span className="text-green-400">#{email.serialNo}:</span> {email.email}
-                    </p>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {searchResults.address && searchResults.address.length > 0 && (
-              <div>
-                <h5 className="text-green-400 font-medium mb-2">Addresses</h5>
-                <div className="space-y-1">
-                  {searchResults.address.map((address: any, index: number) => (
-                    <p key={index} className="text-sm">
-                      <span className="text-green-400">#{address.Seq}:</span> {address.Address}, {address.State} - {address.Postal} ({address.Type})
-                    </p>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {searchResults.voterId && searchResults.voterId.length > 0 && (
-              <div>
-                <h5 className="text-green-400 font-medium mb-2">Voter IDs</h5>
-                <div className="space-y-1">
-                  {searchResults.voterId.map((item: any, index: number) => (
-                    <p key={index} className="text-sm">
-                      <span className="text-green-400">#{item.seq}:</span> {item.IdNumber} (Reported: {item.ReportedDate})
-                    </p>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {searchResults.passport && searchResults.passport.length > 0 && (
-              <div>
-                <h5 className="text-green-400 font-medium mb-2">Passports</h5>
-                <div className="space-y-1">
-                  {searchResults.passport.map((item: any, index: number) => (
-                    <p key={index} className="text-sm">
-                      <span className="text-green-400">#{item.seq}:</span> {item.passport} (Reported: {item.ReportedDate || 'N/A'})
-                    </p>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {searchResults.drivingLicense && searchResults.drivingLicense.length > 0 && (
-              <div>
-                <h5 className="text-green-400 font-medium mb-2">Driving Licenses</h5>
-                <div className="space-y-1">
-                  {searchResults.drivingLicense.map((item: any, index: number) => (
-                    <p key={index} className="text-sm">
-                      <span className="text-green-400">#{item.seq}:</span> {item.IdNumber} (Reported: {item.ReportedDate})
-                    </p>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {searchResults.PAN && searchResults.PAN.length > 0 && (
-              <div>
-                <h5 className="text-green-400 font-medium mb-2">PAN Cards</h5>
-                <div className="space-y-1">
-                  {searchResults.PAN.map((item: any, index: number) => (
-                    <p key={index} className="text-sm">
-                      <span className="text-green-400">#{item.seq}:</span> {item.IdNumber} (Reported: {item.ReportedDate})
-                    </p>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            <details className="mt-4">
-              <summary className={`cursor-pointer text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} hover:text-cyber-teal`}>
-                View Raw JSON Response
-              </summary>
-              <pre className={`mt-2 p-4 rounded-lg overflow-x-auto text-xs ${isDark ? 'bg-crisp-black text-white' : 'bg-gray-100 text-gray-800'}`}>
-                <code>{JSON.stringify(searchResults, null, 2)}</code>
-              </pre>
-            </details>
+          {/* Action Buttons */}
+          <div className="flex justify-end space-x-3 pt-4 border-t border-cyber-teal/20">
+            <button
+              onClick={() => {
+                const dataStr = JSON.stringify(searchResults, null, 2);
+                const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                const url = URL.createObjectURL(dataBlob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `phone-prefill-${phoneNumber}-${Date.now()}.json`;
+                link.click();
+                URL.revokeObjectURL(url);
+                toast.success('Results exported successfully!');
+              }}
+              className="px-4 py-2 bg-electric-blue/20 text-electric-blue rounded-lg hover:bg-electric-blue/30 transition-all duration-200 flex items-center space-x-2"
+            >
+              <Download className="w-4 h-4" />
+              <span>Export Results</span>
+            </button>
+            <button
+              onClick={() => {
+                setSearchResults(null);
+                setSearchError(null);
+                setPhoneNumber('');
+              }}
+              className="px-4 py-2 bg-cyber-gradient text-white rounded-lg hover:shadow-cyber transition-all duration-200"
+            >
+              New Search
+            </button>
           </div>
         </div>
       )}
@@ -529,7 +881,6 @@ export const OfficerProLookups: React.FC = () => {
 
   return (
     <div className={`p-6 space-y-6 min-h-screen ${isDark ? 'bg-crisp-black' : 'bg-soft-white'}`}>
-      {/* Header */}
       <div>
         <h1 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
           PRO Verification Services
@@ -539,7 +890,6 @@ export const OfficerProLookups: React.FC = () => {
         </p>
       </div>
 
-      {/* Tabs */}
       <div className={`border border-cyber-teal/20 rounded-lg p-4 ${
         isDark ? 'bg-muted-graphite' : 'bg-white'
       }`}>
@@ -625,7 +975,6 @@ export const OfficerProLookups: React.FC = () => {
         </div>
       </div>
 
-      {/* Tab Content */}
       {activeTab === 'phone-prefill-v2' && renderPhonePrefillV2()}
       {activeTab === 'rc' && renderRCSearch()}
       {activeTab === 'imei' && renderComingSoon('IMEI Verification', Smartphone)}
@@ -633,7 +982,6 @@ export const OfficerProLookups: React.FC = () => {
       {activeTab === 'credit-history' && renderComingSoon('Credit History', CreditCard)}
       {activeTab === 'cell-id' && renderComingSoon('Cell ID Lookup', MapPin)}
 
-      {/* Service Categories */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div className={`border border-cyber-teal/20 rounded-lg p-6 hover:shadow-cyber transition-all duration-300 ${
           isDark ? 'bg-muted-graphite' : 'bg-white'
