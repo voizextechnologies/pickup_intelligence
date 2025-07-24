@@ -130,41 +130,33 @@ export const OfficerProLookups: React.FC = () => {
     setSearchResults(null);
 
     try {
-      // Mock phone prefill response for demo
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      const mockPhoneResult = {
-        response: {
-          name: {
-            fullName: "Ramesh Kumar Singh",
-            firstName: "Ramesh",
-            lastName: "Singh"
-          },
-          alternatePhone: [
-            { serialNo: "1", phoneNumber: "+91 9876543210" },
-            { serialNo: "2", phoneNumber: "+91 8765432109" }
-          ],
-          email: [
-            { serialNo: "1", email: "ramesh.singh@gmail.com" },
-            { serialNo: "2", email: "r.singh@company.com" }
-          ],
-          address: [
-            {
-              Seq: "1",
-              ReportedDate: "2023-01-15",
-              Address: "123 MG Road, Bangalore",
-              State: "Karnataka",
-              Postal: "560001",
-              Type: "Permanent"
-            }
-          ],
-          age: "35",
-          gender: "Male",
-          dob: "1988-05-15"
+      const requestPayload = {
+        mobileNumber: phoneNumber,
+        consent: {
+          consentFlag: true,
+          consentTimestamp: Date.now(),
+          consentIpAddress: '127.0.0.1',
+          consentMessageId: `consent_${Date.now()}`
         }
       };
       
-      setSearchResults(mockPhoneResult.response);
+      const response = await fetch('/api/signzy/api/v3/phoneprefillv2', {
+        method: 'POST',
+        headers: {
+          'Authorization': phoneAPI.api_key,
+          'x-client-unique-id': officer.email,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestPayload)
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      setSearchResults(data.response);
       
       // Deduct credits
       const newCredits = officer.credits_remaining - phoneAPI.default_credit_charge;
@@ -177,9 +169,9 @@ export const OfficerProLookups: React.FC = () => {
         type: 'PRO',
         category: 'Phone Prefill V2',
         input_data: phoneNumber,
-        source: 'Signzy API',
-        result_summary: `Phone details found for ${mockPhoneResult.response.name.fullName}`,
-        full_result: mockPhoneResult.response,
+        source: 'Signzy API', // Assuming Signzy is the provider
+        result_summary: `Phone details found for ${data.response.name?.fullName || 'Unknown'}`,
+        full_result: data.response,
         credits_used: phoneAPI.default_credit_charge,
         status: 'Success'
       });
