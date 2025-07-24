@@ -16,7 +16,7 @@ export const OfficerDashboardHome: React.FC = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-            Welcome back, {officer.name.split(' ')[0]}!
+            Welcome back, {officer.name.split(' ')}!
           </h1>
           <p className={`mt-1 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
             {officer.rank} - {officer.department}
@@ -213,4 +213,4 @@ export const OfficerDashboardHome: React.FC = () => {
       </div>
     </div>
   );
-};
+}

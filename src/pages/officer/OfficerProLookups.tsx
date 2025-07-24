@@ -1,9 +1,210 @@
-import React from 'react';
-import { Shield, Database, Phone, Car, CreditCard, FileText } from 'lucide-react';
+import React, { useState } from 'react';
+import { Shield, Database, Phone, Car, CreditCard, FileText, Search } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useOfficerAuth } from '../../contexts/OfficerAuthContext';
+import { useSupabaseData } from '../../hooks/useSupabaseData';
+import toast from 'react-hot-toast';
 
 export const OfficerProLookups: React.FC = () => {
   const { isDark } = useTheme();
+  const { officer, updateOfficerState } = useOfficerAuth();
+  const { apis, addQuery } = useSupabaseData();
+  const [rcNumber, setRcNumber] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchResults, setSearchResults] = useState<any>(null);
+  const [searchError, setSearchError] = useState<string | null>(null);
+
+  const handleRCSearch = async () => {
+    if (!rcNumber.trim()) {
+      toast.error('Please enter a vehicle registration number');
+      return;
+    }
+
+    // Find RC API
+    const rcAPI = apis.find(api => api.name.toLowerCase().includes('vehicle') && api.key_status === 'Active');
+    
+    if (!rcAPI) {
+      toast.error('RC search service is currently unavailable');
+      return;
+    }
+
+    if (officer.credits_remaining < rcAPI.default_credit_charge) {
+      toast.error('Insufficient credits for this search');
+      return;
+    }
+
+    setIsSearching(true);
+    setSearchError(null);
+    setSearchResults(null);
+
+    try {
+      const response = await fetch('/api/signzy/api/v3/vehicle/detailedsearches', {
+        method: 'POST',
+        headers: {
+          'Authorization': rcAPI.api_key,
+          'x-client-unique-id': officer.email,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          vehicleNumber: rcNumber.toUpperCase(),
+          splitAddress: true
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      if (data.result) {
+        setSearchResults(data.result);
+        
+        // Deduct credits
+        const newCredits = officer.credits_remaining - rcAPI.default_credit_charge;
+        updateOfficerState({ credits_remaining: newCredits });
+        
+        // Log the query
+        await addQuery({
+          officer_id: officer.id,
+          officer_name: officer.name,
+          type: 'PRO',
+          category: 'Vehicle RC Search',
+          input_data: rcNumber.toUpperCase(),
+          source: 'Signzy API',
+          result_summary: `Vehicle found: ${data.result.model} - ${data.result.owner}`,
+          full_result: data.result,
+          credits_used: rcAPI.default_credit_charge,
+          status: 'Success'
+        });
+        
+        toast.success('Vehicle details retrieved successfully!');
+      } else {
+        throw new Error('No vehicle data found');
+      }
+    } catch (error: any) {
+      console.error('RC Search Error:', error);
+      setSearchError(error.message || 'Search failed');
+      toast.error('Search failed. Please try again.');
+      
+      // Log failed query
+      await addQuery({
+        officer_id: officer.id,
+        officer_name: officer.name,
+        type: 'PRO',
+        category: 'Vehicle RC Search',
+        input_data: rcNumber.toUpperCase(),
+        source: 'Signzy API',
+        result_summary: `Search failed: ${error.message}`,
+        credits_used: 0,
+        status: 'Failed'
+      });
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  const handlePhonePrefill = async () => {
+    if (!phoneNumber.trim()) {
+      toast.error('Please enter a phone number');
+      return;
+    }
+
+    // Find Phone Prefill API
+    const phoneAPI = apis.find(api => api.name.toLowerCase().includes('phone') && api.key_status === 'Active');
+    
+    if (!phoneAPI) {
+      toast.error('Phone verification service is currently unavailable');
+      return;
+    }
+
+    if (officer.credits_remaining < phoneAPI.default_credit_charge) {
+      toast.error('Insufficient credits for this search');
+      return;
+    }
+
+    setIsSearching(true);
+    setSearchError(null);
+    setSearchResults(null);
+
+    try {
+      // Mock phone prefill response for demo
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      const mockPhoneResult = {
+        response: {
+          name: {
+            fullName: "Ramesh Kumar Singh",
+            firstName: "Ramesh",
+            lastName: "Singh"
+          },
+          alternatePhone: [
+            { serialNo: "1", phoneNumber: "+91 9876543210" },
+            { serialNo: "2", phoneNumber: "+91 8765432109" }
+          ],
+          email: [
+            { serialNo: "1", email: "ramesh.singh@gmail.com" },
+            { serialNo: "2", email: "r.singh@company.com" }
+          ],
+          address: [
+            {
+              Seq: "1",
+              ReportedDate: "2023-01-15",
+              Address: "123 MG Road, Bangalore",
+              State: "Karnataka",
+              Postal: "560001",
+              Type: "Permanent"
+            }
+          ],
+          age: "35",
+          gender: "Male",
+          dob: "1988-05-15"
+        }
+      };
+      
+      setSearchResults(mockPhoneResult.response);
+      
+      // Deduct credits
+      const newCredits = officer.credits_remaining - phoneAPI.default_credit_charge;
+      updateOfficerState({ credits_remaining: newCredits });
+      
+      // Log the query
+      await addQuery({
+        officer_id: officer.id,
+        officer_name: officer.name,
+        type: 'PRO',
+        category: 'Phone Prefill V2',
+        input_data: phoneNumber,
+        source: 'Signzy API',
+        result_summary: `Phone details found for ${mockPhoneResult.response.name.fullName}`,
+        full_result: mockPhoneResult.response,
+        credits_used: phoneAPI.default_credit_charge,
+        status: 'Success'
+      });
+      
+      toast.success('Phone details retrieved successfully!');
+    } catch (error: any) {
+      console.error('Phone Search Error:', error);
+      setSearchError(error.message || 'Search failed');
+      toast.error('Search failed. Please try again.');
+      
+      // Log failed query
+      await addQuery({
+        officer_id: officer.id,
+        officer_name: officer.name,
+        type: 'PRO',
+        category: 'Phone Prefill V2',
+        input_data: phoneNumber,
+        source: 'Signzy API',
+        result_summary: `Search failed: ${error.message}`,
+        credits_used: 0,
+        status: 'Failed'
+      });
+    } finally {
+      setIsSearching(false);
+    }
+  };
 
   return (
     <div className={`p-6 space-y-6 min-h-screen ${isDark ? 'bg-crisp-black' : 'bg-soft-white'}`}>
@@ -15,6 +216,147 @@ export const OfficerProLookups: React.FC = () => {
         <p className={`mt-1 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
           Premium API-based verification and intelligence services
         </p>
+      </div>
+
+      {/* Vehicle RC Search */}
+      <div className={`border border-cyber-teal/20 rounded-lg p-6 ${
+        isDark ? 'bg-muted-graphite' : 'bg-white'
+      }`}>
+        <div className="flex items-center space-x-3 mb-4">
+          <Car className="w-6 h-6 text-electric-blue" />
+          <h3 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+            Vehicle RC Search
+          </h3>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          <div className="md:col-span-2">
+            <input
+              type="text"
+              value={rcNumber}
+              onChange={(e) => setRcNumber(e.target.value.toUpperCase())}
+              placeholder="Enter vehicle registration number (e.g., KA01JZ4031)"
+              className={`w-full px-4 py-3 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal ${
+                isDark 
+                  ? 'bg-crisp-black text-white placeholder-gray-500' 
+                  : 'bg-white text-gray-900 placeholder-gray-400'
+              }`}
+            />
+          </div>
+          <button
+            onClick={handleRCSearch}
+            disabled={isSearching || !rcNumber.trim()}
+            className="px-6 py-3 bg-cyber-gradient text-white rounded-lg hover:shadow-cyber transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+          >
+            {isSearching ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <span>Searching...</span>
+              </>
+            ) : (
+              <>
+                <Search className="w-4 h-4" />
+                <span>Search RC</span>
+              </>
+            )}
+          </button>
+        </div>
+
+        {searchError && (
+          <div className={`p-4 rounded-lg border ${
+            isDark ? 'bg-red-500/10 border-red-500/30' : 'bg-red-50 border-red-200'
+          }`}>
+            <p className="text-red-400 text-sm">{searchError}</p>
+          </div>
+        )}
+
+        {searchResults && searchResults.regNo && (
+          <div className={`p-4 rounded-lg border ${
+            isDark ? 'bg-green-500/10 border-green-500/30' : 'bg-green-50 border-green-200'
+          }`}>
+            <h4 className="text-green-400 font-medium mb-2">Search Results</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+              <div>
+                <p><span className="text-green-400">Registration:</span> {searchResults.regNo}</p>
+                <p><span className="text-green-400">Owner:</span> {searchResults.owner}</p>
+                <p><span className="text-green-400">Model:</span> {searchResults.model}</p>
+                <p><span className="text-green-400">Color:</span> {searchResults.vehicleColour}</p>
+              </div>
+              <div>
+                <p><span className="text-green-400">Status:</span> {searchResults.status}</p>
+                <p><span className="text-green-400">Reg Date:</span> {searchResults.regDate}</p>
+                <p><span className="text-green-400">RC Expiry:</span> {searchResults.rcExpiryDate}</p>
+                <p><span className="text-green-400">Insurance:</span> {searchResults.vehicleInsuranceUpto}</p>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Phone Prefill V2 */}
+      <div className={`border border-cyber-teal/20 rounded-lg p-6 ${
+        isDark ? 'bg-muted-graphite' : 'bg-white'
+      }`}>
+        <div className="flex items-center space-x-3 mb-4">
+          <Phone className="w-6 h-6 text-neon-magenta" />
+          <h3 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+            Phone Prefill V2
+          </h3>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          <div className="md:col-span-2">
+            <input
+              type="tel"
+              value={phoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value)}
+              placeholder="Enter phone number (e.g., +91 9876543210)"
+              className={`w-full px-4 py-3 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal ${
+                isDark 
+                  ? 'bg-crisp-black text-white placeholder-gray-500' 
+                  : 'bg-white text-gray-900 placeholder-gray-400'
+              }`}
+            />
+          </div>
+          <button
+            onClick={handlePhonePrefill}
+            disabled={isSearching || !phoneNumber.trim()}
+            className="px-6 py-3 bg-neon-magenta/20 text-neon-magenta border border-neon-magenta/30 rounded-lg hover:bg-neon-magenta/30 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+          >
+            {isSearching ? (
+              <>
+                <div className="w-4 h-4 border-2 border-neon-magenta border-t-transparent rounded-full animate-spin" />
+                <span>Searching...</span>
+              </>
+            ) : (
+              <>
+                <Phone className="w-4 h-4" />
+                <span>Search Phone</span>
+              </>
+            )}
+          </button>
+        </div>
+
+        {searchResults && searchResults.name && (
+          <div className={`p-4 rounded-lg border ${
+            isDark ? 'bg-green-500/10 border-green-500/30' : 'bg-green-50 border-green-200'
+          }`}>
+            <h4 className="text-green-400 font-medium mb-2">Phone Details Found</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+              <div>
+                <p><span className="text-green-400">Name:</span> {searchResults.name.fullName}</p>
+                <p><span className="text-green-400">Age:</span> {searchResults.age}</p>
+                <p><span className="text-green-400">Gender:</span> {searchResults.gender}</p>
+                <p><span className="text-green-400">DOB:</span> {searchResults.dob}</p>
+              </div>
+              <div>
+                <p><span className="text-green-400">Alt Phones:</span> {searchResults.alternatePhone?.length || 0}</p>
+                <p><span className="text-green-400">Emails:</span> {searchResults.email?.length || 0}</p>
+                <p><span className="text-green-400">Addresses:</span> {searchResults.address?.length || 0}</p>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Service Categories */}
