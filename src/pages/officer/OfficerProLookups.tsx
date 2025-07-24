@@ -1462,6 +1462,7 @@ export const OfficerProLookups: React.FC = () => {
     )}
   </div>
 );
+
   const renderComingSoon = (title: string, icon: React.ElementType) => {
     const Icon = icon;
     return (
