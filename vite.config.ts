@@ -18,6 +18,12 @@ export default defineConfig({
           'Origin': 'https://api.signzy.app'
         }
       },
+      '/api/leakosint': {
+        target: 'https://leakosintapi.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/leakosint/, ''),
+        secure: true,
+      },
     },
   },
 });
