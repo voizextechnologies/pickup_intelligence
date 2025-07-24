@@ -833,23 +833,94 @@ export const OfficerProLookups: React.FC = () => {
         </div>
       )}
 
-      {searchResults && searchResults.regNo && (
+      {searchResults && searchResults.regNo && ( // Assuming searchResults here is the 'data.result' object
         <div className={`p-4 rounded-lg border ${
           isDark ? 'bg-green-500/10 border-green-500/30' : 'bg-green-50 border-green-200'
         }`}>
-          <h4 className="text-green-400 font-medium mb-2">Search Results</h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-            <div>
-              <p><span className="text-green-400">Registration:</span> {searchResults.regNo}</p>
-              <p><span className="text-green-400">Owner:</span> {searchResults.owner}</p>
-              <p><span className="text-green-400">Model:</span> {searchResults.model}</p>
-              <p><span className="text-green-400">Color:</span> {searchResults.vehicleColour}</p>
+          <h4 className="text-green-400 font-medium mb-4">Search Results</h4>
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+              <div>
+                <p><span className="text-green-400">Registration No:</span> {searchResults.regNo}</p>
+                <p><span className="text-green-400">Owner Name:</span> {searchResults.owner}</p>
+                <p><span className="text-green-400">Model:</span> {searchResults.model}</p>
+                <p><span className="text-green-400">Make:</span> {searchResults.make}</p>
+                <p><span className="text-green-400">Color:</span> {searchResults.vehicleColour}</p>
+                <p><span className="text-green-400">Fuel Type:</span> {searchResults.fuelType}</p>
+                <p><span className="text-green-400">Engine No:</span> {searchResults.engineNo}</p>
+                <p><span className="text-green-400">Chassis No:</span> {searchResults.chassisNo}</p>
+                <p><span className="text-green-400">Vehicle Type:</span> {searchResults.vehicleType}</p>
+                <p><span className="text-green-400">Seating Capacity:</span> {searchResults.seatingCapacity}</p>
+              </div>
+              <div>
+                <p><span className="text-green-400">Status:</span> {searchResults.status}</p>
+                <p><span className="text-green-400">Registration Date:</span> {searchResults.regDate}</p>
+                <p><span className="text-green-400">RC Expiry:</span> {searchResults.rcExpiryDate}</p>
+                <p><span className="text-green-400">Insurance Upto:</span> {searchResults.vehicleInsuranceUpto}</p>
+                <p><span className="text-green-400">Fitness Upto:</span> {searchResults.vehicleFitnessUpto}</p>
+                <p><span className="text-green-400">PUCC Upto:</span> {searchResults.puccUpto}</p>
+                <p><span className="text-green-400">Financier:</span> {searchResults.financier}</p>
+                <p><span className="text-green-400">RTO:</span> {searchResults.rto}</p>
+                <p><span className="text-green-400">Tax Upto:</span> {searchResults.taxUpto}</p>
+                <p><span className="text-green-400">Cylinders:</span> {searchResults.noOfCylinders}</p>
+              </div>
             </div>
-            <div>
-              <p><span className="text-green-400">Status:</span> {searchResults.status}</p>
-              <p><span className="text-green-400">Reg Date:</span> {searchResults.regDate}</p>
-              <p><span className="text-green-400">RC Expiry:</span> {searchResults.rcExpiryDate}</p>
-              <p><span className="text-green-400">Insurance:</span> {searchResults.vehicleInsuranceUpto}</p>
+
+            {searchResults.ownerAddress && (
+              <div>
+                <h5 className="text-green-400 font-medium mb-2">Owner Address</h5>
+                <p className="text-sm">
+                  {searchResults.ownerAddress.addressLine1}, {searchResults.ownerAddress.addressLine2}, {searchResults.ownerAddress.city}, {searchResults.ownerAddress.state} - {searchResults.ownerAddress.pincode}
+                </p>
+              </div>
+            )}
+
+            {searchResults.presentAddress && (
+              <div>
+                <h5 className="text-green-400 font-medium mb-2">Present Address</h5>
+                <p className="text-sm">
+                  {searchResults.presentAddress.addressLine1}, {searchResults.presentAddress.addressLine2}, {searchResults.presentAddress.city}, {searchResults.presentAddress.state} - {searchResults.presentAddress.pincode}
+                </p>
+              </div>
+            )}
+
+            <details className="mt-4">
+              <summary className={`cursor-pointer text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} hover:text-cyber-teal`}>
+                View Raw JSON Response
+              </summary>
+              <pre className={`mt-2 p-4 rounded-lg overflow-x-auto text-xs ${isDark ? 'bg-crisp-black text-white' : 'bg-gray-100 text-gray-800'}`}>
+                <code>{JSON.stringify(searchResults, null, 2)}</code>
+              </pre>
+            </details>
+
+            <div className="flex justify-end space-x-3 pt-4 border-t border-cyber-teal/20">
+              <button
+                onClick={() => {
+                  const dataStr = JSON.stringify(searchResults, null, 2);
+                  const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                  const url = URL.createObjectURL(dataBlob);
+                  const link = document.createElement('a');
+                  link.href = url;
+                  link.download = `rc-details-${rcNumber}-${Date.now()}.json`;
+                  link.click();
+                  URL.revokeObjectURL(url);
+                  toast.success('Results exported successfully!');
+                }}
+                className="px-4 py-2 bg-electric-blue/20 text-electric-blue rounded-lg hover:bg-electric-blue/30 transition-all duration-200 flex items-center space-x-2"
+              >
+                <Download className="w-4 h-4" />
+                <span>Export Results</span>
+              </button>
+              <button
+                onClick={() => {
+                  setSearchResults(null);
+                  setSearchError(null);
+                  setRcNumber('');
+                }}
+                className="px-4 py-2 bg-cyber-gradient text-white rounded-lg hover:shadow-cyber transition-all duration-200"
+              >
+                New Search
+              </button>
             </div>
           </div>
         </div>
