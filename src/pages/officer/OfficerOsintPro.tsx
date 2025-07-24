@@ -32,25 +32,25 @@ export const OfficerOsintPro: React.FC = () => {
   };
 
   return (
-    <div className={`p-6 space-y-6 min-h-screen ${isDark ? 'bg-crisp-black' : 'bg-soft-white'}`}>
+    <div className={\`p-6 space-y-6 min-h-screen ${isDark ? 'bg-crisp-black' : 'bg-soft-white'}`}>
       {/* Header */}
       <div>
-        <h1 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+        <h1 className={\`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
           OSINT PRO
         </h1>
-        <p className={`mt-1 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+        <p className={\`mt-1 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
           Advanced Open-Source Intelligence Tools
         </p>
       </div>
 
       {/* Tab Navigation */}
-      <div className={`border border-cyber-teal/20 rounded-lg p-4 ${
+      <div className={\`border border-cyber-teal/20 rounded-lg p-4 ${
         isDark ? 'bg-muted-graphite' : 'bg-white'
       }`}>
         <div className="flex space-x-4 mb-6">
           <button
             onClick={() => setActiveTab('mobile')}
-            className={`flex-1 py-2 px-4 rounded-lg transition-all duration-200 flex items-center justify-center space-x-2 ${
+            className={\`flex-1 py-2 px-4 rounded-lg transition-all duration-200 flex items-center justify-center space-x-2 ${
               activeTab === 'mobile'
                 ? 'bg-cyber-teal/20 text-cyber-teal border border-cyber-teal/30'
                 : isDark 
@@ -63,7 +63,7 @@ export const OfficerOsintPro: React.FC = () => {
           </button>
           <button
             onClick={() => setActiveTab('email')}
-            className={`flex-1 py-2 px-4 rounded-lg transition-all duration-200 flex items-center justify-center space-x-2 ${
+            className={\`flex-1 py-2 px-4 rounded-lg transition-all duration-200 flex items-center justify-center space-x-2 ${
               activeTab === 'email'
                 ? 'bg-cyber-teal/20 text-cyber-teal border border-cyber-teal/30'
                 : isDark 
@@ -76,7 +76,7 @@ export const OfficerOsintPro: React.FC = () => {
           </button>
           <button
             onClick={() => setActiveTab('name')}
-            className={`flex-1 py-2 px-4 rounded-lg transition-all duration-200 flex items-center justify-center space-x-2 ${
+            className={\`flex-1 py-2 px-4 rounded-lg transition-all duration-200 flex items-center justify-center space-x-2 ${
               activeTab === 'name'
                 ? 'bg-cyber-teal/20 text-cyber-teal border border-cyber-teal/30'
                 : isDark 
@@ -93,7 +93,7 @@ export const OfficerOsintPro: React.FC = () => {
         <div>
           {activeTab === 'mobile' && (
             <div className="space-y-4">
-              <label className={`block text-sm font-medium mb-2 ${
+              <label className={\`block text-sm font-medium mb-2 ${
                 isDark ? 'text-gray-300' : 'text-gray-700'
               }`}>
                 Mobile Number
@@ -104,7 +104,7 @@ export const OfficerOsintPro: React.FC = () => {
                   value={mobileNumber}
                   onChange={(e) => setMobileNumber(e.target.value)}
                   placeholder="Enter mobile number (e.g., +919876543210)"
-                  className={`flex-1 px-3 py-2 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal ${
+                  className={\`flex-1 px-3 py-2 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal ${
                     isDark 
                       ? 'bg-crisp-black text-white placeholder-gray-500' 
                       : 'bg-white text-gray-900 placeholder-gray-400'
@@ -123,7 +123,7 @@ export const OfficerOsintPro: React.FC = () => {
 
           {activeTab === 'email' && (
             <div className="space-y-4">
-              <label className={`block text-sm font-medium mb-2 ${
+              <label className={\`block text-sm font-medium mb-2 ${
                 isDark ? 'text-gray-300' : 'text-gray-700'
               }`}>
                 Email Address
@@ -134,7 +134,7 @@ export const OfficerOsintPro: React.FC = () => {
                   value={emailAddress}
                   onChange={(e) => setEmailAddress(e.target.value)}
                   placeholder="Enter email address (e.g., example@domain.com)"
-                  className={`flex-1 px-3 py-2 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal ${
+                  className={\`flex-1 px-3 py-2 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal ${
                     isDark 
                       ? 'bg-crisp-black text-white placeholder-gray-500' 
                       : 'bg-white text-gray-900 placeholder-gray-400'
@@ -153,7 +153,7 @@ export const OfficerOsintPro: React.FC = () => {
 
           {activeTab === 'name' && (
             <div className="space-y-4">
-              <label className={`block text-sm font-medium mb-2 ${
+              <label className={\`block text-sm font-medium mb-2 ${
                 isDark ? 'text-gray-300' : 'text-gray-700'
               }`}>
                 Full Name or Keywords
@@ -164,7 +164,7 @@ export const OfficerOsintPro: React.FC = () => {
                   value={advanceName}
                   onChange={(e) => setAdvanceName(e.target.value)}
                   placeholder="Enter name or keywords for advanced scan"
-                  className={`flex-1 px-3 py-2 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal ${
+                  className={\`flex-1 px-3 py-2 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal ${
                     isDark 
                       ? 'bg-crisp-black text-white placeholder-gray-500' 
                       : 'bg-white text-gray-900 placeholder-gray-400'
@@ -184,13 +184,13 @@ export const OfficerOsintPro: React.FC = () => {
       </div>
 
       {/* Placeholder for search results */}
-      <div className={`border border-cyber-teal/20 rounded-lg p-6 ${
+      <div className={\`border border-cyber-teal/20 rounded-lg p-6 ${
         isDark ? 'bg-muted-graphite' : 'bg-white'
       }`}>
-        <h3 className={`text-lg font-semibold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+        <h3 className={\`text-lg font-semibold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
           Search Results
         </h3>
-        <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+        <p className={\`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
           Results will appear here after you perform a search.
         </p>
       </div>
