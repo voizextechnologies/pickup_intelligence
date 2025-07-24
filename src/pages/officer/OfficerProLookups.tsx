@@ -23,7 +23,6 @@ export const OfficerProLookups: React.FC = () => {
     raw: false,
     vehicle: true,
     owner: true,
-    permit: true,
   });
 
   const handleRCSearch = async () => {
@@ -247,7 +246,7 @@ export const OfficerProLookups: React.FC = () => {
     if (cleaned.length === 10) {
       return `+91 ${cleaned}`;
     }
-    return phone || 'N/A';
+    return phone;
   };
 
   const toggleSection = (section: keyof typeof expandedSections) => {
@@ -283,8 +282,7 @@ export const OfficerProLookups: React.FC = () => {
             value={phoneNumber}
             onChange={(e) => setPhoneNumber(e.target.value)}
             placeholder="Enter phone number (e.g., +91 9876543210)"
-            className={`w-full px-4 py-3 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus turma
-            focus:ring-cyber-teal ${
+            className={`w-full px-4 py-3 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal ${
               isDark ? 'bg-crisp-black text-white placeholder-gray-500' : 'bg-white text-gray-900 placeholder-gray-400'
             }`}
           />
@@ -813,7 +811,7 @@ export const OfficerProLookups: React.FC = () => {
             type="text"
             value={rcNumber}
             onChange={(e) => setRcNumber(e.target.value.toUpperCase())}
-            placeholder="Enter vehicle registration number (e.g., TN09CP9879)"
+            placeholder="Enter vehicle registration number (e.g., KA01JZ4031)"
             className={`w-full px-4 py-3 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal ${
               isDark ? 'bg-crisp-black text-white placeholder-gray-500' : 'bg-white text-gray-900 placeholder-gray-400'
             }`}
@@ -926,29 +924,6 @@ export const OfficerProLookups: React.FC = () => {
                     </div>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Vehicle Number:</span>
-                    <div className="flex items-center space-x-2">
-                      <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                        {searchResults.vehicleNumber || 'N/A'}
-                      </span>
-                      {searchResults.vehicleNumber && (
-                        <button
-                          onClick={() => copyToClipboard(searchResults.vehicleNumber)}
-                          className="p-1 text-cyber-teal hover:text-electric-blue transition-colors"
-                          title="Copy Vehicle Number"
-                        >
-                          <Copy className="w-4 h-4" />
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Class:</span>
-                    <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                      {searchResults.class || 'N/A'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
                     <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Model:</span>
                     <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
                       {searchResults.model || 'N/A'}
@@ -973,63 +948,15 @@ export const OfficerProLookups: React.FC = () => {
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Norms Type:</span>
-                    <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                      {searchResults.normsType || 'N/A'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Body Type:</span>
+                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Vehicle Type:</span>
                     <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
                       {searchResults.bodyType || 'N/A'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Vehicle Category:</span>
-                    <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                      {searchResults.vehicleCategory || 'N/A'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Cubic Capacity:</span>
-                    <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                      {searchResults.vehicleCubicCapacity || 'N/A'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Gross Vehicle Weight:</span>
-                    <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                      {searchResults.grossVehicleWeight || 'N/A'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Unladen Weight:</span>
-                    <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                      {searchResults.unladenWeight || 'N/A'}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Seating Capacity:</span>
                     <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
                       {searchResults.vehicleSeatCapacity || 'N/A'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Sleeper Capacity:</span>
-                    <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                      {searchResults.vehicleSleeperCapacity || 'N/A'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Standing Capacity:</span>
-                    <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                      {searchResults.vehicleStandingCapacity || 'N/A'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Wheelbase:</span>
-                    <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                      {searchResults.wheelbase || 'N/A'}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
@@ -1071,12 +998,6 @@ export const OfficerProLookups: React.FC = () => {
                         </button>
                       )}
                     </div>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>RC Standard Capacity:</span>
-                    <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                      {searchResults.rcStandardCap || 'N/A'}
-                    </span>
                   </div>
                 </div>
               </div>
@@ -1129,38 +1050,9 @@ export const OfficerProLookups: React.FC = () => {
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Mobile Number:</span>
-                    <div className="flex items-center space-x-2">
-                      <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                        {formatPhoneNumber(searchResults.mobileNumber)}
-                      </span>
-                      {searchResults.mobileNumber && (
-                        <button
-                          onClick={() => copyToClipboard(searchResults.mobileNumber)}
-                          className="p-1 text-cyber-teal hover:text-electric-blue transition-colors"
-                          title="Copy Mobile Number"
-                        >
-                          <Copy className="w-4 h-4" />
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Owner Count:</span>
-                    <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                      {searchResults.ownerCount || 'N/A'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
                     <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Status:</span>
                     <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
                       {searchResults.status || 'N/A'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Status As On:</span>
-                    <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                      {searchResults.statusAsOn || 'N/A'}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
@@ -1170,27 +1062,9 @@ export const OfficerProLookups: React.FC = () => {
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Manufacturing Month/Year:</span>
-                    <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                      {searchResults.vehicleManufacturingMonthYear || 'N/A'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
                     <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>RC Expiry:</span>
                     <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
                       {searchResults.rcExpiryDate || 'N/A'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Tax Upto:</span>
-                    <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                      {searchResults.vehicleTaxUpto || 'N/A'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Insurance Company:</span>
-                    <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                      {searchResults.vehicleInsuranceCompanyName || 'N/A'}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
@@ -1200,21 +1074,10 @@ export const OfficerProLookups: React.FC = () => {
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Insurance Policy Number:</span>
-                    <div className="flex items-center space-x-2">
-                      <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                        {searchResults.vehicleInsurancePolicyNumber || 'N/A'}
-                      </span>
-                      {searchResults.vehicleInsurancePolicyNumber && (
-                        <button
-                          onClick={() => copyToClipboard(searchResults.vehicleInsurancePolicyNumber)}
-                          className="p-1 text-cyber-teal hover:text-electric-blue transition-colors"
-                          title="Copy Insurance Policy Number"
-                        >
-                          <Copy className="w-4 h-4" />
-                        </button>
-                      )}
-                    </div>
+                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>PUCC Upto:</span>
+                    <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                      {searchResults.puccUpto || 'N/A'}
+                    </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Financier:</span>
@@ -1229,245 +1092,40 @@ export const OfficerProLookups: React.FC = () => {
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>RTO Code:</span>
+                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Tax Upto:</span>
                     <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                      {searchResults.rtoCode || 'N/A'}
+                      {searchResults.vehicleTaxUpto || 'N/A'}
                     </span>
                   </div>
-                  <div className="col-span-2 flex justify-between items-center">
-                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Present Address:</span>
-                    <div className="flex items-center space-x-2">
-                      <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                        {searchResults.splitPresentAddress
-                          ? [
+                  {searchResults.splitPresentAddress && (
+                    <div className="col-span-2">
+                      <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Present Address:</span>
+                      <div className="flex items-center space-x-2 mt-1">
+                        <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                          {[
+                            searchResults.splitPresentAddress.addressLine,
+                            searchResults.splitPresentAddress.city?.[0],
+                            searchResults.splitPresentAddress.state?.[0]?.[0],
+                            searchResults.splitPresentAddress.pincode
+                          ].filter(Boolean).join(', ') || 'N/A'}
+                        </span>
+                        {searchResults.splitPresentAddress.addressLine && (
+                          <button
+                            onClick={() => copyToClipboard([
                               searchResults.splitPresentAddress.addressLine,
                               searchResults.splitPresentAddress.city?.[0],
                               searchResults.splitPresentAddress.state?.[0]?.[0],
                               searchResults.splitPresentAddress.pincode
-                            ].filter(Boolean).join(', ') || 'N/A'
-                          : searchResults.presentAddress || 'N/A'}
-                      </span>
-                      {(searchResults.splitPresentAddress?.addressLine || searchResults.presentAddress) && (
-                        <button
-                          onClick={() => copyToClipboard(
-                            searchResults.splitPresentAddress
-                              ? [
-                                  searchResults.splitPresentAddress.addressLine,
-                                  searchResults.splitPresentAddress.city?.[0],
-                                  searchResults.splitPresentAddress.state?.[0]?.[0],
-                                  searchResults.splitPresentAddress.pincode
-                                ].filter(Boolean).join(', ')
-                              : searchResults.presentAddress
-                          )}
-                          className="p-1 text-cyber-teal hover:text-electric-blue transition-colors"
-                          title="Copy Present Address"
-                        >
-                          <Copy className="w-4 h-4" />
-                        </button>
-                      )}
+                            ].filter(Boolean).join(', '))}
+                            className="p-1 text-cyber-teal hover:text-electric-blue transition-colors"
+                            title="Copy Address"
+                          >
+                            <Copy className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                  <div className="col-span-2 flex justify-between items-center">
-                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Permanent Address:</span>
-                    <div className="flex items-center space-x-2">
-                      <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                        {searchResults.splitPermanentAddress
-                          ? [
-                              searchResults.splitPermanentAddress.addressLine,
-                              searchResults.splitPermanentAddress.city?.[0],
-                              searchResults.splitPermanentAddress.state?.[0]?.[0],
-                              searchResults.splitPermanentAddress.pincode
-                            ].filter(Boolean).join(', ') || 'N/A'
-                          : searchResults.permanentAddress || 'N/A'}
-                      </span>
-                      {(searchResults.splitPermanentAddress?.addressLine || searchResults.permanentAddress) && (
-                        <button
-                          onClick={() => copyToClipboard(
-                            searchResults.splitPermanentAddress
-                              ? [
-                                  searchResults.splitPermanentAddress.addressLine,
-                                  searchResults.splitPermanentAddress.city?.[0],
-                                  searchResults.splitPermanentAddress.state?.[0]?.[0],
-                                  searchResults.splitPermanentAddress.pincode
-                                ].filter(Boolean).join(', ')
-                              : searchResults.permanentAddress
-                          )}
-                          className="p-1 text-cyber-teal hover:text-electric-blue transition-colors"
-                          title="Copy Permanent Address"
-                        >
-                          <Copy className="w-4 h-4" />
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Permit and Additional Details */}
-          <div className="mb-6">
-            <button
-              onClick={() => toggleSection('permit')}
-              className={`w-full flex items-center justify-between p-4 rounded-lg border ${
-                isDark ? 'bg-crisp-black/50 border-cyber-teal/10' : 'bg-gray-50 border-gray-200'
-              }`}
-            >
-              <h5 className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                Permit and Additional Details
-              </h5>
-              {expandedSections.permit ? (
-                <ChevronUp className="w-5 h-5 text-cyber-teal" />
-              ) : (
-                <ChevronDown className="w-5 h-5 text-cyber-teal" />
-              )}
-            </button>
-            {expandedSections.permit && (
-              <div className={`p-4 mt-2 rounded-lg border ${
-                isDark ? 'bg-muted-graphite border-cyber-teal/10' : 'bg-white border-gray-200'
-              }`}>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                  <div className="flex justify-between items-center">
-                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>PUCC Number:</span>
-                    <div className="flex items-center space-x-2">
-                      <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                        {searchResults.puccNumber || 'N/A'}
-                      </span>
-                      {searchResults.puccNumber && (
-                        <button
-                          onClick={() => copyToClipboard(searchResults.puccNumber)}
-                          className="p-1 text-cyber-teal hover:text-electric-blue transition-colors"
-                          title="Copy PUCC Number"
-                        >
-                          <Copy className="w-4 h-4" />
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>PUCC Upto:</span>
-                    <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                      {searchResults.puccUpto || 'N/A'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Permit Issue Date:</span>
-                    <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                      {searchResults.permitIssueDate || 'N/A'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Permit Number:</span>
-                    <div className="flex items-center space-x-2">
-                      <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                        {searchResults.permitNumber || 'N/A'}
-                      </span>
-                      {searchResults.permitNumber && (
-                        <button
-                          onClick={() => copyToClipboard(searchResults.permitNumber)}
-                          className="p-1 text-cyber-teal hover:text-electric-blue transition-colors"
-                          title="Copy Permit Number"
-                        >
-                          <Copy className="w-4 h-4" />
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Permit Type:</span>
-                    <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                      {searchResults.permitType || 'N/A'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Permit Valid From:</span>
-                    <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                      {searchResults.permitValidFrom || 'N/A'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Permit Valid Upto:</span>
-                    <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                      {searchResults.permitValidUpto || 'N/A'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>National Permit Number:</span>
-                    <div className="flex items-center space-x-2">
-                      <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                        {searchResults.nationalPermitNumber || 'N/A'}
-                      </span>
-                      {searchResults.nationalPermitNumber && (
-                        <button
-                          onClick={() => copyToClipboard(searchResults.nationalPermitNumber)}
-                          className="p-1 text-cyber-teal hover:text-electric-blue transition-colors"
-                          title="Copy National Permit Number"
-                        >
-                          <Copy className="w-4 h-4" />
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>National Permit Upto:</span>
-                    <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                      {searchResults.nationalPermitUpto || 'N/A'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>National Permit Issued By:</span>
-                    <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                      {searchResults.nationalPermitIssuedBy || 'N/A'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Is Commercial:</span>
-                    <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                      {searchResults.isCommercial !== undefined ? (searchResults.isCommercial ? 'Yes' : 'No') : 'N/A'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Non Use Status:</span>
-                    <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                      {searchResults.nonUseStatus || 'N/A'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Non Use From:</span>
-                    <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                      {searchResults.nonUseFrom || 'N/A'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Non Use To:</span>
-                    <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                      {searchResults.nonUseTo || 'N/A'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Blacklist Status:</span>
-                    <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                      {searchResults.blacklistStatus || 'N/A'}
-                    </span>
-                  </div>
-                  <div className="col-span-2 flex justify-between items-center">
-                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Blacklist Details:</span>
-                    <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                      {searchResults.blacklistDetails?.length > 0 ? JSON.stringify(searchResults.blacklistDetails) : 'N/A'}
-                    </span>
-                  </div>
-                  <div className="col-span-2 flex justify-between items-center">
-                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Challan Details:</span>
-                    <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                      {searchResults.challanDetails?.length > 0 ? JSON.stringify(searchResults.challanDetails) : 'N/A'}
-                    </span>
-                  </div>
-                  <div className="col-span-2 flex justify-between items-center">
-                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>NOC Details:</span>
-                    <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                      {searchResults.nocDetails || 'N/A'}
-                    </span>
-                  </div>
+                  )}
                 </div>
               </div>
             )}
@@ -1501,9 +1159,7 @@ export const OfficerProLookups: React.FC = () => {
             )}
           </div>
 
-         
-
-              {/* Action Buttons */}
+          {/* Action Buttons */}
           <div className="flex justify-end space-x-3 pt-4 border-t border-cyber-teal/20">
             <button
               onClick={() => {
@@ -1528,10 +1184,9 @@ export const OfficerProLookups: React.FC = () => {
                 setSearchError(null);
                 setRcNumber('');
               }}
-              className="px-4 py-2 bg-cyber-gradient text-white rounded-lg hover:shadow-cyber transition-all duration-200 flex items-center space-x-2"
+              className="px-4 py-2 bg-cyber-gradient text-white rounded-lg hover:shadow-cyber transition-all duration-200"
             >
-              <Search className="w-4 h-4" />
-              <span>New Search</span>
+              New Search
             </button>
           </div>
         </div>
@@ -1539,47 +1194,227 @@ export const OfficerProLookups: React.FC = () => {
     </div>
   );
 
+  const renderComingSoon = (title: string, icon: React.ElementType) => {
+    const Icon = icon;
+    return (
+      <div className={`border border-cyber-teal/20 rounded-lg p-6 ${
+        isDark ? 'bg-muted-graphite' : 'bg-white'
+      }`}>
+        <h3 className={`text-lg font-semibold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+          {title}
+        </h3>
+        <div className="text-center py-12">
+          <Icon className={`w-16 h-16 mx-auto mb-4 ${isDark ? 'text-gray-400' : 'text-gray-500'}`} />
+          <h3 className={`text-lg font-medium mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+            Coming Soon
+          </h3>
+          <p className={isDark ? 'text-gray-400' : 'text-gray-600'}>
+            {title} functionality will be available soon.
+          </p>
+        </div>
+      </div>
+    );
+  };
+
   return (
-    <div className={`p-6 ${isDark ? 'bg-crisp-black' : 'bg-gray-100'} min-h-screen`}>
-      <div className="max-w-7xl mx-auto">
-        <h1 className={`text-2xl font-bold mb-6 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-          OfficerPro Lookups
+    <div className={`p-6 space-y-6 min-h-screen ${isDark ? 'bg-crisp-black' : 'bg-soft-white'}`}>
+      <div>
+        <h1 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+          PRO Verification Services
         </h1>
-        
-        {/* Tabs */}
-        <div className="flex space-x-2 mb-6 overflow-x-auto">
+        <p className={`mt-1 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+          Premium API-based verification and intelligence services
+        </p>
+      </div>
+
+      <div className={`border border-cyber-teal/20 rounded-lg p-4 ${
+        isDark ? 'bg-muted-graphite' : 'bg-white'
+      }`}>
+        <div className="flex space-x-2 flex-wrap gap-2">
           <button
             onClick={() => setActiveTab('phone-prefill-v2')}
-            className={`px-4 py-2 rounded-lg flex items-center space-x-2 ${
+            className={`flex items-center space-x-2 py-2 px-4 rounded-lg transition-all duration-200 ${
               activeTab === 'phone-prefill-v2'
-                ? 'bg-cyber-gradient text-white'
-                : isDark
-                ? 'bg-muted-graphite text-gray-300 hover:bg-cyber-teal/20'
-                : 'bg-white text-gray-600 hover:bg-gray-100'
+                ? 'bg-cyber-teal/20 text-cyber-teal border border-cyber-teal/30'
+                : isDark 
+                  ? 'text-gray-400 hover:text-cyber-teal hover:bg-cyber-teal/10' 
+                  : 'text-gray-600 hover:text-cyber-teal hover:bg-cyber-teal/10'
             }`}
           >
-            <Smartphone className="w-4 h-4" />
-            <span>Phone Prefill V2</span>
+            <Phone className="w-4 h-4" />
+            <span className="font-medium">Phone Prefill V2</span>
           </button>
           <button
             onClick={() => setActiveTab('rc')}
-            className={`px-4 py-2 rounded-lg flex items-center space-x-2 ${
+            className={`flex items-center space-x-2 py-2 px-4 rounded-lg transition-all duration-200 ${
               activeTab === 'rc'
-                ? 'bg-cyber-gradient text-white'
-                : isDark
-                ? 'bg-muted-graphite text-gray-300 hover:bg-cyber-teal/20'
-                : 'bg-white text-gray-600 hover:bg-gray-100'
+                ? 'bg-cyber-teal/20 text-cyber-teal border border-cyber-teal/30'
+                : isDark 
+                  ? 'text-gray-400 hover:text-cyber-teal hover:bg-cyber-teal/10' 
+                  : 'text-gray-600 hover:text-cyber-teal hover:bg-cyber-teal/10'
             }`}
           >
             <Car className="w-4 h-4" />
-            <span>Vehicle RC</span>
+            <span className="font-medium">RC</span>
           </button>
-          {/* Add other tabs for imei, fasttag, credit-history, cell-id as needed */}
+          <button
+            onClick={() => setActiveTab('imei')}
+            className={`flex items-center space-x-2 py-2 px-4 rounded-lg transition-all duration-200 ${
+              activeTab === 'imei'
+                ? 'bg-cyber-teal/20 text-cyber-teal border border-cyber-teal/30'
+                : isDark 
+                  ? 'text-gray-400 hover:text-cyber-teal hover:bg-cyber-teal/10' 
+                  : 'text-gray-600 hover:text-cyber-teal hover:bg-cyber-teal/10'
+            }`}
+          >
+            <Smartphone className="w-4 h-4" />
+            <span className="font-medium">IMEI</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('fasttag')}
+            className={`flex items-center space-x-2 py-2 px-4 rounded-lg transition-all duration-200 ${
+              activeTab === 'fasttag'
+                ? 'bg-cyber-teal/20 text-cyber-teal border border-cyber-teal/30'
+                : isDark 
+                  ? 'text-gray-400 hover:text-cyber-teal hover:bg-cyber-teal/10' 
+                  : 'text-gray-600 hover:text-cyber-teal hover:bg-cyber-teal/10'
+            }`}
+          >
+            <Car className="w-4 h-4" />
+            <span className="font-medium">FastTag</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('credit-history')}
+            className={`flex items-center space-x-2 py-2 px-4 rounded-lg transition-all duration-200 ${
+              activeTab === 'credit-history'
+                ? 'bg-cyber-teal/20 text-cyber-teal border border-cyber-teal/30'
+                : isDark 
+                  ? 'text-gray-400 hover:text-cyber-teal hover:bg-cyber-teal/10' 
+                  : 'text-gray-600 hover:text-cyber-teal hover:bg-cyber-teal/10'
+            }`}
+          >
+            <CreditCard className="w-4 h-4" />
+            <span className="font-medium">Credit History</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('cell-id')}
+            className={`flex items-center space-x-2 py-2 px-4 rounded-lg transition-all duration-200 ${
+              activeTab === 'cell-id'
+                ? 'bg-cyber-teal/20 text-cyber-teal border border-cyber-teal/30'
+                : isDark 
+                  ? 'text-gray-400 hover:text-cyber-teal hover:bg-cyber-teal/10' 
+                  : 'text-gray-600 hover:text-cyber-teal hover:bg-cyber-teal/10'
+            }`}
+          >
+            <MapPin className="w-4 h-4" />
+            <span className="font-medium">Cell ID</span>
+          </button>
+        </div>
+      </div>
+
+      {activeTab === 'phone-prefill-v2' && renderPhonePrefillV2()}
+      {activeTab === 'rc' && renderRCSearch()}
+      {activeTab === 'imei' && renderComingSoon('IMEI Verification', Smartphone)}
+      {activeTab === 'fasttag' && renderComingSoon('FastTag Verification', Car)}
+      {activeTab === 'credit-history' && renderComingSoon('Credit History', CreditCard)}
+      {activeTab === 'cell-id' && renderComingSoon('Cell ID Lookup', MapPin)}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className={`border border-cyber-teal/20 rounded-lg p-6 hover:shadow-cyber transition-all duration-300 ${
+          isDark ? 'bg-muted-graphite' : 'bg-white'
+        }`}>
+          <div className="flex items-center space-x-3 mb-4">
+            <div className="p-3 rounded-lg bg-neon-magenta/10 border-neon-magenta/30 text-neon-magenta">
+              <Phone className="w-6 h-6" />
+            </div>
+            <div>
+              <h3 className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                Phone Verification
+              </h3>
+              <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                Advanced phone intelligence
+              </p>
+            </div>
+          </div>
+          <div className="space-y-2 text-sm">
+            <div className="flex justify-between">
+              <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Phone Prefill V2</span>
+              <span className="text-cyber-teal">2 credits</span>
+            </div>
+            <div className="flex justify-between">
+              <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Carrier Lookup</span>
+              <span className="text-cyber-teal">1 credit</span>
+            </div>
+            <div className="flex justify-between">
+              <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Number Validation</span>
+              <span className="text-cyber-teal">1 credit</span>
+            </div>
+          </div>
         </div>
 
-        {/* Render Active Tab Content */}
-        {activeTab === 'phone-prefill-v2' && renderPhonePrefillV2()}
-        {activeTab === 'rc' && renderRCSearch()}
+        <div className={`border border-cyber-teal/20 rounded-lg p-6 hover:shadow-cyber transition-all duration-300 ${
+          isDark ? 'bg-muted-graphite' : 'bg-white'
+        }`}>
+          <div className="flex items-center space-x-3 mb-4">
+            <div className="p-3 rounded-lg bg-electric-blue/10 border-electric-blue/30 text-electric-blue">
+              <Car className="w-6 h-6" />
+            </div>
+            <div>
+              <h3 className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                Vehicle Verification
+              </h3>
+              <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                RC and vehicle details
+              </p>
+            </div>
+          </div>
+          <div className="space-y-2 text-sm">
+            <div className="flex justify-between">
+              <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>RC Detailed Search</span>
+              <span className="text-cyber-teal">3 credits</span>
+            </div>
+            <div className="flex justify-between">
+              <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Vehicle History</span>
+              <span className="text-cyber-teal">2 credits</span>
+            </div>
+            <div className="flex justify-between">
+              <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Ownership Check</span>
+              <span className="text-cyber-teal">2 credits</span>
+            </div>
+          </div>
+        </div>
+
+        <div className={`border border-cyber-teal/20 rounded-lg p-6 hover:shadow-cyber transition-all duration-300 ${
+          isDark ? 'bg-muted-graphite' : 'bg-white'
+        }`}>
+          <div className="flex items-center space-x-3 mb-4">
+            <div className="p-3 rounded-lg bg-cyber-teal/10 border-cyber-teal/30 text-cyber-teal">
+              <FileText className="w-6 h-6" />
+            </div>
+            <div>
+              <h3 className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                Document Verification
+              </h3>
+              <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                ID and document checks
+              </p>
+            </div>
+          </div>
+          <div className="space-y-2 text-sm">
+            <div className="flex justify-between">
+              <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>PAN Verification</span>
+              <span className="text-cyber-teal">2 credits</span>
+            </div>
+            <div className="flex justify-between">
+              <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Aadhaar Check</span>
+              <span className="text-cyber-teal">3 credits</span>
+            </div>
+            <div className="flex justify-between">
+              <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Passport Verify</span>
+              <span className="text-cyber-teal">4 credits</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
