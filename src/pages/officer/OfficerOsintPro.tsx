@@ -9,7 +9,7 @@ export const OfficerOsintPro: React.FC = () => {
   const { isDark } = useTheme();
   const [activeTab, setActiveTab] = useState<'mobile' | 'email' | 'name'>('mobile');
   const { officer, updateOfficerState } = useOfficerAuth();
-  const { apis, addTransaction, addQuery, getOfficerEnabledAPIs } = useSupabaseData();
+  const { addTransaction, addQuery, getOfficerEnabledAPIs } = useSupabaseData();
   const [mobileNumber, setMobileNumber] = useState('');
   const [emailAddress, setEmailAddress] = useState('');
   const [advanceName, setAdvanceName] = useState('');
@@ -27,124 +27,136 @@ export const OfficerOsintPro: React.FC = () => {
     setSearchResults(null);
     setSearchError(null);
 
+    const officerEnabledAPIs = await getOfficerEnabledAPIs(officer.id);
+    let apiConfig;
+    let inputData;
+    let category;
+
     switch (type) {
       case 'mobile':
-        try {
-          const officerEnabledAPIs = await getOfficerEnabledAPIs(officer.id);
-          const osintProMobileAPI = officerEnabledAPIs.find(api =>
-            api.name.toLowerCase() === 'mobile check' || 
-            api.name.toLowerCase().includes('osint pro mobile check')
-          );
-
-          if (!osintProMobileAPI) {
-            toast.error('OSINT PRO Mobile Check API not enabled for your plan. Please contact admin.');
-            setIsSearching(false);
-            return;
-          }
-
-          if (osintProMobileAPI.key_status !== 'Active') {
-            toast.error('OSINT PRO Mobile Check API is currently inactive. Please contact admin.');
-            setIsSearching(false);
-            return;
-          }
-
-          const creditCost = osintProMobileAPI.default_credit_charge || 5;
-          if (officer.credits_remaining < creditCost) {
-            toast.error(`Insufficient credits. Required: ${creditCost}, Available: ${officer.credits_remaining}`);
-            setIsSearching(false);
-            return;
-          }
-
-          const API_URL = "/api/leakosint/"; // Use the proxy URL
-          const payload = {
-            token: osintProMobileAPI.api_key,
-            request: mobileNumber,
-            limit: 100,
-            lang: "en",
-            type: "json"
-          };
-
-          const response = await fetch(API_URL, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(payload)
-          });
-
-          if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`API request failed: ${response.status} ${response.statusText} - ${errorText}`);
-          }
-
-          const data = await response.json();
-
-          if (data && data["Error code"]) {
-            throw new Error(`API Error: ${data["Error code"]}`);
-          }
-
-          if (!data || !data["List"] || Object.keys(data["List"]).length === 0) {
-            setSearchResults({ message: "No results found." });
-          } else {
-            setSearchResults(data["List"]);
-          }
-
-          const newCredits = officer.credits_remaining - creditCost;
-          updateOfficerState({ credits_remaining: newCredits });
-
-          await addTransaction({
-            officer_id: officer.id,
-            officer_name: officer.name,
-            action: 'Deduction',
-            credits: creditCost,
-            payment_mode: 'Query Usage',
-            remarks: `OSINT PRO Mobile Check for ${mobileNumber}`
-          });
-
-          await addQuery({
-            officer_id: officer.id,
-            officer_name: officer.name,
-            type: 'PRO',
-            category: 'OSINT PRO Mobile Check',
-            input_data: mobileNumber,
-            source: 'LeakOSINTAPI',
-            result_summary: data && data["List"] && Object.keys(data["List"]).length > 0 ? `Found ${Object.keys(data["List"]).length} databases` : "No results found.",
-            full_result: data,
-            credits_used: creditCost,
-            status: 'Success'
-          });
-          toast.success('OSINT PRO Mobile Check completed!');
-        } catch (error: any) {
-          console.error('OSINT PRO Mobile Check error:', error);
-          setSearchError(error.message || 'Search failed');
-          toast.error('Search failed. Please try again.');
-
-          await addQuery({
-            officer_id: officer.id,
-            officer_name: officer.name,
-            type: 'PRO',
-            category: 'OSINT PRO Mobile Check',
-            input_data: mobileNumber,
-            source: 'LeakOSINTAPI',
-            result_summary: `Search failed: ${error.message}`,
-            credits_used: 0,
-            status: 'Failed'
-          });
-        } finally {
-          setIsSearching(false);
-        }
+        apiConfig = officerEnabledAPIs.find(api =>
+          api.name.toLowerCase() === 'mobile check' || 
+          api.name.toLowerCase().includes('osint pro mobile check')
+        );
+        inputData = mobileNumber;
+        category = 'OSINT PRO Mobile Check';
         break;
       case 'email':
-        console.log('Searching email:', emailAddress);
-        setIsSearching(false);
+        apiConfig = officerEnabledAPIs.find(api =>
+          api.name.toLowerCase() === 'email check' || 
+          api.name.toLowerCase().includes('osint pro email check')
+        );
+        inputData = emailAddress;
+        category = 'OSINT PRO Email Check';
         break;
       case 'name':
         console.log('Searching name:', advanceName);
         setIsSearching(false);
-        break;
+        return;
       default:
         setIsSearching(false);
-        break;
+        return;
+    }
+
+    if (!apiConfig) {
+      toast.error(`${category} API not enabled for your plan. Please contact admin.`);
+      setIsSearching(false);
+      return;
+    }
+
+    if (apiConfig.key_status !== 'Active') {
+      toast.error(`${category} API is currently inactive. Please contact admin.`);
+      setIsSearching(false);
+      return;
+    }
+
+    const creditCost = apiConfig.default_credit_charge || 5;
+    if (officer.credits_remaining < creditCost) {
+      toast.error(`Insufficient credits. Required: ${creditCost}, Available: ${officer.credits_remaining}`);
+      setIsSearching(false);
+      return;
+    }
+
+    const API_URL = "/api/leakosint/";
+    const payload = {
+      token: apiConfig.api_key,
+      request: inputData,
+      limit: 100,
+      lang: "en",
+      type: "json"
+    };
+
+    try {
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`API request failed: ${response.status} ${response.statusText} - ${errorText}`);
+      }
+
+      const data = await response.json();
+
+      if (data && data["Error code"]) {
+        throw new Error(`API Error: ${data["Error code"]}`);
+      }
+
+      if (!data || !data["List"] || Object.keys(data["List"]).length === 0) {
+        setSearchResults({ message: "No results found." });
+      } else {
+        setSearchResults(data["List"]);
+      }
+
+      const newCredits = officer.credits_remaining - creditCost;
+      updateOfficerState({ credits_remaining: newCredits });
+
+      await addTransaction({
+        officer_id: officer.id,
+        officer_name: officer.name,
+        action: 'Deduction',
+        credits: creditCost,
+        payment_mode: 'Query Usage',
+        remarks: `${category} for ${inputData}`
+      });
+
+      await addQuery({
+        officer_id: officer.id,
+        officer_name: officer.name,
+        type: 'PRO',
+        category,
+        input_data: inputData,
+        source: 'LeakOSINTAPI',
+        result_summary: data && data["List"] && Object.keys(data["List"]).length > 0 
+          ? `Found ${Object.keys(data["List"]).length} databases` 
+          : "No results found.",
+        full_result: data,
+        credits_used: creditCost,
+        status: 'Success'
+      });
+      toast.success(`${category} completed!`);
+    } catch (error: any) {
+      console.error(`${category} error:`, error);
+      setSearchError(error.message || 'Search failed');
+      toast.error('Search failed. Please try again.');
+
+      await addQuery({
+        officer_id: officer.id,
+        officer_name: officer.name,
+        type: 'PRO',
+        category,
+        input_data: inputData,
+        source: 'LeakOSINTAPI',
+        result_summary: `Search failed: ${error.message}`,
+        credits_used: 0,
+        status: 'Failed'
+      });
+    } finally {
+      setIsSearching(false);
     }
   };
 
@@ -159,7 +171,7 @@ export const OfficerOsintPro: React.FC = () => {
         </p>
       </div>
 
-      <div className={`border border-cyber-teal/20 rounded-lg p-4 ${
+      <div className={`border border-cyber-teal/20 rounded-lg p-4 shadow-lg ${
         isDark ? 'bg-muted-graphite' : 'bg-white'
       }`}>
         <div className="flex space-x-4 mb-6">
@@ -256,7 +268,7 @@ export const OfficerOsintPro: React.FC = () => {
                   className={`flex-1 px-3 py-2 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal ${
                     isDark 
                       ? 'bg-crisp-black text-white placeholder-gray-500' 
-                      : 'bg-white text.facilitate-gray-900 placeholder-gray-400'
+                      : 'bg-white text-gray-900 placeholder-gray-400'
                   }`}
                 />
                 <button
@@ -312,57 +324,75 @@ export const OfficerOsintPro: React.FC = () => {
         </div>
       </div>
 
-      <div className={`border border-cyber-teal/20 rounded-lg p-6 ${
-        isDark ? 'bg-muted-graphite' : 'bg-white'
+      <div className={`rounded-xl p-6 shadow-xl transition-all duration-300 ${
+        isDark 
+          ? 'bg-gray-800/90 border border-cyber-teal/30 hover:shadow-cyber-teal/20' 
+          : 'bg-white border border-cyber-teal/10 hover:shadow-cyber-teal/10'
       }`}>
-        <h3 className={`text-lg font-semibold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-          Search Results
-        </h3>
+        <h3 className={`text-xl font-semibold mb-4 ${
+          isDark ? 'text-white' : 'text-gray-900'
+        }`}>Search Results</h3>
         {isSearching && (
-          <div className="flex items-center justify-center py-4">
-            <div className="w-6 h-6 border-2 border-cyber-teal border-t-transparent rounded-full animate-spin" />
-            <span className={`ml-3 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Searching...</span>
+          <div className="flex items-center justify-center py-6">
+            <div className="w-8 h-8 border-4 border-cyber-teal border-t-transparent rounded-full animate-spin" />
+            <span className={`ml-4 text-lg ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+              Searching...
+            </span>
           </div>
         )}
 
         {!isSearching && searchResults && (
-          <div className={`p-4 rounded-lg border ${
-            searchError ? (isDark ? 'bg-red-500/10 border-red-500/30' : 'bg-red-50 border-red-200') : (isDark ? 'bg-green-500/10 border-green-500/30' : 'bg-green-50 border-green-200')
+          <div className={`p-6 rounded-lg border-2 ${
+            searchError 
+              ? (isDark ? 'bg-red-900/20 border-red-500/40' : 'bg-red-50 border-red-200') 
+              : (isDark ? 'bg-green-900/20 border-green-500/40' : 'bg-green-50 border-green-200')
           }`}>
             {searchError ? (
-              <div className="flex items-center space-x-2">
-                <XCircle className="w-5 h-5 text-red-400" />
-                <p className="text-red-400 font-medium">Search Failed</p>
-                <p className="text-red-400 text-sm mt-1">{searchError}</p>
+              <div className="flex items-center space-x-3">
+                <XCircle className="w-6 h-6 text-red-400" />
+                <div>
+                  <p className="text-red-400 font-semibold text-lg">Search Failed</p>
+                  <p className={`text-sm ${isDark ? 'text-red-300' : 'text-red-500'}`}>
+                    {searchError}
+                  </p>
+                </div>
               </div>
             ) : (
               <>
-                <div className="flex items-center space-x-2 mb-3">
-                  <CheckCircle className="w-5 h-5 text-green-400" />
-                  <p className="text-green-400 font-medium">Search Successful</p>
+                <div className="flex items-center space-x-3 mb-4">
+                  <CheckCircle className="w-6 h-6 text-green-400" />
+                  <p className="text-green-400 font-semibold text-lg">Search Successful</p>
                 </div>
 
                 {typeof searchResults === 'object' && searchResults.message ? (
-                  <p className={`text-yellow-400 text-sm`}>{searchResults.message}</p>
+                  <p className={`text-yellow-400 text-sm font-medium`}>{searchResults.message}</p>
                 ) : (
-                  <div className="space-y-4">
+                  <div className="space-y-6">
                     {Object.entries(searchResults).map(([dbName, dbInfo]: [string, any]) => (
                       <div key={dbName} className="border-b border-cyber-teal/20 pb-4 last:border-b-0">
-                        <h4 className="text-green-400 font-medium mb-2">📁 Database: {dbName}</h4>
-                        <div className="space-y-2">
+                        <h4 className={`text-lg font-medium mb-3 ${
+                          isDark ? 'text-green-300' : 'text-green-500'
+                        }`}>📁 {dbName}</h4>
+                        <div className="space-y-3">
                           {dbInfo.Data && dbInfo.Data.length > 0 ? (
                             dbInfo.Data.map((record: any, recordIndex: number) => (
-                              <div key={recordIndex} className="pl-4 border-l border-gray-500">
+                              <div key={recordIndex} className="pl-4 border-l-2 border-gray-500">
                                 {Object.entries(record).map(([field, value]: [string, any]) => (
                                   <p key={field} className="text-sm">
-                                    <span className="text-green-400">  • {field}:</span> {String(value)}
+                                    <span className={`font-medium ${
+                                      isDark ? 'text-green-300' : 'text-green-500'
+                                    }`}>• {field}:</span> {String(value)}
                                   </p>
                                 ))}
-                                <hr className="my-2 border-gray-700" />
+                                <hr className={`my-3 ${
+                                  isDark ? 'border-gray-700' : 'border-gray-200'
+                                }`} />
                               </div>
                             ))
                           ) : (
-                            <p className="text-sm text-gray-400">No data found for this database.</p>
+                            <p className={`text-sm ${
+                              isDark ? 'text-gray-400' : 'text-gray-500'
+                            }`}>No data found for this database.</p>
                           )}
                         </div>
                       </div>
@@ -375,9 +405,9 @@ export const OfficerOsintPro: React.FC = () => {
         )}
 
         {!isSearching && !searchResults && !searchError && (
-          <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-            Results will appear here after you perform a search.
-          </p>
+          <p className={`text-sm font-medium ${
+            isDark ? 'text-gray-400' : 'text-gray-600'
+          }`}>Results will appear here after you perform a search.</p>
         )}
       </div>
     </div>
