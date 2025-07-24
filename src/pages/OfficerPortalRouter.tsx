@@ -6,7 +6,6 @@ import { OfficerFreeLookups } from './officer/OfficerFreeLookups';
 import { OfficerProLookups } from './officer/OfficerProLookups';
 import { OfficerTrackLink } from './officer/OfficerTrackLink';
 import { OfficerHistory } from './officer/OfficerHistory';
-import { OsintPro } from './officer/OsintPro';
 import { OfficerAccount } from './officer/OfficerAccount';
 import { OfficerDashboardContent } from './officer/OfficerDashboardContent'; // The original content
 
@@ -24,7 +23,6 @@ export const OfficerPortalRouter: React.FC = () => {
         <Route path="free-lookups" element={<OfficerFreeLookups />} />
         <Route path="pro-lookups" element={<OfficerProLookups />} />
         <Route path="tracklink" element={<OfficerTrackLink />} />
-        <Route path="osint-pro" element={<OsintPro />} />
         <Route path="history" element={<OfficerHistory />} />
         <Route path="account" element={<OfficerAccount />} />
 
