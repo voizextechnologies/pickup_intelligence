@@ -16,9 +16,7 @@ export const OfficerOsintPro: React.FC = () => {
   const [isSearching, setIsSearching] = useState(false);
   const [searchResults, setSearchResults] = useState<any>(null);
   const [searchError, setSearchError] = useState<string | null>(null);
-  const [isSearching, setIsSearching] = useState(false);
-  const [searchResults, setSearchResults] = useState<any>(null);
-  const [searchError, setSearchError] = useState<string | null>(null);
+ 
 
   const handleSearch = async (type: string) => {
     if (!officer) {
