@@ -1577,6 +1577,45 @@ export const OfficerProLookups: React.FC = () => {
             <MapPin className="w-4 h-4" />
             <span className="font-medium">Cell ID</span>
           </button>
+          <button
+  onClick={() => setActiveTab('mobile-check')}
+  className={`flex items-center space-x-2 py-2 px-4 rounded-lg transition-all duration-200 ${
+    activeTab === 'mobile-check'
+      ? 'bg-cyber-teal/20 text-cyber-teal border border-cyber-teal/30'
+      : isDark 
+        ? 'text-gray-400 hover:text-cyber-teal hover:bg-cyber-teal/10' 
+        : 'text-gray-600 hover:text-cyber-teal hover:bg-cyber-teal/10'
+  }`}
+>
+  <Smartphone className="w-4 h-4" />
+  <span className="font-medium">Mobile Check</span>
+</button>
+<button
+  onClick={() => setActiveTab('email-check')}
+  className={`flex items-center space-x-2 py-2 px-4 rounded-lg transition-all duration-200 ${
+    activeTab === 'email-check'
+      ? 'bg-cyber-teal/20 text-cyber-teal border border-cyber-teal/30'
+      : isDark 
+        ? 'text-gray-400 hover:text-cyber-teal hover:bg-cyber-teal/10' 
+        : 'text-gray-600 hover:text-cyber-teal hover:bg-cyber-teal/10'
+  }`}
+>
+  <FileText className="w-4 h-4" />
+  <span className="font-medium">Email Check</span>
+</button>
+<button
+  onClick={() => setActiveTab('advance-name-scan')}
+  className={`flex items-center space-x-2 py-2 px-4 rounded-lg transition-all duration-200 ${
+    activeTab === 'advance-name-scan'
+      ? 'bg-cyber-teal/20 text-cyber-teal border border-cyber-teal/30'
+      : isDark 
+        ? 'text-gray-400 hover:text-cyber-teal hover:bg-cyber-teal/10' 
+        : 'text-gray-600 hover:text-cyber-teal hover:bg-cyber-teal/10'
+  }`}
+>
+  <Search className="w-4 h-4" />
+  <span className="font-medium">Advance Name Scan</span>
+</button>
         </div>
       </div>
 
