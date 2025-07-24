@@ -1625,6 +1625,9 @@ export const OfficerProLookups: React.FC = () => {
       {activeTab === 'fasttag' && renderComingSoon('FastTag Verification', Car)}
       {activeTab === 'credit-history' && renderComingSoon('Credit History', CreditCard)}
       {activeTab === 'cell-id' && renderComingSoon('Cell ID Lookup', MapPin)}
+      {activeTab === 'mobile-check' && renderComingSoon('Mobile Check', Smartphone)}
+{activeTab === 'email-check' && renderComingSoon('Email Check', FileText)}
+{activeTab === 'advance-name-scan' && renderComingSoon('Advance Name Scan', Search)}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div className={`border border-cyber-teal/20 rounded-lg p-6 hover:shadow-cyber transition-all duration-300 ${
