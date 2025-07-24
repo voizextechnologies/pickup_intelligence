@@ -8,8 +8,8 @@ import toast from 'react-hot-toast';
 export const OfficerOsintPro: React.FC = () => {
   const { isDark } = useTheme();
   const [activeTab, setActiveTab] = useState<'mobile' | 'email' | 'name'>('mobile');
-  const { officer, updateOfficerState } = useOfficerAuth();
-  const { apis, addTransaction, addQuery } = useSupabaseData();
+  const { officer, updateOfficerState } = useOfficerAuth(); // Assuming officer is always available here
+  const { apis, addTransaction, addQuery, getOfficerEnabledAPIs } = useSupabaseData();
   const [mobileNumber, setMobileNumber] = useState('');
   const [emailAddress, setEmailAddress] = useState('');
   const [advanceName, setAdvanceName] = useState('');
@@ -29,13 +29,21 @@ export const OfficerOsintPro: React.FC = () => {
 
     switch (type) {
       case 'mobile':
-        console.log('Searching mobile:', mobileNumber);
-        const osintProMobileAPI = apis.find(api =>
-          api.name === 'OSINT PRO MOBILE CHECK' && api.key_status === 'Active'
+        // Get APIs enabled for the current officer's plan
+        const officerEnabledAPIs = getOfficerEnabledAPIs(officer.id);
+        const osintProMobileAPI = officerEnabledAPIs.find(api =>
+          api.name.toLowerCase().includes('osint pro mobile check')
         );
 
         if (!osintProMobileAPI) {
-          toast.error('OSINT PRO Mobile Check API not configured or inactive. Please contact admin.');
+          toast.error('OSINT PRO Mobile Check API not enabled for your plan. Please contact admin.');
+          setIsSearching(false);
+          return;
+        }
+
+        // Additionally, check if the API itself is globally active
+        if (osintProMobileAPI.key_status !== 'Active') {
+          toast.error('OSINT PRO Mobile Check API is currently inactive. Please contact admin.');
           setIsSearching(false);
           return;
         }
