@@ -47,7 +47,6 @@ export const OfficerDashboard: React.FC = () => {
   const [isSearching, setIsSearching] = useState(false);
   const [searchResults, setSearchResults] = useState<PhonePrefillV2Response | null>(null);
   const [showResults, setShowResults] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true); // Sidebar state
 
   // RC Search states
   const [vehicleNumber, setVehicleNumber] = useState('');
@@ -1547,151 +1546,154 @@ export const OfficerDashboard: React.FC = () => {
     );
   };
 
-  const renderSidebar = () => (
-    <div className={`fixed inset-y-0 left-0 transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} transition duration-200 ease-in-out w-64 p-4 ${isDark ? 'bg-crisp-black' : 'bg-white'} border-r border-cyber-teal/20 z-50`}>
-      <button
-        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-        className="mb-4 p-2 text-cyber-teal hover:text-electric-blue transition-colors"
-      >
-        <ArrowLeft className={`w-5 h-5 ${isSidebarOpen ? 'rotate-180' : ''}`} />
-      </button>
-      <nav>
-        {[
-          { id: 'dashboard', name: 'Dashboard', icon: Zap },
-          { id: 'free', name: 'Free Lookups', icon: Search },
-          { id: 'pro', name: 'PRO Lookups', icon: Phone },
-          { id: 'tracklink', name: 'TrackLink', icon: LinkIcon },
-          { id: 'history', name: 'History', icon: Clock },
-          { id: 'account', name: 'Account', icon: User }
-        ].map((tab) => {
-          const Icon = tab.icon;
-          return (
+  return (
+    <div className={`min-h-screen ${isDark ? 'bg-crisp-black' : 'bg-soft-white'}`}>
+      {/* Header with Officer Info */}
+      <div className={`border-b border-cyber-teal/20 p-4 ${
+        isDark ? 'bg-muted-graphite' : 'bg-white'
+      }`}>
+        <div className="flex items-center justify-between">
+          <Link to="/" className={`flex items-center space-x-2 transition-colors ${
+            isDark ? 'text-gray-400 hover:text-cyber-teal' : 'text-gray-600 hover:text-cyber-teal'
+          }`}>
+            <ArrowLeft className="w-4 h-4" />
+            <span className="text-sm">Back to Home</span>
+          </Link>
+
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-cyber-gradient rounded-lg flex items-center justify-center">
+                <Shield className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                  Officer Portal
+                </h1>
+                <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                  Intelligence Dashboard
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <div className="w-3 h-3 bg-electric-blue rounded-full animate-pulse" />
+              <span className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                System Online
+              </span>
+            </div>
+
             <button
-              key={tab.id}
-              onClick={() => {
-                setActiveTab(tab.id as any);
-                if (window.innerWidth < 1024) setIsSidebarOpen(false); // Auto-close on mobile
-              }}
-              className={`flex items-center space-x-2 py-2 px-4 rounded-lg w-full text-left transition-all duration-200 ${
-                activeTab === tab.id
-                  ? 'bg-cyber-teal/20 text-cyber-teal border border-cyber-teal/30'
-                  : isDark 
-                    ? 'text-gray-400 hover:text-cyber-teal hover:bg-cyber-teal/10' 
-                    : 'text-gray-600 hover:text-cyber-teal hover:bg-cyber-teal/10'
+              onClick={logout}
+              className={`p-2 transition-colors ${
+                isDark ? 'text-gray-400 hover:text-red-400' : 'text-gray-600 hover:text-red-400'
               }`}
             >
-              <Icon className="w-5 h-5" />
-              <span className="font-medium">{tab.name}</span>
+              <LogOut className="w-4 h-4" />
             </button>
-          );
-        })}
-      </nav>
-    </div>
-  );
+          </div>
+        </div>
+      </div>
 
-  return (
-    <div className={`min-h-screen ${isDark ? 'bg-crisp-black' : 'bg-soft-white'} flex`}>
-      {renderSidebar()}
-      <div className="flex-1 ml-0 transition-all duration-200 lg:ml-64">
-        {/* Header with Officer Info */}
-        <div className={return (
-  <div className={`min-h-screen ${isDark ? 'bg-crisp-black' : 'bg-soft-white'} flex`}>
-    {renderSidebar()}
-    <div className="flex-1 ml-0 transition-all duration-200 lg:ml-64">
-      {/* Header with Officer Info */}
-      <div className={`border-b border-cyber-teal/20 p-4 ${isDark ? 'bg-muted-graphite' : 'bg-white'}`}>
+      {/* Officer Profile Bar */}
+      <div className={`p-4 border-b border-cyber-teal/20 ${
+        isDark ? 'bg-muted-graphite' : 'bg-white'
+      }`}>
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <div className={`w-12 h-12 rounded-full flex items-center justify-center ${isDark ? 'bg-cyber-teal/20' : 'bg-gray-200'}`}>
-              <User className={`w-6 h-6 ${isDark ? 'text-cyber-teal' : 'text-gray-600'}`} />
+          <div className="flex items-center space-x-3">
+            <div className="w-12 h-12 bg-cyber-gradient rounded-full flex items-center justify-center">
+              <User className="w-6 h-6 text-white" />
             </div>
             <div>
               <h2 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
                 {officer.name}
               </h2>
               <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                Officer ID: {officer.id}
+                {officer.mobile}
               </p>
             </div>
           </div>
           <div className="flex items-center space-x-4">
-            <div className={`px-3 py-1 rounded-full ${isDark ? 'bg-cyber-teal/20 text-cyber-teal' : 'bg-gray-200 text-gray-800'}`}>
-              <span className="text-sm font-medium">
-                Credits: {formatCredits(officer.credits_remaining)}
-              </span>
+            <div className="text-right">
+              <p className={`text-lg font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                {formatCredits(officer.credits_remaining)} Credits
+              </p>
+              <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                of {formatCredits(officer.total_credits)}
+              </p>
             </div>
-            <button
-              onClick={logout}
-              className="flex items-center space-x-2 px-4 py-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors"
-            >
-              <LogOut className="w-5 h-5" />
-              <span className="text-sm font-medium">Logout</span>
-            </button>
+            <div className={`w-full rounded-full h-2 ${isDark ? 'bg-crisp-black' : 'bg-gray-200'} w-24`}>
+              <div 
+                className="bg-cyber-gradient h-2 rounded-full transition-all duration-300"
+                style={{ width: `${(officer.credits_remaining / officer.total_credits) * 100}%` }}
+              />
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Main Content Area */}
-      <main className="p-6">
+      {/* Navigation Tabs */}
+      <div className={`border-b border-cyber-teal/20 ${
+        isDark ? 'bg-muted-graphite' : 'bg-white'
+      }`}>
+        <div className="flex space-x-1 p-4">
+          {[
+            { id: 'dashboard', name: 'Dashboard', icon: Zap },
+            { id: 'free', name: 'Free Lookups', icon: Search },
+            { id: 'pro', name: 'PRO Lookups', icon: Phone },
+            { id: 'tracklink', name: 'TrackLink', icon: LinkIcon },
+            { id: 'history', name: 'History', icon: Clock },
+            { id: 'account', name: 'Account', icon: User }
+          ].map((tab) => {
+            const Icon = tab.icon;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)}
+                className={`flex items-center space-x-2 py-2 px-4 rounded-lg transition-all duration-200 ${
+                  activeTab === tab.id
+                    ? 'bg-cyber-teal/20 text-cyber-teal border border-cyber-teal/30'
+                    : isDark 
+                      ? 'text-gray-400 hover:text-cyber-teal hover:bg-cyber-teal/10' 
+                      : 'text-gray-600 hover:text-cyber-teal hover:bg-cyber-teal/10'
+                }`}
+              >
+                <Icon className="w-4 h-4" />
+                <span className="font-medium">{tab.name}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Content Area */}
+      <div className="p-6">
         {activeTab === 'dashboard' && renderDashboard()}
         {activeTab === 'free' && renderFreeLookups()}
         {activeTab === 'pro' && renderPROLookups()}
         {activeTab === 'tracklink' && (
-          <div className={`border border-cyber-teal/20 rounded-lg p-6 ${isDark ? 'bg-muted-graphite' : 'bg-white'}`}>
-            <h2 className={`text-xl font-semibold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-              TrackLink
-            </h2>
-            <div className="text-center py-12">
-              <LinkIcon className={`w-16 h-16 mx-auto mb-4 ${isDark ? 'text-gray-400' : 'text-gray-500'}`} />
-              <h3 className={`text-lg font-medium mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                Coming Soon
-              </h3>
-              <p className={isDark ? 'text-gray-400' : 'text-gray-600'}>
-                TrackLink feature will be available soon.
-              </p>
-            </div>
+          <div className="text-center py-12">
+            <LinkIcon className={`w-16 h-16 mx-auto mb-4 ${isDark ? 'text-gray-400' : 'text-gray-500'}`} />
+            <h3 className={`text-lg font-medium mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+              TrackLink Coming Soon
+            </h3>
+            <p className={isDark ? 'text-gray-400' : 'text-gray-600'}>
+              Link tracking functionality will be available soon.
+            </p>
           </div>
         )}
         {activeTab === 'history' && renderHistory()}
         {activeTab === 'account' && (
-          <div className={`border border-cyber-teal/20 rounded-lg p-6 ${isDark ? 'bg-muted-graphite' : 'bg-white'}`}>
-            <h2 className={`text-xl font-semibold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+          <div className="text-center py-12">
+            <User className={`w-16 h-16 mx-auto mb-4 ${isDark ? 'text-gray-400' : 'text-gray-500'}`} />
+            <h3 className={`text-lg font-medium mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
               Account Settings
-            </h2>
-            <div className="space-y-6">
-              <div>
-                <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
-                  Email
-                </label>
-                <input
-                  type="email"
-                  value={officer.email || ''}
-                  disabled
-                  className={`w-full px-4 py-3 border border-cyber-teal/30 rounded-lg ${isDark ? 'bg-crisp-black text-white placeholder-gray-500' : 'bg-white text-gray-900 placeholder-gray-400'}`}
-                />
-              </div>
-              <div>
-                <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
-                  Theme
-                </label>
-                <select
-                  value={isDark ? 'dark' : 'light'}
-                  onChange={(e) => {
-                    const theme = e.target.value === 'dark' ? true : false;
-                    // This assumes ThemeContext has a setTheme function
-                    // You would need to implement this in your ThemeContext
-                    // useTheme().setTheme(theme);
-                  }}
-                  className={`w-full px-4 py-3 border border-cyber-teal/30 rounded-lg ${isDark ? 'bg-crisp-black text-white' : 'bg-white text-gray-900'}`}
-                >
-                  <option value="light">Light</option>
-                  <option value="dark">Dark</option>
-                </select>
-              </div>
-            </div>
+            </h3>
+            <p className={isDark ? 'text-gray-400' : 'text-gray-600'}>
+              Account management features coming soon.
+            </p>
           </div>
         )}
-      </main>
+      </div>
     </div>
-  </div>
-);
+  );
+};
