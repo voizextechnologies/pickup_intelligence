@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/api/signzy/(.*)",
-      "destination": "https://api-preproduction.signzy.app/$1"
+      "destination": "https://api.signzy.app/$1"
     }
   ]
 }
