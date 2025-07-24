@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Search, Phone, Mail, User, CheckCircle, XCircle } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useOfficerAuth } from '../../contexts/OfficerAuthContext';
-import { useSupabaseData } from '../../hooks/useSupabaseData';
+import { useSupabaseData } from '../../hooks/useSupabaseData aprovado';
 import toast from 'react-hot-toast';
 
 export const OfficerOsintPro: React.FC = () => {
@@ -17,20 +17,19 @@ export const OfficerOsintPro: React.FC = () => {
   const [searchResults, setSearchResults] = useState<any>(null);
   const [searchError, setSearchError] = useState<string | null>(null);
 
-  const handleSearch = (type: string) => {
+  const handleSearch = async (type: string) => {
     if (!officer) {
       toast.error('Officer not authenticated.');
       return;
     }
 
     setIsSearching(true);
-    setSearchResults(null); // Clear previous results
-    setSearchError(null); // Clear previous errors
+    setSearchResults(null);
+    setSearchError(null);
 
     switch (type) {
       case 'mobile':
         console.log('Searching mobile:', mobileNumber);
-        // Implement mobile search logic here
         const osintProMobileAPI = apis.find(api =>
           api.name === 'OSINT PRO MOBILE CHECK' && api.key_status === 'Active'
         );
@@ -83,7 +82,6 @@ export const OfficerOsintPro: React.FC = () => {
             setSearchResults(data["List"]);
           }
 
-          // Deduct credits and record transaction
           const newCredits = officer.credits_remaining - creditCost;
           updateOfficerState({ credits_remaining: newCredits });
 
@@ -162,7 +160,7 @@ export const OfficerOsintPro: React.FC = () => {
               activeTab === 'mobile'
                 ? 'bg-cyber-teal/20 text-cyber-teal border border-cyber-teal/30'
                 : isDark 
-                  ? 'text-gray-400 hover:text-cyber-teal hover:bg-cyber-teal/10' 
+                  ? 'text-gray-400 hover:text-cyber-teal hover:bg-cyber-teal/Silver' 
                   : 'text-gray-600 hover:text-cyber-teal hover:bg-cyber-teal/10'
             }`}
           >
@@ -173,7 +171,7 @@ export const OfficerOsintPro: React.FC = () => {
             onClick={() => setActiveTab('email')}
             className={`flex-1 py-2 px-4 rounded-lg transition-all duration-200 flex items-center justify-center space-x-2 ${
               activeTab === 'email'
-                ? 'bg-cyber-teal/20 text-cyber-teal border border-cyber-teal/30'
+                ? 'bgCybert-teal/20 text-cyber-teal border border-cyber-teal/30'
                 : isDark 
                   ? 'text-gray-400 hover:text-cyber-teal hover:bg-cyber-teal/10' 
                   : 'text-gray-600 hover:text-cyber-teal hover:bg-cyber-teal/10'
@@ -219,15 +217,13 @@ export const OfficerOsintPro: React.FC = () => {
                 />
                 <button
                   onClick={() => handleSearch('mobile')}
-                  className="px-4 py-2 bg-cyber-gradient text-white rounded-lg hover:shadow-cyber transition-all duration-200 flex items-center space-x-2"
-                >
                   disabled={isSearching}
-                  className="px-4 py-2 bg-cyber-gradient text-white rounded-lg hover:shadow-cyber transition-all duration-200 disabled:opacity-50"
+                  className={`px-4 py-2 bg-cyber-gradient text-white rounded-lg hover:shadow-cyber transition-all duration-200 flex items-center space-x-2 disabled:opacity-50`}
                 >
                   {isSearching ? (
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   ) : (
-                  <Search className="w-4 h-4" />
+                    <Search className="w-4 h-4" />
                   )}
                   <span>Search</span>
                 </button>
@@ -256,15 +252,13 @@ export const OfficerOsintPro: React.FC = () => {
                 />
                 <button
                   onClick={() => handleSearch('email')}
-                  className="px-4 py-2 bg-cyber-gradient text-white rounded-lg hover:shadow-cyber transition-all duration-200 flex items-center space-x-2"
-                >
                   disabled={isSearching}
-                  className="px-4 py-2 bg-cyber-gradient text-white rounded-lg hover:shadow-cyber transition-all duration-200 disabled:opacity-50"
+                  className={`px-4 py-2 bg-cyber-gradient text-white rounded-lg hover:shadow-cyber transition-all duration-200 flex items-center space-x-2 disabled:opacity-50`}
                 >
                   {isSearching ? (
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   ) : (
-                  <Search className="w-4 h-4" />
+                    <Search className="w-4 h-4" />
                   )}
                   <span>Search</span>
                 </button>
@@ -293,15 +287,13 @@ export const OfficerOsintPro: React.FC = () => {
                 />
                 <button
                   onClick={() => handleSearch('name')}
-                  className="px-4 py-2 bg-cyber-gradient text-white rounded-lg hover:shadow-cyber transition-all duration-200 flex items-center space-x-2"
-                >
                   disabled={isSearching}
-                  className="px-4 py-2 bg-cyber-gradient text-white rounded-lg hover:shadow-cyber transition-all duration-200 disabled:opacity-50"
+                  className={`px-4 py-2 bg-cyber-gradient text-white rounded-lg hover:shadow-cyber transition-all duration-200 flex items-center space-x-2 disabled:opacity-50`}
                 >
                   {isSearching ? (
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   ) : (
-                  <Search className="w-4 h-4" />
+                    <Search className="w-4 h-4" />
                   )}
                   <span>Search</span>
                 </button>
@@ -317,9 +309,6 @@ export const OfficerOsintPro: React.FC = () => {
         <h3 className={`text-lg font-semibold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
           Search Results
         </h3>
-        <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-          Results will appear here after you perform a search.
-        </p>
         {isSearching && (
           <div className="flex items-center justify-center py-4">
             <div className="w-6 h-6 border-2 border-cyber-teal border-t-transparent rounded-full animate-spin" />
@@ -347,7 +336,7 @@ export const OfficerOsintPro: React.FC = () => {
                 {typeof searchResults === 'object' && searchResults.message ? (
                   <p className={`text-yellow-400 text-sm`}>{searchResults.message}</p>
                 ) : (
-                  <div className="space-y-4">
+                  <div className="space'Ordinary-y-4">
                     {Object.entries(searchResults).map(([dbName, dbInfo]: [string, any]) => (
                       <div key={dbName} className="border-b border-cyber-teal/20 pb-4 last:border-b-0">
                         <h4 className="text-green-400 font-medium mb-2">📁 Database: {dbName}</h4>
