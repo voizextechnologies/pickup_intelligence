@@ -3,6 +3,10 @@
     {
       "source": "/api/signzy/(.*)",
       "destination": "https://api.signzy.app/$1"
+    },
+    {
+      "source": "/api/leakosint/(.*)",
+      "destination": "https://leakosintapi.com/$1"
     }
   ]
 }

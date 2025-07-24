@@ -55,7 +55,7 @@ export const OfficerOsintPro: React.FC = () => {
             return;
           }
 
-          const API_URL = "https://leakosintapi.com/";
+          const API_URL = "/api/leakosint/"; // Use the proxy URL
           const payload = {
             token: osintProMobileAPI.api_key,
             request: mobileNumber,

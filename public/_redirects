@@ -1,1 +1,2 @@
 /api/signzy/* https://api.signzy.app/:splat 200
+/api/leakosint/* https://leakosintapi.com/:splat 200
