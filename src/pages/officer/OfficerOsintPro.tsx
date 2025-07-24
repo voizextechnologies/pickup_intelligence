@@ -29,40 +29,41 @@ export const OfficerOsintPro: React.FC = () => {
 
     switch (type) {
       case 'mobile':
-        const officerEnabledAPIs = await getOfficerEnabledAPIs(officer.id);
-        const osintProMobileAPI = officerEnabledAPIs.find(api =>
-          api.name.toLowerCase().includes('osint pro mobile check')
-        );
-
-        if (!osintProMobileAPI) {
-          toast.error('OSINT PRO Mobile Check API not enabled for your plan. Please contact admin.');
-          setIsSearching(false);
-          return;
-        }
-
-        if (osintProMobileAPI.key_status !== 'Active') {
-          toast.error('OSINT PRO Mobile Check API is currently inactive. Please contact admin.');
-          setIsSearching(false);
-          return;
-        }
-
-        const creditCost = osintProMobileAPI.default_credit_charge || 5;
-        if (officer.credits_remaining < creditCost) {
-          toast.error(`Insufficient credits. Required: ${creditCost}, Available: ${officer.credits_remaining}`);
-          setIsSearching(false);
-          return;
-        }
-
-        const API_URL = "https://leakosintapi.com/";
-        const payload = {
-          token: osintProMobileAPI.api_key,
-          request: mobileNumber,
-          limit: 100,
-          lang: "en",
-          type: "json"
-        };
-
         try {
+          const officerEnabledAPIs = await getOfficerEnabledAPIs(officer.id);
+          const osintProMobileAPI = officerEnabledAPIs.find(api =>
+            api.name.toLowerCase() === 'mobile check' || 
+            api.name.toLowerCase().includes('osint pro mobile check')
+          );
+
+          if (!osintProMobileAPI) {
+            toast.error('OSINT PRO Mobile Check API not enabled for your plan. Please contact admin.');
+            setIsSearching(false);
+            return;
+          }
+
+          if (osintProMobileAPI.key_status !== 'Active') {
+            toast.error('OSINT PRO Mobile Check API is currently inactive. Please contact admin.');
+            setIsSearching(false);
+            return;
+          }
+
+          const creditCost = osintProMobileAPI.default_credit_charge || 5;
+          if (officer.credits_remaining < creditCost) {
+            toast.error(`Insufficient credits. Required: ${creditCost}, Available: ${officer.credits_remaining}`);
+            setIsSearching(false);
+            return;
+          }
+
+          const API_URL = "https://leakosintapi.com/";
+          const payload = {
+            token: osintProMobileAPI.api_key,
+            request: mobileNumber,
+            limit: 100,
+            lang: "en",
+            type: "json"
+          };
+
           const response = await fetch(API_URL, {
             method: 'POST',
             headers: {
@@ -255,7 +256,7 @@ export const OfficerOsintPro: React.FC = () => {
                   className={`flex-1 px-3 py-2 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal ${
                     isDark 
                       ? 'bg-crisp-black text-white placeholder-gray-500' 
-                      : 'bg-white text-gray-900 placeholder-gray-400'
+                      : 'bg-white text.facilitate-gray-900 placeholder-gray-400'
                   }`}
                 />
                 <button
