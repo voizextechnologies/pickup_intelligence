@@ -1594,4 +1594,104 @@ export const OfficerDashboard: React.FC = () => {
       {renderSidebar()}
       <div className="flex-1 ml-0 transition-all duration-200 lg:ml-64">
         {/* Header with Officer Info */}
-        <div className={`
+        <div className={return (
+  <div className={`min-h-screen ${isDark ? 'bg-crisp-black' : 'bg-soft-white'} flex`}>
+    {renderSidebar()}
+    <div className="flex-1 ml-0 transition-all duration-200 lg:ml-64">
+      {/* Header with Officer Info */}
+      <div className={`border-b border-cyber-teal/20 p-4 ${isDark ? 'bg-muted-graphite' : 'bg-white'}`}>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <div className={`w-12 h-12 rounded-full flex items-center justify-center ${isDark ? 'bg-cyber-teal/20' : 'bg-gray-200'}`}>
+              <User className={`w-6 h-6 ${isDark ? 'text-cyber-teal' : 'text-gray-600'}`} />
+            </div>
+            <div>
+              <h2 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                {officer.name}
+              </h2>
+              <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                Officer ID: {officer.id}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center space-x-4">
+            <div className={`px-3 py-1 rounded-full ${isDark ? 'bg-cyber-teal/20 text-cyber-teal' : 'bg-gray-200 text-gray-800'}`}>
+              <span className="text-sm font-medium">
+                Credits: {formatCredits(officer.credits_remaining)}
+              </span>
+            </div>
+            <button
+              onClick={logout}
+              className="flex items-center space-x-2 px-4 py-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors"
+            >
+              <LogOut className="w-5 h-5" />
+              <span className="text-sm font-medium">Logout</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content Area */}
+      <main className="p-6">
+        {activeTab === 'dashboard' && renderDashboard()}
+        {activeTab === 'free' && renderFreeLookups()}
+        {activeTab === 'pro' && renderPROLookups()}
+        {activeTab === 'tracklink' && (
+          <div className={`border border-cyber-teal/20 rounded-lg p-6 ${isDark ? 'bg-muted-graphite' : 'bg-white'}`}>
+            <h2 className={`text-xl font-semibold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+              TrackLink
+            </h2>
+            <div className="text-center py-12">
+              <LinkIcon className={`w-16 h-16 mx-auto mb-4 ${isDark ? 'text-gray-400' : 'text-gray-500'}`} />
+              <h3 className={`text-lg font-medium mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                Coming Soon
+              </h3>
+              <p className={isDark ? 'text-gray-400' : 'text-gray-600'}>
+                TrackLink feature will be available soon.
+              </p>
+            </div>
+          </div>
+        )}
+        {activeTab === 'history' && renderHistory()}
+        {activeTab === 'account' && (
+          <div className={`border border-cyber-teal/20 rounded-lg p-6 ${isDark ? 'bg-muted-graphite' : 'bg-white'}`}>
+            <h2 className={`text-xl font-semibold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+              Account Settings
+            </h2>
+            <div className="space-y-6">
+              <div>
+                <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                  Email
+                </label>
+                <input
+                  type="email"
+                  value={officer.email || ''}
+                  disabled
+                  className={`w-full px-4 py-3 border border-cyber-teal/30 rounded-lg ${isDark ? 'bg-crisp-black text-white placeholder-gray-500' : 'bg-white text-gray-900 placeholder-gray-400'}`}
+                />
+              </div>
+              <div>
+                <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                  Theme
+                </label>
+                <select
+                  value={isDark ? 'dark' : 'light'}
+                  onChange={(e) => {
+                    const theme = e.target.value === 'dark' ? true : false;
+                    // This assumes ThemeContext has a setTheme function
+                    // You would need to implement this in your ThemeContext
+                    // useTheme().setTheme(theme);
+                  }}
+                  className={`w-full px-4 py-3 border border-cyber-teal/30 rounded-lg ${isDark ? 'bg-crisp-black text-white' : 'bg-white text-gray-900'}`}
+                >
+                  <option value="light">Light</option>
+                  <option value="dark">Dark</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        )}
+      </main>
+    </div>
+  </div>
+);
