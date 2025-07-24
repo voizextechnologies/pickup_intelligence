@@ -5,6 +5,7 @@ import { OfficerDashboardHome } from './officer/OfficerDashboardHome';
 import { OfficerFreeLookups } from './officer/OfficerFreeLookups';
 import { OfficerProLookups } from './officer/OfficerProLookups';
 import { OfficerTrackLink } from './officer/OfficerTrackLink';
+import { OfficerOsintPro } from './officer/OfficerOsintPro';
 import { OfficerHistory } from './officer/OfficerHistory';
 import { OfficerAccount } from './officer/OfficerAccount';
 import { OfficerDashboardContent } from './officer/OfficerDashboardContent'; // The original content
@@ -22,6 +23,7 @@ export const OfficerPortalRouter: React.FC = () => {
         {/* New dedicated sub-pages */}
         <Route path="free-lookups" element={<OfficerFreeLookups />} />
         <Route path="pro-lookups" element={<OfficerProLookups />} />
+        <Route path="osint-pro" element={<OfficerOsintPro />} />
         <Route path="tracklink" element={<OfficerTrackLink />} />
         <Route path="history" element={<OfficerHistory />} />
         <Route path="account" element={<OfficerAccount />} />
