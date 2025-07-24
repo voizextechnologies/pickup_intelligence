@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Search, Phone, Mail, User, CheckCircle, XCircle } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useOfficerAuth } from '../../contexts/OfficerAuthContext';
-import { useSupabaseData } from '../../hooks/useSupabaseData aprovado';
+import { useSupabaseData } from '../../hooks/useSupabaseData';
 import toast from 'react-hot-toast';
 
 export const OfficerOsintPro: React.FC = () => {
