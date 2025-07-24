@@ -19,7 +19,7 @@ import { LiveRequests } from './pages/LiveRequests';
 import { Settings } from './pages/Settings';
 import { RatePlans } from './pages/RatePlans';
 import { OfficerLogin } from './pages/OfficerLogin';
-import { OfficerDashboard } from './pages/OfficerDashboard';
+import { OfficerPortalRouter } from './pages/OfficerPortalRouter'; // Import the new router
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, isLoading } = useAuth();
@@ -110,7 +110,8 @@ const AppContent: React.FC = () => {
 
         {/* Officer Routes */}
         <Route path="/officer/login" element={<OfficerLogin />} />
-        <Route path="/officer/dashboard" element={<OfficerDashboard />} />
+        {/* Use the new OfficerPortalRouter for all officer dashboard sub-routes */}
+        <Route path="/officer/dashboard/*" element={<OfficerPortalRouter />} /> 
 
         {/* Legacy Routes (redirect to admin) */}
         <Route path="/login" element={<Navigate to="/admin/login" replace />} />
