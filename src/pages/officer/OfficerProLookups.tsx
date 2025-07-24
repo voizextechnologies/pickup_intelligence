@@ -301,19 +301,128 @@ export const OfficerProLookups: React.FC = () => {
         <div className={`p-4 rounded-lg border ${
           isDark ? 'bg-green-500/10 border-green-500/30' : 'bg-green-50 border-green-200'
         }`}>
-          <h4 className="text-green-400 font-medium mb-2">Phone Details Found</h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-            <div>
-              <p><span className="text-green-400">Name:</span> {searchResults.name.fullName}</p>
-              <p><span className="text-green-400">Age:</span> {searchResults.age}</p>
-              <p><span className="text-green-400">Gender:</span> {searchResults.gender}</p>
-              <p><span className="text-green-400">DOB:</span> {searchResults.dob}</p>
+          <h4 className="text-green-400 font-medium mb-4">Phone Details Found</h4>
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+              <div>
+                <p><span className="text-green-400">Full Name:</span> {searchResults.name.fullName}</p>
+                <p><span className="text-green-400">First Name:</span> {searchResults.name.firstName}</p>
+                <p><span className="text-green-400">Last Name:</span> {searchResults.name.lastName}</p>
+                <p><span className="text-green-400">Age:</span> {searchResults.age}</p>
+                <p><span className="text-green-400">Gender:</span> {searchResults.gender}</p>
+                <p><span className="text-green-400">DOB:</span> {searchResults.dob}</p>
+                <p><span className="text-green-400">Income:</span> {searchResults.income}</p>
+              </div>
+              <div>
+                <p><span className="text-green-400">Alternate Phones Count:</span> {searchResults.alternatePhone?.length || 0}</p>
+                <p><span className="text-green-400">Emails Count:</span> {searchResults.email?.length || 0}</p>
+                <p><span className="text-green-400">Addresses Count:</span> {searchResults.address?.length || 0}</p>
+                <p><span className="text-green-400">Voter IDs Count:</span> {searchResults.voterId?.length || 0}</p>
+                <p><span className="text-green-400">Passports Count:</span> {searchResults.passport?.length || 0}</p>
+                <p><span className="text-green-400">Driving Licenses Count:</span> {searchResults.drivingLicense?.length || 0}</p>
+                <p><span className="text-green-400">PAN Cards Count:</span> {searchResults.PAN?.length || 0}</p>
+              </div>
             </div>
-            <div>
-              <p><span className="text-green-400">Alt Phones:</span> {searchResults.alternatePhone?.length || 0}</p>
-              <p><span className="text-green-400">Emails:</span> {searchResults.email?.length || 0}</p>
-              <p><span className="text-green-400">Addresses:</span> {searchResults.address?.length || 0}</p>
-            </div>
+
+            {searchResults.alternatePhone && searchResults.alternatePhone.length > 0 && (
+              <div>
+                <h5 className="text-green-400 font-medium mb-2">Alternate Phone Numbers</h5>
+                <div className="space-y-1">
+                  {searchResults.alternatePhone.map((phone: any, index: number) => (
+                    <p key={index} className="text-sm">
+                      <span className="text-green-400">#{phone.serialNo}:</span> {phone.phoneNumber}
+                    </p>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {searchResults.email && searchResults.email.length > 0 && (
+              <div>
+                <h5 className="text-green-400 font-medium mb-2">Email Addresses</h5>
+                <div className="space-y-1">
+                  {searchResults.email.map((email: any, index: number) => (
+                    <p key={index} className="text-sm">
+                      <span className="text-green-400">#{email.serialNo}:</span> {email.email}
+                    </p>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {searchResults.address && searchResults.address.length > 0 && (
+              <div>
+                <h5 className="text-green-400 font-medium mb-2">Addresses</h5>
+                <div className="space-y-1">
+                  {searchResults.address.map((address: any, index: number) => (
+                    <p key={index} className="text-sm">
+                      <span className="text-green-400">#{address.Seq}:</span> {address.Address}, {address.State} - {address.Postal} ({address.Type})
+                    </p>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {searchResults.voterId && searchResults.voterId.length > 0 && (
+              <div>
+                <h5 className="text-green-400 font-medium mb-2">Voter IDs</h5>
+                <div className="space-y-1">
+                  {searchResults.voterId.map((item: any, index: number) => (
+                    <p key={index} className="text-sm">
+                      <span className="text-green-400">#{item.seq}:</span> {item.IdNumber} (Reported: {item.ReportedDate})
+                    </p>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {searchResults.passport && searchResults.passport.length > 0 && (
+              <div>
+                <h5 className="text-green-400 font-medium mb-2">Passports</h5>
+                <div className="space-y-1">
+                  {searchResults.passport.map((item: any, index: number) => (
+                    <p key={index} className="text-sm">
+                      <span className="text-green-400">#{item.seq}:</span> {item.passport} (Reported: {item.ReportedDate || 'N/A'})
+                    </p>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {searchResults.drivingLicense && searchResults.drivingLicense.length > 0 && (
+              <div>
+                <h5 className="text-green-400 font-medium mb-2">Driving Licenses</h5>
+                <div className="space-y-1">
+                  {searchResults.drivingLicense.map((item: any, index: number) => (
+                    <p key={index} className="text-sm">
+                      <span className="text-green-400">#{item.seq}:</span> {item.IdNumber} (Reported: {item.ReportedDate})
+                    </p>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {searchResults.PAN && searchResults.PAN.length > 0 && (
+              <div>
+                <h5 className="text-green-400 font-medium mb-2">PAN Cards</h5>
+                <div className="space-y-1">
+                  {searchResults.PAN.map((item: any, index: number) => (
+                    <p key={index} className="text-sm">
+                      <span className="text-green-400">#{item.seq}:</span> {item.IdNumber} (Reported: {item.ReportedDate})
+                    </p>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <details className="mt-4">
+              <summary className={`cursor-pointer text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} hover:text-cyber-teal`}>
+                View Raw JSON Response
+              </summary>
+              <pre className={`mt-2 p-4 rounded-lg overflow-x-auto text-xs ${isDark ? 'bg-crisp-black text-white' : 'bg-gray-100 text-gray-800'}`}>
+                <code>{JSON.stringify(searchResults, null, 2)}</code>
+              </pre>
+            </details>
           </div>
         </div>
       )}
