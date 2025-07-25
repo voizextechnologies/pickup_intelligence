@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Car, Shield, AlertCircle, CheckCircle, ChevronDown, ChevronUp, Copy, Download, Search } from 'lucide-react';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { useOfficerAuth } from '../../../contexts/OfficerAuthContext';
