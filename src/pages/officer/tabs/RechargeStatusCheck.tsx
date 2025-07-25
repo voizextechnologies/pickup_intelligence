@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
-
-import { Smartphone, Car, Shield, AlertCircle, CheckCircle, ChevronDown, ChevronUp, Copy, Download, Search } from 'lucide-react';
-import { useTheme } from '../../../contexts/ThemeContext';
-import { useOfficerAuth } from '../../../contexts/OfficerAuthContext';
-import { useSupabaseData } from '../../../hooks/useSupabaseData';
+import { Smartphone, Shield, AlertCircle, CheckCircle, ChevronDown, ChevronUp, Copy, Download, Search } from 'lucide-react';
+import { useTheme } from '../../contexts/ThemeContext';
+import { useOfficerAuth } from '../../contexts/OfficerAuthContext';
+import { useSupabaseData } from '../../hooks/useSupabaseData';
 import toast from 'react-hot-toast';
 
 interface RechargeStatusResult {
@@ -198,9 +197,9 @@ const RechargeStatusCheck: React.FC = () => {
 
   if (!officer || !apis) {
     return (
-      <div className={`border border-gray-20 rounded-lg p-6 ${isDark ? 'bg-muted-graphite' : 'bg-white'}`}>
-        <div className={`p-4 rounded-lg border flex items-center ${isDark ? 'bg-red-500/20 border-red-500/30' : 'bg-red-50 border-red-200'}`}>
-          <AlertCircle className="w-5 h-4 text-red-400" />
+      <div className={`border border-cyber-teal/20 rounded-lg p-6 ${isDark ? 'bg-muted-graphite' : 'bg-white'}`}>
+        <div className={`p-4 rounded-lg border flex items-center space-x-3 ${isDark ? 'bg-red-500/10 border-red-500/30' : 'bg-red-50 border-red-200'}`}>
+          <AlertCircle className="w-5 h-5 text-red-400" />
           <div>
             <p className="text-red-400 text-sm font-medium">Error</p>
             <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
@@ -217,7 +216,7 @@ const RechargeStatusCheck: React.FC = () => {
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-3">
           <Smartphone className="w-6 h-6 text-electric-blue" />
-          <h3 className="text-xl font-semibold ${isDark ? 'text-white' : 'text-gray-900'}">
+          <h3 className={`text-xl font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
             Recharge Status Check
           </h3>
         </div>
@@ -237,7 +236,9 @@ const RechargeStatusCheck: React.FC = () => {
             value={mobileNumber}
             onChange={(e) => setMobileNumber(e.target.value)}
             placeholder="Enter mobile number (e.g., 9876543210)"
-            className={`w-full px-4 py-3 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal ${isDark ? 'bg-crisp-black text-white placeholder-gray-500' : 'bg-white text-gray-900 placeholder-gray-400'`}
+            className={`w-full px-4 py-3 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal ${
+              isDark ? 'bg-crisp-black text-white placeholder-gray-500' : 'bg-white text-gray-900 placeholder-gray-400'
+            }`}
           />
         </div>
         <div>
@@ -249,7 +250,9 @@ const RechargeStatusCheck: React.FC = () => {
             value={operatorCode}
             onChange={(e) => setOperatorCode(e.target.value)}
             placeholder="Enter operator code (e.g., AIRT, VODA)"
-            className="`w-full px-4 py-3 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal ${isDark ? 'bg-crisp-black text-white placeholder-gray-500' : 'bg-white text-gray-900 placeholder-gray-400'}`}
+            className={`w-full px-4 py-3 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal ${
+              isDark ? 'bg-crisp-black text-white placeholder-gray-500' : 'bg-white text-gray-900 placeholder-gray-400'
+            }`}
           />
         </div>
         <div className="flex items-end">
