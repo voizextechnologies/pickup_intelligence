@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Shield, Zap, Eye, EyeOff } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import toast from 'react-hot-toast';
@@ -32,6 +32,18 @@ export const Login: React.FC = () => {
       isDark ? 'bg-dark-gradient' : 'bg-gradient-to-br from-soft-white to-gray-100'
     }`}>
       <div className="max-w-md w-full space-y-8">
+        {/* Back to Home */}
+        <div className="flex items-center">
+          <Link
+            to="/"
+            className={`flex items-center space-x-2 text-sm transition-colors ${
+              isDark ? 'text-gray-400 hover:text-cyber-teal' : 'text-gray-600 hover:text-cyber-teal'
+            }`}
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Back to Home</span>
+          </Link>
+        </div>
         {/* Header */}
         <div className="text-center">
           <div className="flex justify-center">
