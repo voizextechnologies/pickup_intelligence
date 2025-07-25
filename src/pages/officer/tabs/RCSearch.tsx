@@ -525,4 +525,19 @@ const RCSearch: React.FC = () => {
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>
+                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Address:</span>
+                    <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                      {searchResults.address || 'N/A'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default RCSearch;
