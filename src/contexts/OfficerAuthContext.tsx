@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { supabase } from '../lib/supabase';
+import { supabase } from '../lib/supabase'; // Assuming supabase is used for actual auth
 import toast from 'react-hot-toast';
 
 interface OfficerUser {
@@ -23,6 +23,7 @@ interface OfficerAuthContextType {
   logout: () => void;
   updateOfficerState: (updates: Partial<OfficerUser>) => void;
   isLoading: boolean;
+  // Add navigate to context if needed, or just use it directly in logout
 }
 
 const OfficerAuthContext = createContext<OfficerAuthContextType | undefined>(undefined);
@@ -38,6 +39,7 @@ export const useOfficerAuth = () => {
 interface OfficerAuthProviderProps {
   children: ReactNode;
 }
+import { useNavigate } from 'react-router-dom';
 
 // Mock officer database
 const mockOfficers = [
@@ -137,9 +139,11 @@ const authenticateWithSupabase = async (identifier: string, password: string) =>
 };
 
 export const OfficerAuthProvider: React.FC<OfficerAuthProviderProps> = ({ children }) => {
+  const navigate = useNavigate(); // Initialize useNavigate
   const [officer, setOfficer] = useState<OfficerUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Effect to load stored officer data on component mount
   useEffect(() => {
     // Check for stored auth data
     const storedOfficer = localStorage.getItem('officer_auth_user');
@@ -154,6 +158,7 @@ export const OfficerAuthProvider: React.FC<OfficerAuthProviderProps> = ({ childr
     setIsLoading(false);
   }, []);
 
+  // Login function
   const login = async (identifier: string, password: string) => {
     setIsLoading(true);
     
@@ -205,9 +210,11 @@ export const OfficerAuthProvider: React.FC<OfficerAuthProviderProps> = ({ childr
     setIsLoading(false);
   };
 
+  // Logout function
   const logout = () => {
     setOfficer(null);
     localStorage.removeItem('officer_auth_user');
+    navigate('/officer/login'); // Redirect to officer login page after logout
     toast.success('Logged out successfully');
   };
 
