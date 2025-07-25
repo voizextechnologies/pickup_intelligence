@@ -12,6 +12,8 @@ export const OfficerOsintPro: React.FC = () => {
   const { addTransaction, addQuery, getOfficerEnabledAPIs } = useSupabaseData();
   const [mobileNumber, setMobileNumber] = useState('');
   const [emailAddress, setEmailAddress] = useState('');
+  const [rechargeOperatorCode, setRechargeOperatorCode] = useState('');
+  const [rechargeMobileNumber, setRechargeMobileNumber] = useState('');
   const [advanceName, setAdvanceName] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [searchResults, setSearchResults] = useState<any>(null);
@@ -49,8 +51,16 @@ export const OfficerOsintPro: React.FC = () => {
         inputData = emailAddress;
         category = 'OSINT PRO Email Check';
         break;
+      case 'recharge-status':
+        apiConfig = officerEnabledAPIs.find(api =>
+          api.name.toLowerCase().includes('recharge expiry check')
+        );
+        inputData = rechargeMobileNumber;
+        category = 'Recharge Status Check';
+        break;
       case 'name':
         console.log('Searching name:', advanceName);
+        // This case is currently a placeholder and does not perform an actual search.
         setIsSearching(false);
         return;
       default:
@@ -77,14 +87,21 @@ export const OfficerOsintPro: React.FC = () => {
       return;
     }
 
-    const API_URL = "/api/leakosint/";
-    const payload = {
-      token: apiConfig.api_key,
-      request: inputData,
-      limit: 100,
-      lang: "en",
-      type: "json"
-    };
+    let API_URL = "";
+    let payload: any = {};
+
+    if (type === 'recharge-status') {
+      API_URL = "/api/planapi/Mobile/CheckLastRecharge";
+      payload = {
+        Apimember_Id: import.meta.env.VITE_PLANAPI_MEMBER_ID,
+        Api_Password: import.meta.env.VITE_PLANAPI_PASSWORD,
+        Operator_Code: rechargeOperatorCode,
+        Mobile_No: rechargeMobileNumber
+      };
+    } else {
+      API_URL = "/api/leakosint/";
+      payload = { token: apiConfig.api_key, request: inputData, limit: 100, lang: "en", type: "json" };
+    }
 
     try {
       const response = await fetch(API_URL, {
@@ -202,6 +219,19 @@ export const OfficerOsintPro: React.FC = () => {
             <span>Email Check</span>
           </button>
           <button
+            onClick={() => setActiveTab('recharge-status')}
+            className={`flex-1 py-2 px-4 rounded-lg transition-all duration-200 flex items-center justify-center space-x-2 ${
+              activeTab === 'recharge-status'
+                ? 'bg-cyber-teal/20 text-cyber-teal border border-cyber-teal/30'
+                : isDark 
+                  ? 'text-gray-400 hover:text-cyber-teal hover:bg-cyber-teal/10' 
+                  : 'text-gray-600 hover:text-cyber-teal hover:bg-cyber-teal/10'
+            }`}
+          >
+            <Mail className="w-4 h-4" />
+            <span>Email Check</span>
+          </button>
+          <button
             onClick={() => setActiveTab('name')}
             className={`flex-1 py-2 px-4 rounded-lg transition-all duration-200 flex items-center justify-center space-x-2 ${
               activeTab === 'name'
@@ -287,6 +317,61 @@ export const OfficerOsintPro: React.FC = () => {
             </div>
           )}
 
+          {activeTab === 'recharge-status' && (
+            <div className="space-y-4">
+              <div>
+                <label className={`block text-sm font-medium mb-2 ${
+                  isDark ? 'text-gray-300' : 'text-gray-700'
+                }`}>
+                  Operator Code
+                </label>
+                <input
+                  type="text"
+                  value={rechargeOperatorCode}
+                  onChange={(e) => setRechargeOperatorCode(e.target.value)}
+                  placeholder="Enter operator code (e.g., 2 for Airtel)"
+                  className={`flex-1 px-3 py-2 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal ${
+                    isDark 
+                      ? 'bg-crisp-black text-white placeholder-gray-500' 
+                      : 'bg-white text-gray-900 placeholder-gray-400'
+                  }`}
+                />
+              </div>
+              <div>
+                <label className={`block text-sm font-medium mb-2 ${
+                  isDark ? 'text-gray-300' : 'text-gray-700'
+                }`}>
+                  Mobile Number
+                </label>
+                <div className="flex space-x-2">
+                  <input
+                    type="tel"
+                    value={rechargeMobileNumber}
+                    onChange={(e) => setRechargeMobileNumber(e.target.value)}
+                    placeholder="Enter mobile number (e.g., 9677040419)"
+                    className={`flex-1 px-3 py-2 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal ${
+                      isDark 
+                        ? 'bg-crisp-black text-white placeholder-gray-500' 
+                        : 'bg-white text-gray-900 placeholder-gray-400'
+                    }`}
+                  />
+                  <button
+                    onClick={() => handleSearch('recharge-status')}
+                    disabled={isSearching}
+                    className={`px-4 py-2 bg-cyber-gradient text-white rounded-lg hover:shadow-cyber transition-all duration-200 flex items-center space-x-2 disabled:opacity-50`}
+                  >
+                    {isSearching ? (
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <Search className="w-4 h-4" />
+                    )}
+                    <span>Search</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {activeTab === 'name' && (
             <div className="space-y-4">
               <label className={`block text-sm font-medium mb-2 ${
@@ -367,6 +452,20 @@ export const OfficerOsintPro: React.FC = () => {
                   </p>
                 ) : (
                   <div className="space-y-4">
+                    {/* Handle PlanAPI response structure */}
+                    {searchResults.Status && searchResults.Message && searchResults.Data ? (
+                      <div className="border-b border-cyber-teal/20 pb-3 last:border-b-0">
+                        <h4 className={`text-md font-medium mb-2 ${isDark ? 'text-green-300' : 'text-green-600'}`}>
+                          Status: {searchResults.Status}
+                        </h4>
+                        <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                          Message: {searchResults.Message}
+                        </p>
+                        {Object.entries(searchResults.Data).map(([key, value]: [string, any]) => (
+                          <p key={key} className="text-sm"><span className={`font-medium ${isDark ? 'text-green-300' : 'text-green-600'}`}>• {key}:</span> {String(value)}</p>
+                        ))}
+                      </div>
+                    ) : (
                     {Object.entries(searchResults).map(([dbName, dbInfo]: [string, any]) => (
                       <div key={dbName} className="border-b border-cyber-teal/20 pb-3 last:border-b-0">
                         <h4 className={`text-md font-medium mb-2 ${
@@ -394,6 +493,7 @@ export const OfficerOsintPro: React.FC = () => {
                             }`}>No data found for this database.</p>
                           )}
                         </div>
+
                       </div>
                     ))}
                   </div>
