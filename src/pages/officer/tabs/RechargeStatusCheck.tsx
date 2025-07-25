@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Car, Shield, AlertCircle, CheckCircle, ChevronDown, ChevronUp, Copy, Download, Search } from 'lucide-react';
-import { useTheme } from '../../../contexts/ThemeContext';
-import { useOfficerAuth } from '../../../contexts/OfficerAuthContext';
-import { useSupabaseData } from '../../../hooks/useSupabaseData';
+import { Smartphone, Shield, AlertCircle, CheckCircle, ChevronDown, ChevronUp, Copy, Download, Search } from 'lucide-react';
+import { useTheme } from '../../contexts/ThemeContext';
+import { useOfficerAuth } from '../../contexts/OfficerAuthContext';
+import { useSupabaseData } from '../../hooks/useSupabaseData';
 import toast from 'react-hot-toast';
 
 const RechargeStatusCheck: React.FC = () => {
@@ -11,6 +11,7 @@ const RechargeStatusCheck: React.FC = () => {
   const { apis, addQuery, addTransaction } = useSupabaseData();
   const [mobileNumber, setMobileNumber] = useState('');
   const [operatorCode, setOperatorCode] = useState('');
+  const [usePost, setUsePost] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [searchResults, setSearchResults] = useState<any>(null);
   const [searchError, setSearchError] = useState<string | null>(null);
@@ -20,20 +21,18 @@ const RechargeStatusCheck: React.FC = () => {
   });
 
   const handleRechargeStatusCheck = async () => {
-    if (!mobileNumber.trim()) {
-      toast.error('Please enter a mobile number');
+    if (!mobileNumber.trim() || !operatorCode.trim()) {
+      toast.error('Please enter both a mobile number and operator code');
       return;
     }
-    if (!operatorCode.trim()) {
-      toast.error('Please enter an operator code');
-      return;
-    }
+
     if (!officer) {
       toast.error('Officer not authenticated');
       return;
     }
 
     const rechargeAPI = apis.find(api => api.name.toLowerCase().includes('recharge status check') && api.key_status === 'Active');
+    
     if (!rechargeAPI) {
       toast.error('Recharge Status Check API not configured. Please contact admin.');
       return;
@@ -46,31 +45,35 @@ const RechargeStatusCheck: React.FC = () => {
     }
 
     setIsSearching(true);
-    setSearchResults(null);
     setSearchError(null);
+    setSearchResults(null);
 
     try {
+      const [apiMemberId, apiPassword] = rechargeAPI.api_key.split(':');
       const cleanMobileNumber = mobileNumber.replace(/\D/g, '');
-      const encodedPassword = encodeURIComponent(rechargeAPI.api_key);
-      const usePost = false; // Configurable: Set to true for POST, false for GET
+      const encodedPassword = encodeURIComponent(apiPassword);
+      const baseUrl = 'https://planapi.in/api/Mobile/CheckLastRecharge';
 
       let response;
       if (usePost) {
         const payload = {
-          Apimember_Id: '6325',
-          Api_Password: rechargeAPI.api_key,
+          Apimember_Id: apiMemberId,
+          Api_Password: apiPassword,
           Operator_Code: operatorCode.toUpperCase(),
           Mobile_No: cleanMobileNumber,
         };
-        response = await fetch('https://planapi.in/api/Mobile/CheckLastRecharge', {
+
+        response = await fetch(baseUrl, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': rechargeAPI.api_key,
           },
           body: JSON.stringify(payload),
         });
       } else {
-        const url = `https://planapi.in/api/Mobile/CheckLastRecharge?Apimember_Id=6325&Api_Password=${encodedPassword}&Operator_Code=${operatorCode.toUpperCase()}&Mobile_No=${cleanMobileNumber}`;
+        const url = `${baseUrl}?Apimember_Id=${apiMemberId}&Api_Password=${encodedPassword}&Operator_Code=${operatorCode.toUpperCase()}&Mobile_No=${cleanMobileNumber}`;
+
         response = await fetch(url, {
           method: 'GET',
           headers: {
@@ -148,14 +151,14 @@ const RechargeStatusCheck: React.FC = () => {
     <div className={`border border-cyber-teal/20 rounded-lg p-6 ${isDark ? 'bg-muted-graphite' : 'bg-white'} shadow-md hover:shadow-cyber transition-shadow duration-300`}>
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-3">
-          <Smartphone className="w-6 h-6 text-neon-magenta" />
+          <Smartphone className="w-6 h-6 text-electric-blue" />
           <h3 className={`text-xl font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
             Recharge Status Check
           </h3>
         </div>
         <div className="flex items-center space-x-2">
-          <Shield className="w-5 h-5 text-neon-magenta" />
-          <span className="text-xs bg-neon-magenta/20 text-neon-magenta px-2 py-1 rounded">PREMIUM</span>
+          <Shield className="w-5 h-5 text-electric-blue" />
+          <span className="text-xs bg-electric-blue/20 text-electric-blue px-2 py-1 rounded">PREMIUM</span>
         </div>
       </div>
 
@@ -201,16 +204,29 @@ const RechargeStatusCheck: React.FC = () => {
               </>
             ) : (
               <>
-                <Smartphone className="w-4 h-4" />
-                <span>Check Status</span>
+                <Search className="w-4 h-4" />
+                <span>Check Recharge Status</span>
               </>
             )}
           </button>
         </div>
       </div>
-      <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'} mb-6`}>
-        * Required. Consumes {apis.find(api => api.name.toLowerCase().includes('recharge status check'))?.default_credit_charge || 1} credits per query.
-      </p>
+      <div className="flex items-center space-x-4 mb-6">
+        <label className="flex items-center space-x-2">
+          <input
+            type="checkbox"
+            checked={usePost}
+            onChange={(e) => setUsePost(e.target.checked)}
+            className="form-checkbox h-4 w-4 text-cyber-teal"
+          />
+          <span className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+            Use POST method
+          </span>
+        </label>
+        <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+          * Required. Consumes {apis.find(api => api.name.toLowerCase().includes('recharge status check'))?.default_credit_charge || 1} credits per query.
+        </p>
+      </div>
 
       {searchError && (
         <div className={`p-4 rounded-lg border flex items-center space-x-3 ${isDark ? 'bg-red-500/10 border-red-500/30' : 'bg-red-50 border-red-200'} mb-6`}>
@@ -267,12 +283,12 @@ const RechargeStatusCheck: React.FC = () => {
                   <div className="flex justify-between items-center">
                     <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Mobile Number:</span>
                     <div className="flex items-center space-x-2">
-                      <span PDIReplacemobileNumber="${searchResults.mobileNo || ' : 'N/A'}">
-                        {searchResults.mobileNo || 'N/A'}
+                      <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                        {searchResults.mobileNumber || 'N/A'}
                       </span>
-                      {searchResults.mobileNo && (
+                      {searchResults.mobileNumber && (
                         <button
-                          onClick={() => copyToClipboard(searchResults.mobileNo)}
+                          onClick={() => copyToClipboard(searchResults.mobileNumber)}
                           className="p-1 text-cyber-teal hover:text-electric-blue transition-colors"
                           title="Copy Mobile Number"
                         >
@@ -284,13 +300,13 @@ const RechargeStatusCheck: React.FC = () => {
                   <div className="flex justify-between items-center">
                     <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Operator:</span>
                     <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                      {searchResults.operator || operatorCode.toUpperCase() || 'N/A'}
+                      {searchResults.operator || operatorCode || 'N/A'}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Recharge Amount:</span>
                     <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                      {searchResults.amount || 'N/A'}
+                      {searchResults.rechargeAmount || 'N/A'}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
@@ -300,7 +316,7 @@ const RechargeStatusCheck: React.FC = () => {
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Status:</span>
+                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Recharge Status:</span>
                     <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
                       {searchResults.status || 'N/A'}
                     </span>
