@@ -3,6 +3,7 @@ import { Shield, Database, Phone, Car, CreditCard, FileText, Search, Smartphone,
 import { useTheme } from '../../contexts/ThemeContext';
 import PhonePrefillV2 from './tabs/PhonePrefillV2';
 import RCSearch from './tabs/RCSearch';
+import RechargeStatusCheck from './tabs/RechargeStatusCheck';
 
 export const OfficerProLookups: React.FC = () => {
   const { isDark } = useTheme();
@@ -163,11 +164,11 @@ export const OfficerProLookups: React.FC = () => {
 
       {activeTab === 'phone-prefill-v2' && <PhonePrefillV2 />}
       {activeTab === 'rc' && <RCSearch />}
+      {activeTab === 'recharge-status' && <RechargeStatusCheck />}
       {activeTab === 'imei' && renderComingSoon('IMEI Verification', Smartphone)}
       {activeTab === 'fasttag' && renderComingSoon('FastTag Verification', Car)}
       {activeTab === 'credit-history' && renderComingSoon('Credit History', CreditCard)}
       {activeTab === 'cell-id' && renderComingSoon('Cell ID Lookup', MapPin)}
-      {activeTab === 'recharge-status' && renderComingSoon('Recharge Status Check', Smartphone)}
       {activeTab === 'recharge-expiry' && renderComingSoon('Recharge Expiry Check', FileText)}
       {activeTab === 'operator-check' && renderComingSoon('Operator Check', Search)}
 
@@ -197,6 +198,10 @@ export const OfficerProLookups: React.FC = () => {
             </div>
             <div className="flex justify-between">
               <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Number Validation</span>
+              <span className="text-cyber-teal">1 credit</span>
+            </div>
+            <div className="flex justify-between">
+              <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Recharge Status Check</span>
               <span className="text-cyber-teal">1 credit</span>
             </div>
           </div>
