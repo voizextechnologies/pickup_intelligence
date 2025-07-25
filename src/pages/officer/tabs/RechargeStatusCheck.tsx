@@ -57,8 +57,8 @@ const RechargeStatusCheck: React.FC = () => {
       return;
     }
 
-    const rechargeAPI = apis.find(api => 
-      api.name.toLowerCase().includes('recharge status check') && api.key_status === 'Active'
+    const rechargeAPI = apis.find(api =>
+      api.name.toLowerCase().includes('recharge expiry check') && api.key_status === 'Active'
     );
 
     if (!rechargeAPI) {
@@ -237,9 +237,8 @@ const RechargeStatusCheck: React.FC = () => {
             value={mobileNumber}
             onChange={(e) => setMobileNumber(e.target.value)}
             placeholder="Enter mobile number (e.g., 9876543210)"
-            className={`w-full px-4 py-3 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal ${
-              isDark ? 'bg-crisp-black text-white placeholder-gray-500' : 'bg-white text-gray-900 placeholder-gray-400'
-            }`}
+            className={`w-full px-4 py-3 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal ${isDark ? 'bg-crisp-black text-white placeholder-gray-500' : 'bg-white text-gray-900 placeholder-gray-400'
+              }`}
           />
         </div>
         <div>
@@ -251,9 +250,8 @@ const RechargeStatusCheck: React.FC = () => {
             value={operatorCode}
             onChange={(e) => setOperatorCode(e.target.value)}
             placeholder="Enter operator code (e.g., AIRT, VODA)"
-            className={`w-full px-4 py-3 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal ${
-              isDark ? 'bg-crisp-black text-white placeholder-gray-500' : 'bg-white text-gray-900 placeholder-gray-400'
-            }`}
+            className={`w-full px-4 py-3 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal ${isDark ? 'bg-crisp-black text-white placeholder-gray-500' : 'bg-white text-gray-900 placeholder-gray-400'
+              }`}
           />
         </div>
         <div className="flex items-end">
