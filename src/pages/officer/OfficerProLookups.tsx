@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Shield, Database, Phone, Car, CreditCard, FileText, Search, Smartphone, MapPin } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 import PhonePrefillV2 from './tabs/PhonePrefillV2';
