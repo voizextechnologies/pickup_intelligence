@@ -1,2 +1,2 @@
 /api/signzy/* https://api.signzy.app/:splat 200
-/api/planapi/* https://planapi.in/api/:splat 200
+/api/planapi/* https://planapi.in/:splat 200
