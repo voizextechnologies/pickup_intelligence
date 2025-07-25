@@ -67,30 +67,31 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const login = async (email: string, password: string) => {
     setIsLoading(true);
-    
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Find user in mock database
-    const foundUser = mockUsers.find(u => u.email === email && u.password === password);
-    
-    if (foundUser) {
-      const userData: User = {
-        id: foundUser.id,
-        email: foundUser.email,
-        name: foundUser.name,
-        role: foundUser.role
-      };
+    try {
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
-      setUser(userData);
-      localStorage.setItem('auth_user', JSON.stringify(userData));
-      toast.success(`Welcome back, ${userData.name}!`);
-    } else {
-      toast.error('Invalid email or password');
-      throw new Error('Invalid credentials');
+      // Find user in mock database
+      const foundUser = mockUsers.find(u => u.email === email && u.password === password);
+      
+      if (foundUser) {
+        const userData: User = {
+          id: foundUser.id,
+          email: foundUser.email,
+          name: foundUser.name,
+          role: foundUser.role
+        };
+        
+        setUser(userData);
+        localStorage.setItem('auth_user', JSON.stringify(userData));
+        toast.success(`Welcome back, ${userData.name}!`);
+      } else {
+        toast.error('Invalid email or password');
+        throw new Error('Invalid credentials');
+      }
+    } finally {
+      setIsLoading(false);
     }
-    
-    setIsLoading(false);
   };
 
   const logout = () => {
