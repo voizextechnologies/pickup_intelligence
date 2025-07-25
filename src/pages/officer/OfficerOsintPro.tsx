@@ -466,7 +466,7 @@ export const OfficerOsintPro: React.FC = () => {
                         ))}
                       </div>
                     ) : (
-                    {Object.entries(searchResults).map(([dbName, dbInfo]: [string, any]) => (
+                    Object.entries(searchResults).map(([dbName, dbInfo]: [string, any]) => (
                       <div key={dbName} className="border-b border-cyber-teal/20 pb-3 last:border-b-0">
                         <h4 className={`text-md font-medium mb-2 ${
                           isDark ? 'text-green-300' : 'text-green-600'
@@ -495,7 +495,8 @@ export const OfficerOsintPro: React.FC = () => {
                         </div>
 
                       </div>
-                    ))}
+                    ))
+                    )}
                   </div>
                 )}
               </>
