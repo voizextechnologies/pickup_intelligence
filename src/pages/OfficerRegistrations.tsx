@@ -473,7 +473,7 @@ export const OfficerRegistrations: React.FC = () => {
                   )}
                 </div>
               </div>
-                {registration.identicard_url && (
+                {selectedRequest.identicard_url && (
                   <div className="mt-3">
                     <span className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
                       Identicard / Official ID Proof:
@@ -481,7 +481,7 @@ export const OfficerRegistrations: React.FC = () => {
                     <div className="flex items-center space-x-2 mt-1">
                       <FileText className="w-4 h-4 text-cyber-teal" />
                       <a
-                        href={registration.identicard_url}
+                        href={selectedRequest.identicard_url}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-cyber-teal hover:text-electric-blue transition-colors flex items-center space-x-1 text-sm"
@@ -489,20 +489,6 @@ export const OfficerRegistrations: React.FC = () => {
                         <span>View Document</span>
                         <ExternalLink className="w-3 h-3" />
                       </a>
-                      {selectedRequest.identicard_url && (
-                        <p className="flex items-center space-x-2">
-                          <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>ID Proof:</span> 
-                          <a
-                            href={selectedRequest.identicard_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-cyber-teal hover:text-electric-blue transition-colors flex items-center space-x-1"
-                          >
-                            <span>View Document</span>
-                            <ExternalLink className="w-3 h-3" />
-                          </a>
-                        </p>
-                      )}
                     </div>
                   </div>
                 )}
