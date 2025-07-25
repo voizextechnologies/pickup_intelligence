@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Shield, Database, Phone, Car, CreditCard, FileText, Search, Smartphone, MapPin } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
-import PhonePrefillV2 from './PhonePrefillV2';
-import RCSearch from './RCSearch';
+import PhonePrefillV2 from './tabs/PhonePrefillV2';
+import RCSearch from './tabs/RCSearch';
 
 export const OfficerProLookups: React.FC = () => {
   const { isDark } = useTheme();
