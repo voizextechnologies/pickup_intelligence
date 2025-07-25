@@ -4,6 +4,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import PhonePrefillV2 from './tabs/PhonePrefillV2';
 import RCSearch from './tabs/RCSearch';
 import RechargeStatusCheck from './tabs/RechargeStatusCheck';
+import RechargeExpiryCheck from './tabs/RechargeExpiryCheck';
 
 export const OfficerProLookups: React.FC = () => {
   const { isDark } = useTheme();
@@ -94,7 +95,6 @@ export const OfficerProLookups: React.FC = () => {
             <Car className="w-4 h-4" />
             <span className="font-medium">FastTag</span>
           </button>
-          
           <button
             onClick={() => setActiveTab('cell-id')}
             className={`flex items-center space-x-2 py-2 px-4 rounded-lg transition-all duration-200 ${
@@ -153,11 +153,10 @@ export const OfficerProLookups: React.FC = () => {
       {activeTab === 'phone-prefill-v2' && <PhonePrefillV2 />}
       {activeTab === 'rc' && <RCSearch />}
       {activeTab === 'recharge-status' && <RechargeStatusCheck />}
+      {activeTab === 'recharge-expiry' && <RechargeExpiryCheck />}
       {activeTab === 'imei' && renderComingSoon('IMEI Verification', Smartphone)}
       {activeTab === 'fasttag' && renderComingSoon('FastTag Verification', Car)}
-      
       {activeTab === 'cell-id' && renderComingSoon('Cell ID Lookup', MapPin)}
-      {activeTab === 'recharge-expiry' && renderComingSoon('Recharge Expiry Check', FileText)}
       {activeTab === 'operator-check' && renderComingSoon('Operator Check', Search)}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -190,6 +189,10 @@ export const OfficerProLookups: React.FC = () => {
             </div>
             <div className="flex justify-between">
               <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Recharge Status Check</span>
+              <span className="text-cyber-teal">1 credit</span>
+            </div>
+            <div className="flex justify-between">
+              <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Recharge Expiry Check</span>
               <span className="text-cyber-teal">1 credit</span>
             </div>
           </div>
