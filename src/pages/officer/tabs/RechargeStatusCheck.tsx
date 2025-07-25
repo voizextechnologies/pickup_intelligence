@@ -56,7 +56,7 @@ const RechargeStatusCheck: React.FC = () => {
     }
 
     const rechargeAPI = apis.find(api =>
-      api.name.toLowerCase().includes('recharge expiry check') && api.key_status === 'Active'
+      api.name.toLowerCase().includes('recharge status check') && api.key_status === 'Active'
     );
 
     if (!rechargeAPI) {
