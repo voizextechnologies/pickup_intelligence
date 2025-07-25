@@ -48,7 +48,7 @@ export const VehicleRCLookup: React.FC = () => {
     setSearchResults(null);
 
     try {
-      const response = await fetch('/api/signzy/api/v3/vehicle/detailedsearches', {
+      const response = await fetch('/api/signzy/v3/vehicle/detailedsearches', {
         method: 'POST',
         headers: {
           'Authorization': rcAPI.api_key,

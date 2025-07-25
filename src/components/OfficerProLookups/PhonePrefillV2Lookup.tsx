@@ -60,7 +60,7 @@ export const PhonePrefillV2Lookup: React.FC = () => {
         }
       };
 
-      const response = await fetch('/api/signzy/api/v3/phoneprefillv2', {
+      const response = await fetch('/api/signzy/v3/phoneprefillv2', {
         method: 'POST',
         headers: {
           'Authorization': phoneAPI.api_key,
