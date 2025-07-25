@@ -33,7 +33,7 @@ interface AuthProviderProps {
 const mockUsers = [
   {
     id: '1',
-    email: 'admin@11111111111111111pickme.intel',
+    email: 'admin@pickme.intel',
     password: 'admin123',
     name: 'Admin User',
     role: 'admin' as const
