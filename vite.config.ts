@@ -27,7 +27,7 @@ export default defineConfig({
       '/api/planapi': {
         target: 'https://planapi.in',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/planapi/, ''),
+        rewrite: (path) => path.replace(/^\/api\/planapi/, '/api'),
         secure: true,
       },
     },

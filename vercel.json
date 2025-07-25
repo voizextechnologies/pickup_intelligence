@@ -10,7 +10,7 @@
     },
     {
       "source": "/api/planapi/(.*)",
-      "destination": "https://planapi.in/$1"
+      "destination": "https://planapi.in/api/$1"
     }
   ]
 }
