@@ -36,7 +36,7 @@ const AppContent: React.FC = () => {
   if (isLoading) return <LoadingSpinner />;
 
   return (
-    <Router>
+    <>
       <Routes>
         {/* Landing Page */}
         <Route path="/" element={<LandingPage />} />
@@ -138,21 +138,23 @@ const AppContent: React.FC = () => {
           },
         }}
       />
-    </Router>
+    </>
   );
 };
 
 function App() {
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <OfficerAuthProvider>
-          <div className="min-h-screen font-cyber" style={{ backgroundColor: 'var(--bg-primary)' }}>
-            <AppContent />
-          </div>
-        </OfficerAuthProvider>
-      </AuthProvider>
-    </ThemeProvider>
+    <Router>
+      <ThemeProvider>
+        <AuthProvider>
+          <OfficerAuthProvider>
+            <div className="min-h-screen font-cyber" style={{ backgroundColor: 'var(--bg-primary)' }}>
+              <AppContent />
+            </div>
+          </OfficerAuthProvider>
+        </AuthProvider>
+      </ThemeProvider>
+    </Router>
   );
 }
 
