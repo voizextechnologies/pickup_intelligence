@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { supabase } from '../lib/supabase'; // Assuming supabase is used for actual auth
+import { supabase } from '../lib/supabase';
+import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
 interface OfficerUser {
@@ -9,8 +10,8 @@ interface OfficerUser {
   email: string;
   telegram_id?: string;
   plan_id?: string;
-  credits_remaining: number; // Changed to number for decimal support
-  total_credits: number; // Changed to number for decimal support
+  credits_remaining: number;
+  total_credits: number;
   status: string;
   department?: string;
   rank?: string;
@@ -23,7 +24,6 @@ interface OfficerAuthContextType {
   logout: () => void;
   updateOfficerState: (updates: Partial<OfficerUser>) => void;
   isLoading: boolean;
-  // Add navigate to context if needed, or just use it directly in logout
 }
 
 const OfficerAuthContext = createContext<OfficerAuthContextType | undefined>(undefined);
@@ -39,7 +39,6 @@ export const useOfficerAuth = () => {
 interface OfficerAuthProviderProps {
   children: ReactNode;
 }
-import { useNavigate } from 'react-router-dom';
 
 // Mock officer database
 const mockOfficers = [
@@ -50,7 +49,7 @@ const mockOfficers = [
     email: 'ramesh@police.gov.in',
     password: 'officer123',
     telegram_id: '@rameshcop',
-    plan_id: null, // Will be set when plans are assigned
+    plan_id: null,
     credits_remaining: 32,
     total_credits: 50,
     status: 'Active',
@@ -87,13 +86,12 @@ const mockOfficers = [
     department: 'Crime Branch',
     rank: 'Sub Inspector',
     badge_number: 'CB003'
-  }
+  },
 ];
 
 // Function to authenticate officer with Supabase
 const authenticateWithSupabase = async (identifier: string, password: string) => {
   try {
-    // First, try to find the officer by email or mobile
     const { data: officers, error } = await supabase
       .from('officers')
       .select('*')
@@ -109,8 +107,6 @@ const authenticateWithSupabase = async (identifier: string, password: string) =>
 
     const officer = officers[0];
     
-    // Verify password hash
-    // Check if the password hash contains the base64 encoded password (our simple hashing method)
     const expectedHash = `$2b$10$${btoa(password).slice(0, 53)}`;
     const passwordMatch = officer.password_hash === expectedHash;
     
@@ -139,13 +135,11 @@ const authenticateWithSupabase = async (identifier: string, password: string) =>
 };
 
 export const OfficerAuthProvider: React.FC<OfficerAuthProviderProps> = ({ children }) => {
-  const navigate = useNavigate(); // Initialize useNavigate
+  const navigate = useNavigate();
   const [officer, setOfficer] = useState<OfficerUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Effect to load stored officer data on component mount
   useEffect(() => {
-    // Check for stored auth data
     const storedOfficer = localStorage.getItem('officer_auth_user');
     if (storedOfficer) {
       try {
@@ -158,15 +152,12 @@ export const OfficerAuthProvider: React.FC<OfficerAuthProviderProps> = ({ childr
     setIsLoading(false);
   }, []);
 
-  // Login function
   const login = async (identifier: string, password: string) => {
     setIsLoading(true);
     
-    // Simulate API call delay
     await new Promise(resolve => setTimeout(resolve, 1500));
     
     try {
-      // Try Supabase authentication first
       const officerData = await authenticateWithSupabase(identifier, password);
       setOfficer(officerData);
       localStorage.setItem('officer_auth_user', JSON.stringify(officerData));
@@ -177,7 +168,6 @@ export const OfficerAuthProvider: React.FC<OfficerAuthProviderProps> = ({ childr
       console.log('Supabase auth failed, trying mock data:', supabaseError);
     }
     
-    // Find officer in mock database
     const foundOfficer = mockOfficers.find(o => 
       (o.email === identifier || o.mobile === identifier || o.mobile.replace('+91 ', '') === identifier) && 
       o.password === password
@@ -210,11 +200,10 @@ export const OfficerAuthProvider: React.FC<OfficerAuthProviderProps> = ({ childr
     setIsLoading(false);
   };
 
-  // Logout function
   const logout = () => {
     setOfficer(null);
     localStorage.removeItem('officer_auth_user');
-    navigate('/officer/login'); // Redirect to officer login page after logout
+    navigate('/officer/login');
     toast.success('Logged out successfully');
   };
 
