@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {Shield, AlertCircle, CheckCircle, ChevronDown, ChevronUp, Copy, Download, Search } from 'lucide-react';
+
 import { Smartphone, Car, Shield, AlertCircle, CheckCircle, ChevronDown, ChevronUp, Copy, Download, Search } from 'lucide-react';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { useOfficerAuth } from '../../../contexts/OfficerAuthContext';
