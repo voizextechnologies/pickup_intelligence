@@ -1627,8 +1627,8 @@ export const OfficerProLookups: React.FC = () => {
       {activeTab === 'credit-history' && renderComingSoon('Credit History', CreditCard)}
       {activeTab === 'cell-id' && renderComingSoon('Cell ID Lookup', MapPin)}
       {activeTab === 'recharge-status' && renderComingSoon('Recharge Status Check', Smartphone)}
-{activeTab === 'recharge-expiry' && renderComingSoon('Recharge Expiry Check', FileText)}
-{activeTab === 'operator-check' && renderComingSoon('Operator Check', Search)}
+      {activeTab === 'recharge-expiry' && renderComingSoon('Recharge Expiry Check', FileText)}
+      {activeTab === 'operator-check' && renderComingSoon('Operator Check', Search)}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div className={`border border-cyber-teal/20 rounded-lg p-6 hover:shadow-cyber transition-all duration-300 ${
