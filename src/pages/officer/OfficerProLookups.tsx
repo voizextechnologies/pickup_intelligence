@@ -167,7 +167,7 @@ export const OfficerProLookups: React.FC = () => {
       {activeTab === 'recharge-status' && <RechargeStatusCheck />}
       {activeTab === 'imei' && renderComingSoon('IMEI Verification', Smartphone)}
       {activeTab === 'fasttag' && renderComingSoon('FastTag Verification', Car)}
-      {activeTab === 'credit-history' && renderComingSoon('Credit History', CreditCard)}
+      
       {activeTab === 'cell-id' && renderComingSoon('Cell ID Lookup', MapPin)}
       {activeTab === 'recharge-expiry' && renderComingSoon('Recharge Expiry Check', FileText)}
       {activeTab === 'operator-check' && renderComingSoon('Operator Check', Search)}
