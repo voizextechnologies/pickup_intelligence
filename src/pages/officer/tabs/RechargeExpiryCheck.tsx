@@ -19,7 +19,6 @@ const RechargeExpiryCheck: React.FC = () => {
   const { apis, addQuery, addTransaction } = useSupabaseData();
   const [mobileNumber, setMobileNumber] = useState('');
   const operatorCode = '2'; // Fixed operator code
-  const [usePost, setUsePost] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [searchResults, setSearchResults] = useState<RechargeExpiryResult | null>(null);
   const [searchError, setSearchError] = useState<string | null>(null);
@@ -84,33 +83,14 @@ const RechargeExpiryCheck: React.FC = () => {
       const encodedPassword = encodeURIComponent(apiPassword);
       const baseUrl = '/api/planapi/api/Mobile/RechargeExpiryDate';
 
-      let response;
-      if (usePost) {
-        const payload = {
-          Apimember_Id: apiMemberId,
-          Api_Password: apiPassword,
-          Operator_Code: operatorCode,
-          Mobile_No: cleanMobileNumber,
-        };
+      const url = `${baseUrl}?Apimember_Id=${apiMemberId}&Api_Password=${encodedPassword}&Operator_Code=${operatorCode}&Mobile_No=${cleanMobileNumber}`;
 
-        response = await fetch(baseUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': rechargeAPI.api_key,
-          },
-          body: JSON.stringify(payload),
-        });
-      } else {
-        const url = `${baseUrl}?Apimember_Id=${apiMemberId}&Api_Password=${encodedPassword}&Operator_Code=${operatorCode}&Mobile_No=${cleanMobileNumber}`;
-
-        response = await fetch(url, {
-          method: 'GET',
-          headers: {
-            'Authorization': rechargeAPI.api_key,
-          },
-        });
-      }
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Authorization': rechargeAPI.api_key,
+        },
+      });
 
       if (!response.ok) {
         throw new Error(`API request failed: ${response.status} ${response.statusText}`);
@@ -256,22 +236,9 @@ const RechargeExpiryCheck: React.FC = () => {
           </button>
         </div>
       </div>
-      <div className="flex items-center space-x-4 mb-6">
-        <label className="flex items-center space-x-2">
-          <input
-            type="checkbox"
-            checked={usePost}
-            onChange={(e) => setUsePost(e.target.checked)}
-            className="form-checkbox h-4 w-4 text-cyber-teal"
-          />
-          <span className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
-            Use POST method
-          </span>
-        </label>
-        <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-          * Required. Consumes {apis.find(api => api.name.toLowerCase().includes('recharge expiry check'))?.default_credit_charge || 1} credits per query.
-        </p>
-      </div>
+      <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'} mb-6`}>
+        * Required. Consumes {apis.find(api => api.name.toLowerCase().includes('recharge expiry check'))?.default_credit_charge || 1} credits per query.
+      </p>
 
       {searchError && (
         <div className={`p-4 rounded-lg border flex items-center space-x-3 ${isDark ? 'bg-red-500/10 border-red-500/30' : 'bg-red-50 border-red-200'} mb-6`}>
