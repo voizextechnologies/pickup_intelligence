@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-
 import { Car, Shield, AlertCircle, CheckCircle, ChevronDown, ChevronUp, Copy, Download, Search, Smartphone } from 'lucide-react';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { useOfficerAuth } from '../../../contexts/OfficerAuthContext';
@@ -13,7 +12,7 @@ interface RechargeStatusResult {
   rechargeDate?: string;
   status?: string;
   transactionId?: string;
-  [key: string]: any; // Allow additional fields
+  [key: string]: any;
 }
 
 const RechargeStatusCheck: React.FC = () => {
@@ -21,7 +20,7 @@ const RechargeStatusCheck: React.FC = () => {
   const { officer, updateOfficerState } = useOfficerAuth();
   const { apis, addQuery, addTransaction } = useSupabaseData();
   const [mobileNumber, setMobileNumber] = useState('');
-  const [operatorCode, setOperatorCode] = useState('');
+  const operatorCode = '2'; // Fixed operator code
   const [usePost, setUsePost] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [searchResults, setSearchResults] = useState<RechargeStatusResult | null>(null);
@@ -32,7 +31,6 @@ const RechargeStatusCheck: React.FC = () => {
     raw: false,
   });
 
-  // Check if required context data is loaded
   useEffect(() => {
     if (apis && officer) {
       setIsLoading(false);
@@ -40,8 +38,8 @@ const RechargeStatusCheck: React.FC = () => {
   }, [apis, officer]);
 
   const handleRechargeStatusCheck = async () => {
-    if (!mobileNumber.trim() || !operatorCode.trim()) {
-      toast.error('Please enter both a mobile number and operator code');
+    if (!mobileNumber.trim()) {
+      toast.error('Please enter a mobile number');
       return;
     }
 
@@ -93,7 +91,7 @@ const RechargeStatusCheck: React.FC = () => {
         const payload = {
           Apimember_Id: apiMemberId,
           Api_Password: apiPassword,
-          Operator_Code: operatorCode.toUpperCase(),
+          Operator_Code: operatorCode,
           Mobile_No: cleanMobileNumber,
         };
 
@@ -106,7 +104,7 @@ const RechargeStatusCheck: React.FC = () => {
           body: JSON.stringify(payload),
         });
       } else {
-        const url = `${baseUrl}?Apimember_Id=${apiMemberId}&Api_Password=${encodedPassword}&Operator_Code=${operatorCode.toUpperCase()}&Mobile_No=${cleanMobileNumber}`;
+        const url = `${baseUrl}?Apimember_Id=${apiMemberId}&Api_Password=${encodedPassword}&Operator_Code=${operatorCode}&Mobile_No=${cleanMobileNumber}`;
 
         response = await fetch(url, {
           method: 'GET',
@@ -143,7 +141,7 @@ const RechargeStatusCheck: React.FC = () => {
           officer_name: officer.name || 'Unknown',
           type: 'PRO',
           category: 'Recharge Status Check',
-          input_data: `Mobile: ${cleanMobileNumber}, Operator: ${operatorCode.toUpperCase()}`,
+          input_data: `Mobile: ${cleanMobileNumber}, Operator: ${operatorCode}`,
           source: 'PlanAPI',
           result_summary: `Recharge status retrieved for ${cleanMobileNumber}`,
           full_result: data,
@@ -227,7 +225,7 @@ const RechargeStatusCheck: React.FC = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <div>
           <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
             Mobile Number *
@@ -237,27 +235,13 @@ const RechargeStatusCheck: React.FC = () => {
             value={mobileNumber}
             onChange={(e) => setMobileNumber(e.target.value)}
             placeholder="Enter mobile number (e.g., 9876543210)"
-            className={`w-full px-4 py-3 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal ${isDark ? 'bg-crisp-black text-white placeholder-gray-500' : 'bg-white text-gray-900 placeholder-gray-400'
-              }`}
-          />
-        </div>
-        <div>
-          <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
-            Operator Code *
-          </label>
-          <input
-            type="text"
-            value={operatorCode}
-            onChange={(e) => setOperatorCode(e.target.value)}
-            placeholder="Enter operator code (e.g., AIRT, VODA)"
-            className={`w-full px-4 py-3 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal ${isDark ? 'bg-crisp-black text-white placeholder-gray-500' : 'bg-white text-gray-900 placeholder-gray-400'
-              }`}
+            className={`w-full px-4 py-3 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal ${isDark ? 'bg-crisp-black text-white placeholder-gray-500' : 'bg-white text-gray-900 placeholder-gray-400'}`}
           />
         </div>
         <div className="flex items-end">
           <button
             onClick={handleRechargeStatusCheck}
-            disabled={isSearching || !mobileNumber.trim() || !operatorCode.trim()}
+            disabled={isSearching || !mobileNumber.trim()}
             className="w-full py-3 px-4 bg-cyber-gradient text-white font-medium rounded-lg hover:shadow-cyber transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
           >
             {isSearching ? (
@@ -452,7 +436,6 @@ const RechargeStatusCheck: React.FC = () => {
                 setSearchResults(null);
                 setSearchError(null);
                 setMobileNumber('');
-                setOperatorCode('');
               }}
               className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-lg hover:shadow-lg transition-all duration-200"
             >
