@@ -7,12 +7,10 @@ import toast from 'react-hot-toast';
 
 export const OfficerOsintPro: React.FC = () => {
   const { isDark } = useTheme();
-  const [activeTab, setActiveTab] = useState<'mobile' | 'email' | 'name' | 'recharge-status'>('mobile');
+  const [activeTab, setActiveTab] = useState<'mobile' | 'email' | 'name'>('mobile');
   const { officer, updateOfficerState } = useOfficerAuth();
   const { addTransaction, addQuery, getOfficerEnabledAPIs } = useSupabaseData();
   const [mobileNumber, setMobileNumber] = useState('');
-  const [rechargeOperatorCode, setRechargeOperatorCode] = useState('');
-  const [rechargeMobileNumber, setRechargeMobileNumber] = useState('');
   const [emailAddress, setEmailAddress] = useState('');
   const [advanceName, setAdvanceName] = useState('');
   const [isSearching, setIsSearching] = useState(false);
@@ -33,8 +31,6 @@ export const OfficerOsintPro: React.FC = () => {
     let apiConfig;
     let inputData;
     let category;
-    let API_URL;
-    let payload: any;
 
     switch (type) {
       case 'mobile':
@@ -42,13 +38,7 @@ export const OfficerOsintPro: React.FC = () => {
           api.name.toLowerCase() === 'mobile check' || 
           api.name.toLowerCase().includes('osint pro mobile check')
         );
-        inputData = mobileNumber.trim();
-        if (!inputData) {
-          toast.error('Please enter a mobile number.');
-          setIsSearching(false);
-          return;
-        }
-
+        inputData = mobileNumber;
         category = 'OSINT PRO Mobile Check';
         break;
       case 'email':
@@ -56,50 +46,13 @@ export const OfficerOsintPro: React.FC = () => {
           api.name.toLowerCase() === 'email check' || 
           api.name.toLowerCase().includes('osint pro email check')
         );
-        inputData = emailAddress.trim();
-        if (!inputData) {
-          toast.error('Please enter an email address.');
-          setIsSearching(false);
-          return;
-        }
-
+        inputData = emailAddress;
         category = 'OSINT PRO Email Check';
         break;
       case 'name':
         console.log('Searching name:', advanceName);
         setIsSearching(false);
         return;
-      case 'recharge-status':
-        apiConfig = officerEnabledAPIs.find(api =>
-          api.name.toLowerCase().includes('recharge expiry check') ||
-          api.name.toLowerCase().includes('planapi')
-        );
-        inputData = `Operator: ${rechargeOperatorCode.trim()}, Mobile: ${rechargeMobileNumber.trim()}`;
-        category = 'Recharge Status Check';
-
-        const Apimember_Id = import.meta.env.VITE_PLANAPI_MEMBER_ID;
-        const Api_Password = import.meta.env.VITE_PLANAPI_PASSWORD;
-
-        if (!Apimember_Id || !Api_Password) {
-          toast.error('API credentials for Recharge Status Check are not configured in environment variables.');
-          setIsSearching(false);
-          return;
-        }
-
-        if (!rechargeOperatorCode.trim() || !rechargeMobileNumber.trim()) {
-          toast.error('Please enter both Operator Code and Mobile Number for Recharge Status Check.');
-          setIsSearching(false);
-          return;
-        }
-
-        API_URL = "/api/planapi/Mobile/CheckLastRecharge";
-        payload = {
-          Apimember_Id: Apimember_Id,
-          Api_Password: Api_Password,
-          Operator_Code: rechargeOperatorCode.trim(),
-          Mobile_No: rechargeMobileNumber.trim()
-        };
-        break;
       default:
         setIsSearching(false);
         return;
@@ -124,18 +77,14 @@ export const OfficerOsintPro: React.FC = () => {
       return;
     }
 
-    // Set API_URL and payload based on type if not already set in switch
-    if (!API_URL) {
-      API_URL = "/api/leakosint/"; // Default for mobile/email/name if not explicitly set
-      payload = {
-        token: apiConfig.api_key,
-        request: inputData,
-        limit: 100,
-        lang: "en",
-        type: "json"
-      };
-    }
-
+    const API_URL = "/api/leakosint/";
+    const payload = {
+      token: apiConfig.api_key,
+      request: inputData,
+      limit: 100,
+      lang: "en",
+      type: "json"
+    };
 
     try {
       const response = await fetch(API_URL, {
@@ -153,16 +102,11 @@ export const OfficerOsintPro: React.FC = () => {
 
       const data = await response.json();
 
-      // Handle specific API responses
-      if (type === 'recharge-status') {
-        if (data && data.Status === "Success") {
-          setSearchResults(data);
-        } else {
-          throw new Error(data.Message || "API returned an unsuccessful status.");
-        }
-      } else if (data && data["Error code"]) { // LeakOSINTAPI error
-        throw new Error(`API Error: ${data["Error code"]} - ${data["Message"] || 'Unknown error'}`);
-      } else if (!data || !data["List"] || Object.keys(data["List"]).length === 0) { // LeakOSINTAPI no results
+      if (data && data["Error code"]) {
+        throw new Error(`API Error: ${data["Error code"]}`);
+      }
+
+      if (!data || !data["List"] || Object.keys(data["List"]).length === 0) {
         setSearchResults({ message: "No results found." });
       } else {
         setSearchResults(data["List"]);
@@ -186,7 +130,7 @@ export const OfficerOsintPro: React.FC = () => {
         type: 'PRO',
         category,
         input_data: inputData,
-        source: type === 'recharge-status' ? 'PlanAPI' : 'LeakOSINTAPI',
+        source: 'LeakOSINTAPI',
         result_summary: data && data["List"] && Object.keys(data["List"]).length > 0 
           ? `Found ${Object.keys(data["List"]).length} databases` 
           : "No results found.",
@@ -206,7 +150,7 @@ export const OfficerOsintPro: React.FC = () => {
         type: 'PRO',
         category,
         input_data: inputData,
-        source: type === 'recharge-status' ? 'PlanAPI' : 'LeakOSINTAPI',
+        source: 'LeakOSINTAPI',
         result_summary: `Search failed: ${error.message}`,
         credits_used: 0,
         status: 'Failed'
@@ -271,24 +215,6 @@ export const OfficerOsintPro: React.FC = () => {
             <span>Advance Name Scan</span>
           </button>
         </div>
-        <button
-          onClick={() => setActiveTab('recharge-status')}
-          className={`flex-1 py-2 px-4 rounded-lg transition-all duration-200 flex items-center justify-center space-x-2 ${
-            activeTab === 'recharge-status'
-              ? 'bg-cyber-teal/20 text-cyber-teal border border-cyber-teal/30'
-              : isDark 
-                ? 'text-gray-400 hover:text-cyber-teal hover:bg-cyber-teal/10' 
-                : 'text-gray-600 hover:text-cyber-teal hover:bg-cyber-teal/10'
-          }`}
-        >
-          <Phone className="w-4 h-4" />
-          <span>Recharge Status</span>
-        </button>
-      </div>
-
-      <div className={`border border-cyber-teal/20 rounded-lg p-4 shadow-lg ${
-        isDark ? 'bg-muted-graphite' : 'bg-white'
-      }`}>
 
         <div>
           {activeTab === 'mobile' && (
@@ -395,59 +321,6 @@ export const OfficerOsintPro: React.FC = () => {
               </div>
             </div>
           )}
-
-          {activeTab === 'recharge-status' && (
-            <div className="space-y-4">
-              <label className={`block text-sm font-medium mb-2 ${
-                isDark ? 'text-gray-300' : 'text-gray-700'
-              }`}>
-                Operator Code
-              </label>
-              <div className="flex space-x-2">
-                <input
-                  type="text"
-                  value={rechargeOperatorCode}
-                  onChange={(e) => setRechargeOperatorCode(e.target.value)}
-                  placeholder="Enter Operator Code (e.g., 2 for Airtel)"
-                  className={`flex-1 px-3 py-2 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal ${
-                    isDark 
-                      ? 'bg-crisp-black text-white placeholder-gray-500' 
-                      : 'bg-white text-gray-900 placeholder-gray-400'
-                  }`}
-                />
-              </div>
-              <label className={`block text-sm font-medium mb-2 ${
-                isDark ? 'text-gray-300' : 'text-gray-700'
-              }`}>
-                Mobile Number
-              </label>
-              <div className="flex space-x-2">
-                <input
-                  type="tel"
-                  value={rechargeMobileNumber}
-                  onChange={(e) => setRechargeMobileNumber(e.target.value)}
-                  placeholder="Enter mobile number (e.g., 9677040419)"
-                  className={`flex-1 px-3 py-2 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal ${
-                    isDark 
-                      ? 'bg-crisp-black text-white placeholder-gray-500' 
-                      : 'bg-white text-gray-900 placeholder-gray-400'
-                  }`}
-                />
-                <button
-                  onClick={() => handleSearch('recharge-status')}
-                  disabled={isSearching}
-                  className={`px-4 py-2 bg-cyber-gradient text-white rounded-lg hover:shadow-cyber transition-all duration-200 flex items-center space-x-2 disabled:opacity-50`}
-                >
-                  {isSearching ? (
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    <Search className="w-4 h-4" />
-                  )}
-                  <span>Search</span>
-                </button>
-              </div>
-            </div>
-          )}
         </div>
       </div>
 
@@ -479,33 +352,6 @@ export const OfficerOsintPro: React.FC = () => {
                   {searchError}
                 </p>
               </div>
-            ) : (typeof searchResults === 'object' && searchResults.Status && searchResults.MobileNo) ? (
-              // Display for Recharge Status Check API
-              <div className="space-y-4">
-                <h4 className={`text-md font-medium mb-2 ${
-                  isDark ? 'text-green-300' : 'text-green-600'
-                }`}>Recharge Status Details</h4>
-                <div className="space-y-2 text-sm">
-                  <p><span className={`font-medium ${isDark ? 'text-green-300' : 'text-green-600'}`}>Status:</span> {searchResults.Status}</p>
-                  <p><span className={`font-medium ${isDark ? 'text-green-300' : 'text-green-600'}`}>Message:</span> {searchResults.Message}</p>
-                  <p><span className={`font-medium ${isDark ? 'text-green-300' : 'text-green-600'}`}>Mobile Number:</span> {searchResults.MobileNo}</p>
-                  <p><span className={`font-medium ${isDark ? 'text-green-300' : 'text-green-600'}`}>Operator:</span> {searchResults.Operator}</p>
-                  <p><span className={`font-medium ${isDark ? 'text-green-300' : 'text-green-600'}`}>Last Recharge Amount:</span> {searchResults.LastRechargeAmount}</p>
-                  <p><span className={`font-medium ${isDark ? 'text-green-300' : 'text-green-600'}`}>Last Recharge Date:</span> {searchResults.LastRechargeDate}</p>
-                  <p><span className={`font-medium ${isDark ? 'text-green-300' : 'text-green-600'}`}>Validity Date:</span> {searchResults.ValidityDate}</p>
-                </div>
-                <details className="mt-4">
-                  <summary className={`cursor-pointer text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} hover:text-cyber-teal`}>
-                    View Raw JSON Response
-                  </summary>
-                  <pre className={`mt-2 p-4 rounded-lg overflow-x-auto text-xs ${isDark ? 'bg-crisp-black text-white' : 'bg-gray-100 text-gray-800'}`}>
-                    <code>{JSON.stringify(searchResults, null, 2)}</code>
-                  </pre>
-                </details>
-              </div>
-            ) : (
-              // Original LeakOSINTAPI results
-
             ) : (
               <>
                 <div className="flex items-center space-x-2 mb-2">
