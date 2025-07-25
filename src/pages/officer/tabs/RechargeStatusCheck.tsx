@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Smartphone, Shield, AlertCircle, CheckCircle, ChevronDown, ChevronUp, Copy, Download } from 'lucide-react';
-import { useTheme } from '../../contexts/ThemeContext';
-import { useOfficerAuth } from '../../contexts/OfficerAuthContext';
-import { useSupabaseData } from '../../hooks/useSupabaseData';
+import { Car, Shield, AlertCircle, CheckCircle, ChevronDown, ChevronUp, Copy, Download, Search } from 'lucide-react';
+import { useTheme } from '../../../contexts/ThemeContext';
+import { useOfficerAuth } from '../../../contexts/OfficerAuthContext';
+import { useSupabaseData } from '../../../hooks/useSupabaseData';
 import toast from 'react-hot-toast';
 
 const RechargeStatusCheck: React.FC = () => {
