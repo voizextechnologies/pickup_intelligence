@@ -4,7 +4,15 @@ import { useTheme } from '../../../contexts/ThemeContext';
 import { useOfficerAuth } from '../../../contexts/OfficerAuthContext';
 import { useSupabaseData } from '../../../hooks/useSupabaseData';
 import toast from 'react-hot-toast';
-
+interface RechargeStatusResult {
+  mobileNumber?: string;
+  operator?: string;
+  rechargeAmount?: string;
+  rechargeDate?: string;
+  status?: string;
+  transactionId?: string;
+  [key: string]: any; // Allow additional fields
+}
 
 const RechargeStatusCheck: React.FC = () => {
   const { isDark } = useTheme();
@@ -14,12 +22,20 @@ const RechargeStatusCheck: React.FC = () => {
   const [operatorCode, setOperatorCode] = useState('');
   const [usePost, setUsePost] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
-  const [searchResults, setSearchResults] = useState<any>(null);
+  const [searchResults, setSearchResults] = useState<RechargeStatusResult | null>(null);
   const [searchError, setSearchError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [expandedSections, setExpandedSections] = useState({
     recharge: true,
     raw: false,
   });
+
+  // Check if required context data is loaded
+  useEffect(() => {
+    if (apis && officer) {
+      setIsLoading(false);
+    }
+  }, [apis, officer]);
 
   const handleRechargeStatusCheck = async () => {
     if (!mobileNumber.trim() || !operatorCode.trim()) {
@@ -29,19 +45,30 @@ const RechargeStatusCheck: React.FC = () => {
 
     if (!officer) {
       toast.error('Officer not authenticated');
+      setSearchError('Officer not authenticated');
       return;
     }
 
-    const rechargeAPI = apis.find(api => api.name.toLowerCase().includes('recharge status check') && api.key_status === 'Active');
-    
+    if (!apis) {
+      toast.error('API configuration not loaded');
+      setSearchError('API configuration not loaded');
+      return;
+    }
+
+    const rechargeAPI = apis.find(api => 
+      api.name.toLowerCase().includes('recharge status check') && api.key_status === 'Active'
+    );
+
     if (!rechargeAPI) {
       toast.error('Recharge Status Check API not configured. Please contact admin.');
+      setSearchError('Recharge Status Check API not configured');
       return;
     }
 
     const creditCost = rechargeAPI.default_credit_charge || 1;
     if (officer.credits_remaining < creditCost) {
       toast.error(`Insufficient credits. Required: ${creditCost}, Available: ${officer.credits_remaining}`);
+      setSearchError(`Insufficient credits: ${creditCost} required`);
       return;
     }
 
@@ -51,6 +78,10 @@ const RechargeStatusCheck: React.FC = () => {
 
     try {
       const [apiMemberId, apiPassword] = rechargeAPI.api_key.split(':');
+      if (!apiMemberId || !apiPassword) {
+        throw new Error('Invalid API key format');
+      }
+
       const cleanMobileNumber = mobileNumber.replace(/\D/g, '');
       const encodedPassword = encodeURIComponent(apiPassword);
       const baseUrl = 'https://planapi.in/api/Mobile/CheckLastRecharge';
@@ -87,53 +118,60 @@ const RechargeStatusCheck: React.FC = () => {
         throw new Error(`API request failed: ${response.status} ${response.statusText}`);
       }
 
-      const data = await response.json();
+      const data: RechargeStatusResult = await response.json();
       setSearchResults(data);
 
       const newCreditsRemaining = officer.credits_remaining - creditCost;
       updateOfficerState({ credits_remaining: newCreditsRemaining });
 
-      await addTransaction({
-        officer_id: officer.id,
-        officer_name: officer.name,
-        action: 'Deduction',
-        credits: creditCost,
-        payment_mode: 'Query Usage',
-        remarks: `Recharge Status Check query for ${cleanMobileNumber}`,
-      });
+      if (addTransaction) {
+        await addTransaction({
+          officer_id: officer.id,
+          officer_name: officer.name || 'Unknown',
+          action: 'Deduction',
+          credits: creditCost,
+          payment_mode: 'Query Usage',
+          remarks: `Recharge Status Check query for ${cleanMobileNumber}`,
+        });
+      }
 
-      await addQuery({
-        officer_id: officer.id,
-        officer_name: officer.name,
-        type: 'PRO',
-        category: 'Recharge Status Check',
-        input_data: `Mobile: ${cleanMobileNumber}, Operator: ${operatorCode.toUpperCase()}`,
-        source: 'PlanAPI',
-        result_summary: `Recharge status retrieved for ${cleanMobileNumber}`,
-        full_result: data,
-        credits_used: creditCost,
-        status: 'Success',
-      });
+      if (addQuery) {
+        await addQuery({
+          officer_id: officer.id,
+          officer_name: officer.name || 'Unknown',
+          type: 'PRO',
+          category: 'Recharge Status Check',
+          input_data: `Mobile: ${cleanMobileNumber}, Operator: ${operatorCode.toUpperCase()}`,
+          source: 'PlanAPI',
+          result_summary: `Recharge status retrieved for ${cleanMobileNumber}`,
+          full_result: data,
+          credits_used: creditCost,
+          status: 'Success',
+        });
+      }
 
       toast.success('Recharge status retrieved successfully!');
     } catch (error) {
       console.error('Recharge Status Check error:', error);
-      setSearchError(error instanceof Error ? error.message : 'Unknown error');
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      setSearchError(errorMessage);
 
-      await addQuery({
-        officer_id: officer.id,
-        officer_name: officer.name,
-        type: 'PRO',
-        category: 'Recharge Status Check',
-        input_data: `Mobile: ${mobileNumber}, Operator: ${operatorCode}`,
-        source: 'PlanAPI',
-        result_summary: `Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        full_result: null,
-        credits_used: 0,
-        status: 'Failed',
-      });
+      if (addQuery) {
+        await addQuery({
+          officer_id: officer.id,
+          officer_name: officer.name || 'Unknown',
+          type: 'PRO',
+          category: 'Recharge Status Check',
+          input_data: `Mobile: ${mobileNumber}, Operator: ${operatorCode}`,
+          source: 'PlanAPI',
+          result_summary: `Error: ${errorMessage}`,
+          full_result: null,
+          credits_used: 0,
+          status: 'Failed',
+        });
+      }
 
-      toast.error(error instanceof Error ? error.message : 'Failed to retrieve recharge status');
+      toast.error(errorMessage);
     } finally {
       setIsSearching(false);
     }
@@ -147,6 +185,30 @@ const RechargeStatusCheck: React.FC = () => {
   const toggleSection = (section: keyof typeof expandedSections) => {
     setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
   };
+
+  if (isLoading) {
+    return (
+      <div className={`border border-cyber-teal/20 rounded-lg p-6 ${isDark ? 'bg-muted-graphite' : 'bg-white'} text-center`}>
+        <p className={isDark ? 'text-gray-400' : 'text-gray-600'}>Loading...</p>
+      </div>
+    );
+  }
+
+  if (!officer || !apis) {
+    return (
+      <div className={`border border-cyber-teal/20 rounded-lg p-6 ${isDark ? 'bg-muted-graphite' : 'bg-white'}`}>
+        <div className={`p-4 rounded-lg border flex items-center space-x-3 ${isDark ? 'bg-red-500/10 border-red-500/30' : 'bg-red-50 border-red-200'}`}>
+          <AlertCircle className="w-5 h-5 text-red-400" />
+          <div>
+            <p className="text-red-400 text-sm font-medium">Error</p>
+            <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+              Required data not loaded. Please try refreshing or contact support.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`border border-cyber-teal/20 rounded-lg p-6 ${isDark ? 'bg-muted-graphite' : 'bg-white'} shadow-md hover:shadow-cyber transition-shadow duration-300`}>
@@ -267,19 +329,19 @@ const RechargeStatusCheck: React.FC = () => {
           <div className="mb-6">
             <button
               onClick={() => toggleSection('recharge')}
-              className={`w-full flex items-center justify-between p-4 rounded-lg border ${isDark ? 'bg-crisp-black/50 border-cyber-teal/10' : 'bg-gray-50 border-gray-200'}`}
+              className={`w-full flex items-center justify-between p-4 rounded-lg border ${isDark ? 'bg-gray-800/50 border-cyber-teal/10' : 'bg-gray-50 border-gray-200'}`}
             >
               <h5 className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
                 Recharge Information
               </h5>
               {expandedSections.recharge ? (
-                <ChevronUp className="w-5 h-5 text-cyber-teal" />
+                <ChevronUp className="w-5 h-5 text-cyan-500" />
               ) : (
-                <ChevronDown className="w-5 h-5 text-cyber-teal" />
+                <ChevronDown className="w-5 h-5 text-cyan-500" />
               )}
             </button>
             {expandedSections.recharge && (
-              <div className={`p-4 mt-2 rounded-lg border ${isDark ? 'bg-muted-graphite border-cyber-teal/10' : 'bg-white border-gray-200'}`}>
+              <div className={`p-4 mt-2 rounded-lg border ${isDark ? 'bg-gray-700/50 border-cyber-teal/10' : 'bg-white border-gray-200'}`}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                   <div className="flex justify-between items-center">
                     <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Mobile Number:</span>
@@ -290,7 +352,7 @@ const RechargeStatusCheck: React.FC = () => {
                       {searchResults.mobileNumber && (
                         <button
                           onClick={() => copyToClipboard(searchResults.mobileNumber)}
-                          className="p-1 text-cyber-teal hover:text-electric-blue transition-colors"
+                          className="p-1 text-cyan-500 hover:text-cyan-400 transition-colors"
                           title="Copy Mobile Number"
                         >
                           <Copy className="w-4 h-4" />
@@ -331,7 +393,7 @@ const RechargeStatusCheck: React.FC = () => {
                       {searchResults.transactionId && (
                         <button
                           onClick={() => copyToClipboard(searchResults.transactionId)}
-                          className="p-1 text-cyber-teal hover:text-electric-blue transition-colors"
+                          className="p-1 text-cyan-500 hover:text-cyan-400 transition-colors"
                           title="Copy Transaction ID"
                         >
                           <Copy className="w-4 h-4" />
@@ -347,19 +409,19 @@ const RechargeStatusCheck: React.FC = () => {
           <div className="mb-6">
             <button
               onClick={() => toggleSection('raw')}
-              className={`w-full flex items-center justify-between p-4 rounded-lg border ${isDark ? 'bg-crisp-black/50 border-cyber-teal/10' : 'bg-gray-50 border-gray-200'}`}
+              className={`w-full flex items-center justify-between p-4 rounded-lg border ${isDark ? 'bg-gray-800/50 border-cyber-teal/10' : 'bg-gray-50 border-gray-200'}`}
             >
               <h5 className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
                 Raw JSON Response
               </h5>
               {expandedSections.raw ? (
-                <ChevronUp className="w-5 h-5 text-cyber-teal" />
+                <ChevronUp className="w-5 h-5 text-cyan-500" />
               ) : (
-                <ChevronDown className="w-5 h-5 text-cyber-teal" />
+                <ChevronDown className="w-5 h-5 text-cyan-500" />
               )}
             </button>
             {expandedSections.raw && (
-              <div className={`mt-2 p-4 rounded-lg border ${isDark ? 'bg-crisp-black text-white' : 'bg-gray-100 text-gray-800'} overflow-x-auto`}>
+              <div className={`mt-2 p-4 rounded-lg border ${isDark ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-800'} overflow-x-auto`}>
                 <pre className="text-xs">
                   <code>{JSON.stringify(searchResults, null, 2)}</code>
                 </pre>
@@ -380,7 +442,7 @@ const RechargeStatusCheck: React.FC = () => {
                 URL.revokeObjectURL(url);
                 toast.success('Results exported successfully!');
               }}
-              className="px-4 py-2 bg-electric-blue/20 text-electric-blue rounded-lg hover:bg-electric-blue/30 transition-all duration-200 flex items-center space-x-2"
+              className="px-4 py-2 bg-blue-500/20 text-blue-500 rounded-lg hover:bg-blue-500/30 transition-all duration-200 flex items-center space-x-2"
             >
               <Download className="w-4 h-4" />
               <span>Export Results</span>
@@ -392,7 +454,7 @@ const RechargeStatusCheck: React.FC = () => {
                 setMobileNumber('');
                 setOperatorCode('');
               }}
-              className="px-4 py-2 bg-cyber-gradient text-white rounded-lg hover:shadow-cyber transition-all duration-200"
+              className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-lg hover:shadow-lg transition-all duration-200"
             >
               New Search
             </button>
