@@ -86,7 +86,7 @@ const RechargeStatusCheck: React.FC = () => {
 
       const cleanMobileNumber = mobileNumber.replace(/\D/g, '');
       const encodedPassword = encodeURIComponent(apiPassword);
-      const baseUrl = 'https://planapi.in/api/Mobile/CheckLastRecharge';
+      const baseUrl = '/api/planapi/api/Mobile/CheckLastRecharge';
 
       let response;
       if (usePost) {

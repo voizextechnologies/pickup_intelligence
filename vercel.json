@@ -7,6 +7,10 @@
     {
       "source": "/api/leakosint/(.*)",
       "destination": "https://leakosintapi.com/$1"
+    },
+    {
+      "source": "/api/planapi/(.*)",
+      "destination": "https://planapi.in/$1"
     }
   ]
 }
