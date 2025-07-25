@@ -9,7 +9,8 @@ export const OfficerProLookups: React.FC = () => {
   const { isDark } = useTheme();
   const { officer, updateOfficerState } = useOfficerAuth();
   const { apis, addQuery, addTransaction, getOfficerEnabledAPIs } = useSupabaseData();
-  const [activeTab, setActiveTab] = useState<'phone-prefill-v2' | 'rc' | 'imei' | 'fasttag' | 'credit-history' | 'cell-id' | 'mobile-check' | 'email-check' | 'advance-name-scan'>('phone-prefill-v2');
+ 
+  const [activeTab, setActiveTab] = useState<'phone-prefill-v2' | 'rc' | 'imei' | 'fasttag' | 'credit-history' | 'cell-id' | 'recharge-status' | 'recharge-expiry' | 'operator-check'>('phone-prefill-v2');
   const [rcNumber, setRcNumber] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [isSearching, setIsSearching] = useState(false);
