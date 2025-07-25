@@ -1579,9 +1579,9 @@ export const OfficerProLookups: React.FC = () => {
             <span className="font-medium">Cell ID</span>
           </button>
           <button
-  onClick={() => setActiveTab('mobile-check')}
+  onClick={() => setActiveTab('recharge-status')}
   className={`flex items-center space-x-2 py-2 px-4 rounded-lg transition-all duration-200 ${
-    activeTab === 'mobile-check'
+    activeTab === 'recharge-status'
       ? 'bg-cyber-teal/20 text-cyber-teal border border-cyber-teal/30'
       : isDark 
         ? 'text-gray-400 hover:text-cyber-teal hover:bg-cyber-teal/10' 
@@ -1589,12 +1589,12 @@ export const OfficerProLookups: React.FC = () => {
   }`}
 >
   <Smartphone className="w-4 h-4" />
-  <span className="font-medium">Mobile Check</span>
+  <span className="font-medium">Recharge Status Check</span>
 </button>
 <button
-  onClick={() => setActiveTab('email-check')}
+  onClick={() => setActiveTab('recharge-expiry')}
   className={`flex items-center space-x-2 py-2 px-4 rounded-lg transition-all duration-200 ${
-    activeTab === 'email-check'
+    activeTab === 'recharge-expiry'
       ? 'bg-cyber-teal/20 text-cyber-teal border border-cyber-teal/30'
       : isDark 
         ? 'text-gray-400 hover:text-cyber-teal hover:bg-cyber-teal/10' 
@@ -1602,12 +1602,12 @@ export const OfficerProLookups: React.FC = () => {
   }`}
 >
   <FileText className="w-4 h-4" />
-  <span className="font-medium">Email Check</span>
+  <span className="font-medium">Recharge Expiry Check</span>
 </button>
 <button
-  onClick={() => setActiveTab('advance-name-scan')}
+  onClick={() => setActiveTab('operator-check')}
   className={`flex items-center space-x-2 py-2 px-4 rounded-lg transition-all duration-200 ${
-    activeTab === 'advance-name-scan'
+    activeTab === 'operator-check'
       ? 'bg-cyber-teal/20 text-cyber-teal border border-cyber-teal/30'
       : isDark 
         ? 'text-gray-400 hover:text-cyber-teal hover:bg-cyber-teal/10' 
@@ -1615,7 +1615,7 @@ export const OfficerProLookups: React.FC = () => {
   }`}
 >
   <Search className="w-4 h-4" />
-  <span className="font-medium">Advance Name Scan</span>
+  <span className="font-medium">Operator Check</span>
 </button>
         </div>
       </div>
