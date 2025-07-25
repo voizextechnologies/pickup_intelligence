@@ -5,17 +5,15 @@ import { useOfficerAuth } from '../../../contexts/OfficerAuthContext';
 import { useSupabaseData } from '../../../hooks/useSupabaseData';
 import toast from 'react-hot-toast';
 
-interface RechargeStatusResult {
+interface RechargeExpiryResult {
   mobileNumber?: string;
   operator?: string;
-  rechargeAmount?: string;
-  rechargeDate?: string;
+  expiryDate?: string;
   status?: string;
-  transactionId?: string;
   [key: string]: any;
 }
 
-const RechargeStatusCheck: React.FC = () => {
+const RechargeExpiryCheck: React.FC = () => {
   const { isDark } = useTheme();
   const { officer, updateOfficerState } = useOfficerAuth();
   const { apis, addQuery, addTransaction } = useSupabaseData();
@@ -23,7 +21,7 @@ const RechargeStatusCheck: React.FC = () => {
   const operatorCode = '2'; // Fixed operator code
   const [usePost, setUsePost] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
-  const [searchResults, setSearchResults] = useState<RechargeStatusResult | null>(null);
+  const [searchResults, setSearchResults] = useState<RechargeExpiryResult | null>(null);
   const [searchError, setSearchError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [expandedSections, setExpandedSections] = useState({
@@ -37,7 +35,7 @@ const RechargeStatusCheck: React.FC = () => {
     }
   }, [apis, officer]);
 
-  const handleRechargeStatusCheck = async () => {
+  const handleRechargeExpiryCheck = async () => {
     if (!mobileNumber.trim()) {
       toast.error('Please enter a mobile number');
       return;
@@ -56,12 +54,12 @@ const RechargeStatusCheck: React.FC = () => {
     }
 
     const rechargeAPI = apis.find(api =>
-      api.name.toLowerCase().includes('recharge status check') && api.key_status === 'Active'
+      api.name.toLowerCase().includes('recharge expiry check') && api.key_status === 'Active'
     );
 
     if (!rechargeAPI) {
-      toast.error('Recharge Status Check API not configured. Please contact admin.');
-      setSearchError('Recharge Status Check API not configured');
+      toast.error('Recharge Expiry Check API not configured. Please contact admin.');
+      setSearchError('Recharge Expiry Check API not configured');
       return;
     }
 
@@ -118,7 +116,7 @@ const RechargeStatusCheck: React.FC = () => {
         throw new Error(`API request failed: ${response.status} ${response.statusText}`);
       }
 
-      const data: RechargeStatusResult = await response.json();
+      const data: RechargeExpiryResult = await response.json();
       setSearchResults(data);
 
       const newCreditsRemaining = officer.credits_remaining - creditCost;
@@ -131,7 +129,7 @@ const RechargeStatusCheck: React.FC = () => {
           action: 'Deduction',
           credits: creditCost,
           payment_mode: 'Query Usage',
-          remarks: `Recharge Status Check query for ${cleanMobileNumber}`,
+          remarks: `Recharge Expiry Check query for ${cleanMobileNumber}`,
         });
       }
 
@@ -140,19 +138,19 @@ const RechargeStatusCheck: React.FC = () => {
           officer_id: officer.id,
           officer_name: officer.name || 'Unknown',
           type: 'PRO',
-          category: 'Recharge Status Check',
+          category: 'Recharge Expiry Check',
           input_data: `Mobile: ${cleanMobileNumber}, Operator: ${operatorCode}`,
           source: 'PlanAPI',
-          result_summary: `Recharge status retrieved for ${cleanMobileNumber}`,
+          result_summary: `Recharge expiry retrieved for ${cleanMobileNumber}`,
           full_result: data,
           credits_used: creditCost,
           status: 'Success',
         });
       }
 
-      toast.success('Recharge status retrieved successfully!');
+      toast.success('Recharge expiry retrieved successfully!');
     } catch (error) {
-      console.error('Recharge Status Check error:', error);
+      console.error('Recharge Expiry Check error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       setSearchError(errorMessage);
 
@@ -161,7 +159,7 @@ const RechargeStatusCheck: React.FC = () => {
           officer_id: officer.id,
           officer_name: officer.name || 'Unknown',
           type: 'PRO',
-          category: 'Recharge Status Check',
+          category: 'Recharge Expiry Check',
           input_data: `Mobile: ${mobileNumber}, Operator: ${operatorCode}`,
           source: 'PlanAPI',
           result_summary: `Error: ${errorMessage}`,
@@ -216,7 +214,7 @@ const RechargeStatusCheck: React.FC = () => {
         <div className="flex items-center space-x-3">
           <Smartphone className="w-6 h-6 text-electric-blue" />
           <h3 className={`text-xl font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-            Recharge Status Check
+            Recharge Expiry Check
           </h3>
         </div>
         <div className="flex items-center space-x-2">
@@ -240,7 +238,7 @@ const RechargeStatusCheck: React.FC = () => {
         </div>
         <div className="flex items-end">
           <button
-            onClick={handleRechargeStatusCheck}
+            onClick={handleRechargeExpiryCheck}
             disabled={isSearching || !mobileNumber.trim()}
             className="w-full py-3 px-4 bg-cyber-gradient text-white font-medium rounded-lg hover:shadow-cyber transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
           >
@@ -252,7 +250,7 @@ const RechargeStatusCheck: React.FC = () => {
             ) : (
               <>
                 <Search className="w-4 h-4" />
-                <span>Check Recharge Status</span>
+                <span>Check Recharge Expiry</span>
               </>
             )}
           </button>
@@ -271,7 +269,7 @@ const RechargeStatusCheck: React.FC = () => {
           </span>
         </label>
         <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-          * Required. Consumes {apis.find(api => api.name.toLowerCase().includes('recharge status check'))?.default_credit_charge || 1} credits per query.
+          * Required. Consumes {apis.find(api => api.name.toLowerCase().includes('recharge expiry check'))?.default_credit_charge || 1} credits per query.
         </p>
       </div>
 
@@ -300,7 +298,7 @@ const RechargeStatusCheck: React.FC = () => {
             <div className="flex items-center space-x-3">
               <CheckCircle className="w-5 h-5 text-green-400" />
               <h4 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                Recharge Status Found
+                Recharge Expiry Found
               </h4>
             </div>
             <div className="flex items-center space-x-2">
@@ -316,7 +314,7 @@ const RechargeStatusCheck: React.FC = () => {
               className={`w-full flex items-center justify-between p-4 rounded-lg border ${isDark ? 'bg-gray-800/50 border-cyber-teal/10' : 'bg-gray-50 border-gray-200'}`}
             >
               <h5 className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                Recharge Information
+                Recharge Expiry Information
               </h5>
               {expandedSections.recharge ? (
                 <ChevronUp className="w-5 h-5 text-cyan-500" />
@@ -347,43 +345,20 @@ const RechargeStatusCheck: React.FC = () => {
                   <div className="flex justify-between items-center">
                     <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Operator:</span>
                     <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                      {searchResults.operator || operatorCode || 'N probs/A'}
+                      {searchResults.operator || operatorCode || 'N/A'}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Recharge Amount:</span>
+                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Expiry Date:</span>
                     <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                      {searchResults.rechargeAmount || 'N/A'}
+                      {searchResults.expiryDate || 'N/A'}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Recharge Date:</span>
-                    <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                      {searchResults.rechargeDate || 'N/A'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Recharge Status:</span>
+                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Status:</span>
                     <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
                       {searchResults.status || 'N/A'}
                     </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Transaction ID:</span>
-                    <div className="flex items-center space-x-2">
-                      <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                        {searchResults.transactionId || 'N/A'}
-                      </span>
-                      {searchResults.transactionId && (
-                        <button
-                          onClick={() => copyToClipboard(searchResults.transactionId)}
-                          className="p-1 text-cyan-500 hover:text-cyan-400 transition-colors"
-                          title="Copy Transaction ID"
-                        >
-                          <Copy className="w-4 h-4" />
-                        </button>
-                      )}
-                    </div>
                   </div>
                 </div>
               </div>
@@ -421,7 +396,7 @@ const RechargeStatusCheck: React.FC = () => {
                 const url = URL.createObjectURL(dataBlob);
                 const link = document.createElement('a');
                 link.href = url;
-                link.download = `recharge-status-${mobileNumber}-${Date.now()}.json`;
+                link.download = `recharge-expiry-${mobileNumber}-${Date.now()}.json`;
                 link.click();
                 URL.revokeObjectURL(url);
                 toast.success('Results exported successfully!');
@@ -448,4 +423,4 @@ const RechargeStatusCheck: React.FC = () => {
   );
 };
 
-export default RechargeStatusCheck;
+export default RechargeExpiryCheck;
