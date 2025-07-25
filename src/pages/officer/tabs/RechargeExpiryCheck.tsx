@@ -82,7 +82,7 @@ const RechargeExpiryCheck: React.FC = () => {
 
       const cleanMobileNumber = mobileNumber.replace(/\D/g, '');
       const encodedPassword = encodeURIComponent(apiPassword);
-      const baseUrl = 'https://planapi.in/api/Mobile/RechargeExpiryDate';
+      const baseUrl = '/api/planapi/api/Mobile/RechargeExpiryDate';
 
       let response;
       if (usePost) {
