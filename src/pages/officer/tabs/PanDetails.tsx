@@ -83,14 +83,14 @@ const PanDetails: React.FC = () => {
       const payload = {
         Panid: cleanPanNumber,
         ApiMode: '1', // Production mode
+ ApiUserID: apiUserId,
+ ApiPassword: apiPassword,
+ TokenID: tokenId,
       };
 
       const response = await fetch(url, {
         method: 'POST',
         headers: {
-          'TokenID': tokenId,
-          'ApiUserID': apiUserId,
-          'ApiPassword': apiPassword,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(payload),
