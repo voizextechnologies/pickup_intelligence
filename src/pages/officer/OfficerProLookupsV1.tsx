@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Shield, Database, CreditCard, FileText, Search, Car, User } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 import PassportVerification from './tabs/PassportVerification';
-import PanDetails from './tabs/PanDetails';
+
 import PanDetails from './tabs/PanDetails'; // This line should be removed if already imported once
 
 export const OfficerProLookupsV1: React.FC = () => {
