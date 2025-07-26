@@ -80,21 +80,22 @@ const PanDetails: React.FC = () => {
       const cleanPanNumber = panNumber.replace(/\s/g, '').toUpperCase();
       const url = '/api/planapi/api/Ekyc/PanDetails';
 
-      // Prepare the form-urlencoded data including API credentials
-      const requestBody = new URLSearchParams();
-      requestBody.append('Panid', cleanPanNumber);
-      requestBody.append('ApiMode', '1'); // Assuming '1' is always the mode
-      requestBody.append('ApiUserID', apiUserId);
-      requestBody.append('ApiPassword', apiPassword);
-      requestBody.append('TokenID', tokenId);
+     // Prepare the form-urlencoded body
+const requestBody = new URLSearchParams();
+requestBody.append('Panid', cleanPanNumber);
+requestBody.append('ApiMode', '1'); // "1" = Live Mode, "0" = Test
 
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded', // Explicitly set content type
-        },
-        body: requestBody.toString(), // Convert URLSearchParams to string
-      });
+// Send POST request
+const response = await fetch(url, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/x-www-form-urlencoded',
+    'ApiUserID': apiUserId,
+    'ApiPassword': apiPassword,
+    'TokenID': tokenId
+  },
+  body: requestBody.toString()
+});
 
       if (!response.ok) {
         throw new Error(`API request failed: ${response.status} ${response.statusText}`);
