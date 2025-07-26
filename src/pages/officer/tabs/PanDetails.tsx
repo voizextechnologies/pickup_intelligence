@@ -78,22 +78,20 @@ const PanDetails: React.FC = () => {
       }
 
       const cleanPanNumber = panNumber.replace(/\s/g, '').toUpperCase();
-      const url = '/api/planapi/api/Ekyc/PanDetails';
+      const url = 'https://planapi.in/api/Ekyc/PanDetails';
 
-      const payload = {
-        Panid: cleanPanNumber,
-        ApiMode: '1', // Production mode
-        ApiUserID: apiUserId,
-        ApiPassword: apiPassword,
-        TokenID: tokenId,
-      };
+      const formData = new FormData();
+      formData.append('Panid', cleanPanNumber);
+      formData.append('ApiMode', '1');
 
       const response = await fetch(url, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'ApiUserID': apiUserId,    // 6325
+          'ApiPassword': apiPassword, // !Raman@786@
+          'TokenID': tokenId,        // 2bdce720-da0b-4d5c-b230-be8ad342621d
         },
-        body: JSON.stringify(payload),
+        body: formData,
       });
 
       if (!response.ok) {
