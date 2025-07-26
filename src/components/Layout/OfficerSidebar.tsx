@@ -16,7 +16,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 const navigation = [
   { name: 'Dashboard', href: '/officer/dashboard/home', icon: Shield },
   { name: 'Free Lookups', href: '/officer/dashboard/free-lookups', icon: Search },
-  { name: 'PRO Lookups', href: '/officer/dashboard/pro-lookups', icon: Database },
+  { name: 'PRO Lookups', href: '/officer/dashboard/pro-lookups', icon: Database }, // Keep this for the existing PRO Lookups
   { name: 'PRO Lookups V1', href: '/officer/dashboard/pro-lookups-v1', icon: Database },
   { name: 'OSINT PRO', href: '/officer/dashboard/osint-pro', icon: Search },
   { name: 'TrackLink', href: '/officer/dashboard/tracklink', icon: LinkIcon },
