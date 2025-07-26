@@ -266,6 +266,8 @@ import RechargeExpiryCheck from './tabs/RechargeExpiryCheck';
 import OperatorCircleCheck from './tabs/Operator_Circle_Check';
 
 export const OfficerProLookupsV1: React.FC = () => {
+          }
+  )
   const { isDark } = useTheme();
   const [activeTab, setActiveTab] = useState<'phone-prefill-v2' | 'rc' | 'imei' | 'fasttag' | 'credit-history' | 'cell-id' | 'recharge-status' | 'recharge-expiry' | 'operator-check'>('phone-prefill-v2');
 
