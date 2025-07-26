@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Shield, Database, CreditCard, FileText, Search, Car, User } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 import PassportVerification from './tabs/PassportVerification';
+import PanDetails from './tabs/PanDetails';
 
 export const OfficerProLookupsV1: React.FC = () => {
   const { isDark } = useTheme();
