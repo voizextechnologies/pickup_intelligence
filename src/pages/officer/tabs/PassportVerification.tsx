@@ -82,19 +82,20 @@ const PassportVerification: React.FC = () => {
       const cleanFileNo = fileNo.replace(/\s/g, '');
       const cleanDateOfBirth = dateOfBirth.replace(/\s/g, '');
       const url = 'https://planapi.in/Api/Ekyc/PassportVerification';
+      const proxyUrl = '/api/planapi/Api/Ekyc/PassportVerification';
 
       const payload = {
         File_No: cleanFileNo,
         DateofBirth: cleanDateOfBirth,
         ApiMode: '1', // Production mode
+        ApiUserID: apiUserId,
+        ApiPassword: apiPassword,
+        TokenID: tokenId,
       };
 
-      const response = await fetch(url, {
+      const response = await fetch(proxyUrl, {
         method: 'POST',
         headers: {
-          'TokenID': tokenId,
-          'ApiUserID': apiUserId,
-          'ApiPassword': apiPassword,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(payload),
