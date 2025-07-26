@@ -86,8 +86,7 @@ export const OfficerProLookupsV1: React.FC = () => {
                 : isDark 
                   ? 'text-gray-400 hover:text-cyber-teal hover:bg-cyber-teal/10' 
                   : 'text-gray-600 hover:text-cyber-teal hover:bg-cyber-teal/10'
-            }
-            }`
+            }`}
           >
             <FileText className="w-4 h-4" />
             <span className="font-medium">PAN Verification</span>
@@ -358,7 +357,7 @@ export const OfficerProLookupsV1: React.FC = () => {
       {activeTab === 'gst-verification' && renderComingSoon('GST Verification', FileText)}
       {activeTab === 'voter-id-verification' && renderComingSoon('Voter ID Verification', User)}
       {activeTab === 'voter-id-2-verification' && renderComingSoon('Voter ID 2 Verification', User)}
-      {activeTab === 'mca-vcc' && renderComingSoon('MCA VCC Verification', FileText)}
+      {activeTab === 'mca-company' && renderComingSoon('MCA Company', FileText)}
       {activeTab === 'mca-cin-search' && renderComingSoon('MCA CIN Search', Search)}
       {activeTab === 'din-verification' && renderComingSoon('DIN Verification', FileText)}
       {activeTab === 'registration-certificate' && renderComingSoon('Registration Certificate', Car)}
