@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Car, Shield, AlertCircle, CheckCircle, ChevronDown, ChevronUp, Copy, Download, Search, Smartphone } from 'lucide-react';
+import { Shield, AlertCircle, CheckCircle, ChevronDown, ChevronUp, Copy, Download, Search, Smartphone } from 'lucide-react';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { useOfficerAuth } from '../../../contexts/OfficerAuthContext';
 import { useSupabaseData } from '../../../hooks/useSupabaseData';
@@ -73,8 +73,8 @@ const OperatorCircleCheck: React.FC = () => {
     setSearchResults(null);
 
     try {
-      const [apiUserID, apiPassword] = operatorAPI.api_key.split(':');
-      if (!apiUserID || !apiPassword) {
+      const [apiUserId, apiPassword] = operatorAPI.api_key.split(':');
+      if (!apiUserId || !apiPassword) {
         throw new Error('Invalid API key format');
       }
 
@@ -82,7 +82,7 @@ const OperatorCircleCheck: React.FC = () => {
       const encodedPassword = encodeURIComponent(apiPassword);
       const baseUrl = 'https://planapi.in/api/Mobile/OperatorFetchNew';
 
-      const url = `${baseUrl}?ApiUserID=${apiUserID}&ApiPassword=${encodedPassword}&Mobileno=${cleanMobileNumber}`;
+      const url = `${baseUrl}?ApiUserID=${apiUserId}&ApiPassword=${encodedPassword}&Mobileno=${cleanMobileNumber}`;
 
       const response = await fetch(url, {
         method: 'GET',
@@ -120,16 +120,16 @@ const OperatorCircleCheck: React.FC = () => {
           category: 'Operator Circle Check',
           input_data: `Mobile: ${cleanMobileNumber}`,
           source: 'PlanAPI',
-          result_summary: `Operator & circle retrieved for ${cleanMobileNumber}`,
+          result_summary: `Operator and circle retrieved for ${cleanMobileNumber}`,
           full_result: data,
           credits_used: creditCost,
           status: 'Success',
         });
       }
 
-      toast.success('Operator & circle retrieved successfully!');
+      toast.success('Operator and circle retrieved successfully!');
     } catch (error) {
-      console.error('Operator & Circle Check error:', error);
+      console.error('Operator Circle Check error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       setSearchError(errorMessage);
 
