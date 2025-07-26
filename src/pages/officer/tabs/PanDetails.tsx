@@ -78,7 +78,7 @@ const PanDetails: React.FC = () => {
       }
 
       const cleanPanNumber = panNumber.replace(/\s/g, '').toUpperCase();
-      const url = 'https://planapi.in/api/Ekyc/PanDetails';
+      const url = '/api/planapi/api/Ekyc/PanDetails';
 
       const payload = {
         Panid: cleanPanNumber,
