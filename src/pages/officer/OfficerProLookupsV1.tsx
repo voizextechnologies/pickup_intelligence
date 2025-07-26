@@ -86,6 +86,7 @@ export const OfficerProLookupsV1: React.FC = () => {
                 : isDark 
                   ? 'text-gray-400 hover:text-cyber-teal hover:bg-cyber-teal/10' 
                   : 'text-gray-600 hover:text-cyber-teal hover:bg-cyber-teal/10'
+            }
             }`
           >
             <FileText className="w-4 h-4" />
