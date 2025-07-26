@@ -5,7 +5,7 @@ import PassportVerification from './tabs/PassportVerification';
 
 export const OfficerProLookupsV1: React.FC = () => {
   const { isDark } = useTheme();
-  const [activeTab, setActiveTab] = useState<'aadhaar-duplicate' | 'pan-duplicate' | 'pan-details' | 'pan-verification' | 'pan-by-gst' | 'bank-verification-v1' | 'bank-verification-v2' | 'upi-info' | 'upi-to-account' | 'upi-validation' | 'gst-status' | 'gst-advance' | 'gst-verification' | 'voter-id-verification' | 'voter-id-2-verification' | 'mca-company' | 'mca-cin-search' | 'din-verification' | 'registration-certificate' | 'driving-license-verification' | 'vehicle-challan-details' | 'passport-verification'>('aadhaar-duplicate');
+  const [activeTab, setActiveTab] = useState<'aadhaar-duplicate' | 'pan-duplicate' | 'pan-details' | 'pan-verification' | 'pan-by-gst' | 'bank-verification-v1' | 'bank-verification-v2' | 'upi-info' | 'upi-to-account' | 'upi-validation' | 'mobile-to-upi' | 'gst-status' | 'gst-advance' | 'gst-verification' | 'voter-id-verification' | 'voter-id-2-verification' | 'mca-company' | 'mca-cin-search' | 'din-verification' | 'registration-certificate' | 'driving-license-verification' | 'vehicle-challan-details' | 'passport-verification'>('aadhaar-duplicate');
 
   const renderComingSoon = (title: string, icon: React.ElementType) => {
     const Icon = icon;
@@ -169,6 +169,19 @@ export const OfficerProLookupsV1: React.FC = () => {
           >
             <CreditCard className="w-4 h-4" />
             <span className="font-medium">UPI Validation</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('mobile-to-upi')}
+            className={`flex items-center space-x-2 py-2 px-4 rounded-lg transition-all duration-200 ${
+              activeTab === 'mobile-to-upi'
+                ? 'bg-cyber-teal/20 text-cyber-teal border border-cyber-teal/30'
+                : isDark 
+                  ? 'text-gray-400 hover:text-cyber-teal hover:bg-cyber-teal/10' 
+                  : 'text-gray-600 hover:text-cyber-teal hover:bg-cyber-teal/10'
+            }`}
+          >
+            <CreditCard className="w-4 h-4" />
+            <span className="font-medium">Mobile to UPI</span>
           </button>
           <button
             onClick={() => setActiveTab('gst-status')}
@@ -339,6 +352,7 @@ export const OfficerProLookupsV1: React.FC = () => {
       {activeTab === 'upi-info' && renderComingSoon('UPI Info', CreditCard)}
       {activeTab === 'upi-to-account' && renderComingSoon('UPI to Account Number', CreditCard)}
       {activeTab === 'upi-validation' && renderComingSoon('UPI Validation', CreditCard)}
+      {activeTab === 'mobile-to-upi' && renderComingSoon('Mobile to UPI', CreditCard)}
       {activeTab === 'gst-status' && renderComingSoon('GST Status', FileText)}
       {activeTab === 'gst-advance' && renderComingSoon('GST Advance Check', FileText)}
       {activeTab === 'gst-verification' && renderComingSoon('GST Verification', FileText)}
@@ -433,6 +447,10 @@ export const OfficerProLookupsV1: React.FC = () => {
             <div className="flex justify-between">
               <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>UPI Validation</span>
               <span className="text-cyber-teal">1 credit</span>
+            </div>
+            <div className="flex justify-between">
+              <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Mobile to UPI</span>
+              <span className="text-cyber-teal">2 credits</span>
             </div>
           </div>
         </div>
