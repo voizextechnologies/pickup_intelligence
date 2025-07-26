@@ -389,5 +389,3 @@ const PanDetails: React.FC = () => {
 };
 
 export default PanDetails;
-
-export default PanDetails
