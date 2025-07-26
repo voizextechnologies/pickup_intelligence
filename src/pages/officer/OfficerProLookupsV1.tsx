@@ -346,6 +346,7 @@ export const OfficerProLookupsV1: React.FC = () => {
       {activeTab === 'aadhaar-duplicate' && renderComingSoon('Aadhaar Duplicate Check', FileText)}
       {activeTab === 'pan-duplicate' && renderComingSoon('PAN Duplicate Check', FileText)}
       {activeTab === 'pan-details' && renderComingSoon('PAN Card Details', FileText)}
+      {activeTab === 'pan-details' && <PanDetails />}
       {activeTab === 'pan-verification' && renderComingSoon('PAN Verification', FileText)}
       {activeTab === 'pan-by-gst' && renderComingSoon('PAN Number by GST Number', FileText)}
       {activeTab === 'bank-verification-v1' && renderComingSoon('Bank Account Verification V1', CreditCard)}
