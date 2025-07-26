@@ -80,7 +80,7 @@ const OperatorCircleCheck: React.FC = () => {
 
       const cleanMobileNumber = mobileNumber.replace(/\D/g, '');
       const encodedPassword = encodeURIComponent(apiPassword);
-      const baseUrl = 'https://planapi.in/api/Mobile/OperatorFetchNew';
+      const baseUrl = '/api/planapi/api/Mobile/OperatorFetchNew';
 
       const url = `${baseUrl}?ApiUserID=${apiUserId}&ApiPassword=${encodedPassword}&Mobileno=${cleanMobileNumber}`;
 
