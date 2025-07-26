@@ -80,18 +80,20 @@ const PanDetails: React.FC = () => {
       const cleanPanNumber = panNumber.replace(/\s/g, '').toUpperCase();
       const url = '/api/planapi/api/Ekyc/PanDetails';
 
-      const formData = new FormData();
-      formData.append('Panid', cleanPanNumber);
-      formData.append('ApiMode', '1');
+      // Prepare the form-urlencoded data including API credentials
+      const requestBody = new URLSearchParams();
+      requestBody.append('Panid', cleanPanNumber);
+      requestBody.append('ApiMode', '1'); // Assuming '1' is always the mode
+      requestBody.append('ApiUserID', apiUserId);
+      requestBody.append('ApiPassword', apiPassword);
+      requestBody.append('TokenID', tokenId);
 
       const response = await fetch(url, {
         method: 'POST',
         headers: {
-          'ApiUserID': apiUserId,    // 6325
-          'ApiPassword': apiPassword, // !Raman@786@
-          'TokenID': tokenId,        // 2bdce720-da0b-4d5c-b230-be8ad342621d
+          'Content-Type': 'application/x-www-form-urlencoded', // Explicitly set content type
         },
-        body: formData,
+        body: requestBody.toString(), // Convert URLSearchParams to string
       });
 
       if (!response.ok) {
@@ -387,3 +389,5 @@ const PanDetails: React.FC = () => {
 };
 
 export default PanDetails;
+
+export default PanDetails
