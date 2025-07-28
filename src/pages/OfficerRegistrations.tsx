@@ -314,6 +314,14 @@ export const OfficerRegistrations: React.FC = () => {
                       {registration.mobile}
                     </span>
                   </div>
+                  {registration.telegram_id && (
+                    <div className="flex items-center space-x-2">
+                      <User className="w-4 h-4 text-cyber-teal" />
+                      <span className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                        {registration.telegram_id}
+                      </span>
+                    </div>
+                  )}
                   <div className="flex items-center space-x-2">
                     <Building className="w-4 h-4 text-cyber-teal" />
                     <span className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
