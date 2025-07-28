@@ -9,7 +9,7 @@ import OperatorCircleCheck from './tabs/Operator_Circle_Check';
 
 export const OfficerProLookups: React.FC = () => {
   const { isDark } = useTheme();
-  const [activeTab, setActiveTab] = useState<'phone-prefill-v2' | 'rc' | 'imei' | 'fasttag' | 'credit-history' | 'cell-id' | 'recharge-status' | 'recharge-expiry' | 'operator-check'>('phone-prefill-v2');
+  const [activeTab, setActiveTab] = useState<'phone-prefill-v2' | 'rc' | 'imei' | 'fasttag' | 'credit-history' | 'cell-id' | 'recharge-status' | 'recharge-expiry' | 'operator-check' | 'phone-pro-max'>('phone-prefill-v2');
 
   const renderComingSoon = (title: string, icon: React.ElementType) => {
     const Icon = icon;
@@ -148,6 +148,21 @@ export const OfficerProLookups: React.FC = () => {
             <Search className="w-4 h-4" />
             <span className="font-medium">Operator Check</span>
           </button>
+          <button
+            onClick={() => setActiveTab('phone-pro-max')}
+            className={`flex items-center space-x-2 py-2 px-4 rounded-lg transition-all duration-200 relative overflow-hidden ${
+              activeTab === 'phone-pro-max'
+                ? 'bg-gradient-to-r from-neon-magenta to-electric-blue text-white border border-neon-magenta/50 shadow-lg'
+                : isDark 
+                  ? 'text-white bg-gradient-to-r from-neon-magenta/80 to-electric-blue/80 hover:from-neon-magenta hover:to-electric-blue' 
+                  : 'text-white bg-gradient-to-r from-neon-magenta/80 to-electric-blue/80 hover:from-neon-magenta hover:to-electric-blue'
+            }`}
+          >
+            <span className="absolute inset-0 bg-gradient-to-r from-neon-magenta/20 to-electric-blue/20 animate-pulse" />
+            <Phone className="w-4 h-4 relative z-10" />
+            <span className="font-bold relative z-10">Phone Pro Max</span>
+            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full animate-bounce">New</span>
+          </button>
         </div>
       </div>
 
@@ -159,6 +174,7 @@ export const OfficerProLookups: React.FC = () => {
       {activeTab === 'fasttag' && renderComingSoon('FastTag Verification', Car)}
       {activeTab === 'cell-id' && renderComingSoon('Cell ID Lookup', MapPin)}
       {activeTab === 'operator-check' && <OperatorCircleCheck />}
+      {activeTab === 'phone-pro-max' && renderComingSoon('Phone Pro Max', Phone)}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div className={`border border-cyber-teal/20 rounded-lg p-6 hover:shadow-cyber transition-all duration-300 ${isDark ? 'bg-muted-graphite' : 'bg-white'}`}>
@@ -179,6 +195,10 @@ export const OfficerProLookups: React.FC = () => {
             <div className="flex justify-between">
               <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Phone Prefill V2</span>
               <span className="text-cyber-teal">2 credits</span>
+            </div>
+            <div className="flex justify-between">
+              <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Phone Pro Max</span>
+              <span className="text-cyber-teal">3 credits</span>
             </div>
             <div className="flex justify-between">
               <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Carrier Lookup</span>
