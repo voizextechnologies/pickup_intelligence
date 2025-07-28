@@ -151,17 +151,17 @@ export const OfficerProLookups: React.FC = () => {
           </button>
           <button
   onClick={() => setActiveTab('phone-to-credit-business')}
-  className={`relative flex items-center space-x-2 py-2.5 px-5 rounded-lg transition-all duration-300 transform hover:scale-105 ${
+  className={`relative flex items-center space-x-3 py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-xl ${
     activeTab === 'phone-to-credit-business'
-      ? 'bg-gradient-to-br from-cyber-teal to-neon-magenta text-white border-2 border-neon-magenta shadow-lg shadow-neon-magenta/50'
+      ? 'bg-gradient-to-r from-neon-magenta to-cyber-teal text-white border-2 border-electric-blue shadow-2xl shadow-electric-blue/40 animate-pulse-slow'
       : isDark
-        ? 'bg-gradient-to-br from-cyber-teal/60 to-neon-magenta/60 text-white hover:from-cyber-teal/80 hover:to-neon-magenta/80 border border-cyber-teal/30'
-        : 'bg-gradient-to-br from-cyber-teal/50 to-neon-magenta/50 text-white hover:from-cyber-teal/70 hover:to-neon-magenta/70 border border-cyber-teal/20'
+        ? 'bg-gradient-to-r from-neon-magenta/70 to-cyber-teal/70 text-white border border-electric-blue/50 hover:bg-gradient-to-r hover:from-neon-magenta/90 hover:to-cyber-teal/90'
+        : 'bg-gradient-to-r from-neon-magenta/60 to-cyber-teal/60 text-white border border-electric-blue/40 hover:bg-gradient-to-r hover:from-neon-magenta/80 hover:to-cyber-teal/80'
   } overflow-hidden group`}
 >
-  <span className="absolute inset-0 bg-gradient-to-br from-neon-magenta/20 to-cyber-teal/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-  <CreditCard className="w-5 h-5 relative z-10" />
-  <span className="font-bold relative z-10">Phone to Credit & Business</span>
+  <span className="absolute inset-0 bg-gradient-to-r from-electric-blue/20 to-neon-magenta/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+  <CreditCard className="w-6 h-6 relative z-10" />
+  <span className="font-extrabold text-lg relative z-10 tracking-wide">Phone to Credit & Business</span>
 </button>
         </div>
       </div>
