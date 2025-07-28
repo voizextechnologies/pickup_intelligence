@@ -15,10 +15,7 @@ export default defineConfig({
 
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/signzy/, ''),
-        secure: true,
-        headers: {
-          'Origin': 'https://api.signzy.app'
-        }
+        secure: true
       },
       '/api/leakosint': {
         target: 'https://leakosintapi.com',
