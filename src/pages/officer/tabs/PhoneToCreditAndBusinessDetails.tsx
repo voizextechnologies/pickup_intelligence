@@ -58,7 +58,7 @@ const PhoneToCreditAndBusinessDetails: React.FC = () => {
 
     try {
       const cleanPhoneNumber = phoneNumber.replace(/\D/g, '');
-      const response = await fetch('https://api.signzy.app/api/v3/nca/phoneToCreditAndBusinessDetails', {
+      const response = await fetch('/api/signzy/api/v3/nca/phoneToCreditAndBusinessDetails', {
         method: 'POST',
         headers: {
           'Authorization': creditBusinessAPI.api_key,
