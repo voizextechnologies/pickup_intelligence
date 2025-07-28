@@ -217,7 +217,7 @@ const response = await fetch(url, {
             type="text"
             value={panNumber}
             onChange={(e) => setPanNumber(e.target.value)}
-            placeholder="Enter PAN number (e.g., EQZPA0559K)"
+            placeholder="Enter PAN number (e.g., ABCDA1234R)"
             className={`w-full px-4 py-3 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal ${isDark ? 'bg-crisp-black text-white placeholder-gray-500' : 'bg-white text-gray-900 placeholder-gray-400'}`}
           />
         </div>
