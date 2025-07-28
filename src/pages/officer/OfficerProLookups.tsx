@@ -162,6 +162,7 @@ export const OfficerProLookups: React.FC = () => {
             <Phone className="w-4 h-4 relative z-10" />
             <span className="font-bold relative z-10">Phone Pro Max</span>
             
+          </div>
         </div>
       </div>
 
