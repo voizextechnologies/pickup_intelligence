@@ -78,7 +78,7 @@ const PhonePrefillV2: React.FC = () => {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': phonePrefillAPI.api_key,
-          'x-client-unique-id': officer.email // Add this line
+          
         },
         body: JSON.stringify(requestPayload)
       });
