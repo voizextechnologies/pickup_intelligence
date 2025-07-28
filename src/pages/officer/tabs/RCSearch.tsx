@@ -165,7 +165,7 @@ const RCSearch: React.FC = () => {
         </div>
       </div>
       <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'} mb-6`}>
-        * Required. Consumes {apis.find(api => api.name.toLowerCase().includes('vehicle'))?.default_credit_charge || 3} credits per query.
+        * Required. Consumes {apis.find(api => api.name.toLowerCase().includes('Vehicle rc detailed search'))?.default_credit_charge || 3} credits per query.
       </p>
 
       {searchError && (
