@@ -64,7 +64,7 @@ const PhonePrefillV2: React.FC = () => {
       const cleanPhoneNumber = phoneNumber.replace(/\D/g, '');
       const requestPayload = {
         mobileNumber: cleanPhoneNumber,
-        fullName: officer.name, // Add this line
+        
         consent: {
           consentFlag: true,
           consentTimestamp: Math.floor(Date.now() / 1000),
