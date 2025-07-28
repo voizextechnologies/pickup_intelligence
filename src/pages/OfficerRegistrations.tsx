@@ -314,14 +314,6 @@ export const OfficerRegistrations: React.FC = () => {
                       {registration.mobile}
                     </span>
                   </div>
-                  {registration.telegram_id && (
-                    <div className="flex items-center space-x-2">
-                      <User className="w-4 h-4 text-cyber-teal" />
-                      <span className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
-                        {registration.telegram_id}
-                      </span>
-                    </div>
-                  )}
                   <div className="flex items-center space-x-2">
                     <Building className="w-4 h-4 text-cyber-teal" />
                     <span className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
@@ -473,6 +465,9 @@ export const OfficerRegistrations: React.FC = () => {
                   <p><span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Email:</span> {selectedRequest.email}</p>
                   <p><span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Mobile:</span> {selectedRequest.mobile}</p>
                   <p><span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Station:</span> {selectedRequest.station}</p>
+                  {selectedRequest.telegram_id && (
+                    <p><span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Telegram ID:</span> {selectedRequest.telegram_id}</p>
+                  )}
                   {selectedRequest.department && (
                     <p><span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Department:</span> {selectedRequest.department}</p>
                   )}
