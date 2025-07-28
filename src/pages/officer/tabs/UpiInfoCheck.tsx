@@ -88,11 +88,29 @@ const UpiInfoCheck: React.FC = () => {
         method: 'GET',
         headers: {
           'Authorization': upiAPI.api_key,
+          'Accept': 'application/json',
         },
       });
 
       if (!response.ok) {
+        const text = await response.text();
+        console.error('API request failed:', {
+          status: response.status,
+          statusText: response.statusText,
+          responseText: text,
+        });
         throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+      }
+
+      // Check if response is JSON
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await response.text();
+        console.error('Invalid response content type:', {
+          contentType,
+          responseText: text.substring(0, 100), // Log first 100 chars for brevity
+        });
+        throw new Error('Invalid response format: Expected JSON');
       }
 
       const data: UpiInfoResult = await response.json();
@@ -248,8 +266,8 @@ const UpiInfoCheck: React.FC = () => {
               {searchError}
               {searchError.includes('Insufficient credits') ? (
                 <span> Contact admin to top up your credits.</span>
-              ) : searchError.includes('API request failed') ? (
-                <span> Please try again or check your network connection.</span>
+              ) : searchError.includes('API request failed') || searchError.includes('Invalid response format') ? (
+                <span> Please verify the API configuration or check your network connection.</span>
               ) : (
                 <span> Please try again or contact support.</span>
               )}
