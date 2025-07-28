@@ -33,7 +33,7 @@ const PhoneToCreditAndBusinessDetails: React.FC = () => {
 
     const enabledAPIs = getOfficerEnabledAPIs(officer.id);
     const creditBusinessAPI = enabledAPIs.find(api =>
-      api.name.toLowerCase().includes('phone to credit and business details')
+      api.name.toLowerCase().includes('phone to credit')
     );
 
     if (!creditBusinessAPI) {
