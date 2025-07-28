@@ -20,6 +20,7 @@ export const OfficerLogin: React.FC = () => {
     station: '',
     email: '',
     mobile: '',
+    telegram_id: '',
     department: '',
     rank: '',
     badge_number: '',
@@ -126,6 +127,7 @@ export const OfficerLogin: React.FC = () => {
           name: registerData.name,
           email: registerData.email,
           mobile: registerData.mobile,
+          telegram_id: registerData.telegram_id,
           station: registerData.station,
           department: registerData.department,
           rank: registerData.rank,
@@ -153,6 +155,7 @@ export const OfficerLogin: React.FC = () => {
         station: '',
         email: '',
         mobile: '',
+        telegram_id: '',
         department: '',
         rank: '',
         badge_number: '',
@@ -429,6 +432,24 @@ export const OfficerLogin: React.FC = () => {
                   </div>
                 </div>
 
+                <div>
+                  <label className={`block text-sm font-medium mb-2 ${
+                    isDark ? 'text-gray-300' : 'text-gray-700'
+                  }`}>
+                    Telegram ID (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={registerData.telegram_id}
+                    onChange={(e) => setRegisterData(prev => ({ ...prev, telegram_id: e.target.value }))}
+                    placeholder="@username"
+                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal focus:border-transparent transition-all duration-200 ${
+                      isDark 
+                        ? 'bg-crisp-black border-cyber-teal/30 text-white placeholder-gray-500' 
+                        : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'
+                    }`}
+                  />
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className={`block text-sm font-medium mb-2 ${
