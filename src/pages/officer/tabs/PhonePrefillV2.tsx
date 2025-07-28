@@ -64,6 +64,7 @@ const PhonePrefillV2: React.FC = () => {
       const cleanPhoneNumber = phoneNumber.replace(/\D/g, '');
       const requestPayload = {
         mobileNumber: cleanPhoneNumber,
+        fullName: officer.name, // Add this line
         consent: {
           consentFlag: true,
           consentTimestamp: Math.floor(Date.now() / 1000),
@@ -77,7 +78,7 @@ const PhonePrefillV2: React.FC = () => {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': phonePrefillAPI.api_key,
-          'x-client-unique-id': 'raman@truevirtuetechnologies.com' // Add this line
+          'x-client-unique-id': officer.email // Add this line
         },
         body: JSON.stringify(requestPayload)
       });
