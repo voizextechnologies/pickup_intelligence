@@ -85,21 +85,22 @@ const PassportVerification: React.FC = () => {
       const proxyUrl = '/api/planapi/Api/Ekyc/PassportVerification';
 
       const payload = {
-        File_No: cleanFileNo,
-        DateofBirth: cleanDateOfBirth,
-        ApiMode: '1', // Production mode
-        ApiUserID: apiUserId,
-        ApiPassword: apiPassword,
-        TokenID: tokenId,
-      };
+  File_No: cleanFileNo,
+  DateofBirth: cleanDateOfBirth,
+  ApiMode: '1',
+};
 
-      const response = await fetch(proxyUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
+const response = await fetch(proxyUrl, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'TokenID': tokenId,
+    'ApiUserID': apiUserId,
+    'ApiPassword': apiPassword,
+  },
+  body: JSON.stringify(payload),
+});
+
 
       if (!response.ok) {
         throw new Error(`API request failed: ${response.status} ${response.statusText}`);
