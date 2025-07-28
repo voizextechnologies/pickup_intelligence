@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { Shield, Database, CreditCard, FileText, Search, Car, User } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 import PassportVerification from './tabs/PassportVerification';
-
-import PanDetails from './tabs/PanDetails'; // This line should be removed if already imported once
+import PanDetails from './tabs/PanDetails';
+import UpiInfoCheck from './tabs/UpiInfoCheck'; // Import the new UPI Info Check component
 
 export const OfficerProLookupsV1: React.FC = () => {
   const { isDark } = useTheme();
@@ -347,12 +347,11 @@ export const OfficerProLookupsV1: React.FC = () => {
       {activeTab === 'aadhaar-duplicate' && renderComingSoon('Aadhaar Duplicate Check', FileText)}
       {activeTab === 'pan-duplicate' && renderComingSoon('PAN Duplicate Check', FileText)}
       {activeTab === 'pan-details' && <PanDetails />}
-      
       {activeTab === 'pan-verification' && renderComingSoon('PAN Verification', FileText)}
       {activeTab === 'pan-by-gst' && renderComingSoon('PAN Number by GST Number', FileText)}
       {activeTab === 'bank-verification-v1' && renderComingSoon('Bank Account Verification V1', CreditCard)}
       {activeTab === 'bank-verification-v2' && renderComingSoon('Bank Account Verification V2', CreditCard)}
-      {activeTab === 'upi-info' && renderComingSoon('UPI Info', CreditCard)}
+      {activeTab === 'upi-info' && <UpiInfoCheck />}
       {activeTab === 'upi-to-account' && renderComingSoon('UPI to Account Number', CreditCard)}
       {activeTab === 'upi-validation' && renderComingSoon('UPI Validation', CreditCard)}
       {activeTab === 'mobile-to-upi' && renderComingSoon('Mobile to UPI', CreditCard)}
@@ -441,7 +440,7 @@ export const OfficerProLookupsV1: React.FC = () => {
             </div>
             <div className="flex justify-between">
               <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>UPI Info</span>
-              <span className="text-cyber-teal">1 credit</span>
+              <span className="text-cyber-teal">1.8 credits</span> {/* Updated credit cost */}
             </div>
             <div className="flex justify-between">
               <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>UPI to Account Number</span>
