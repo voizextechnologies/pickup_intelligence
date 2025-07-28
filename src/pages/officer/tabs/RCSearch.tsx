@@ -25,7 +25,7 @@ const RCSearch: React.FC = () => {
       return;
     }
 
-    const rcAPI = apis.find(api => api.name.toLowerCase().includes('Vehicle rc detailed search') && api.key_status === 'Active');
+    const rcAPI = apis.find(api => api.name.toLowerCase().includes('vehicle rc detailed search') && api.key_status === 'Active');
     
     if (!rcAPI) {
       toast.error('RC search service is currently unavailable');
