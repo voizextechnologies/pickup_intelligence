@@ -47,7 +47,6 @@ const RCSearch: React.FC = () => {
         headers: {
           'Authorization': rcAPI.api_key,
           'x-client-unique-id': officer.email,
-          'x-client-unique-id': officer.email,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
