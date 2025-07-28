@@ -150,21 +150,18 @@ export const OfficerProLookups: React.FC = () => {
             <span className="font-medium">Operator Check</span>
           </button>
           <button
-  onClick={() => setActiveTab('phone-to-credit-business')}
-  className={`relative flex items-center space-x-2 py-2.5 px-5 rounded-lg transition-all duration-300 ${
-    activeTab === 'phone-to-credit-business'
-      ? 'bg-gradient-to-r from-neon-magenta to-cyber-teal text-white border-2 border-neon-magenta shadow-lg shadow-neon-magenta/30'
-      : isDark
-        ? 'bg-gradient-to-r from-neon-magenta/60 to-cyber-teal/60 text-white hover:from-neon-magenta/80 hover:to-cyber-teal/80 hover:shadow-md hover:shadow-neon-magenta/20'
-        : 'bg-gradient-to-r from-neon-magenta/50 to-cyber-teal/50 text-white hover:from-neon-magenta/70 hover:to-cyber-teal/70 hover:shadow-md hover:shadow-neon-magenta/20'
-  } overflow-hidden transform hover:scale-105`}
->
- Moderation: focus-visible:ring-2 focus:ring-neon-magenta focus:outline-none
->
-  <span className="absolute inset-0 bg-gradient-to-r from-neon-magenta/20 to-cyber-teal/20 animate-pulse opacity-30" />
-  <CreditCard className="w-5 h-5 relative z-10" />
-  <span className="font-bold relative z-10">Phone to Credit & Business</span>
-</button>
+            onClick={() => setActiveTab('phone-to-credit-business')}
+            className={`flex items-center space-x-2 py-2 px-4 rounded-lg transition-all duration-200 ${
+              activeTab === 'phone-to-credit-business'
+                ? 'bg-cyber-teal/20 text-cyber-teal border border-cyber-teal/30'
+                : isDark 
+                  ? 'text-gray-400 hover:text-cyber-teal hover:bg-cyber-teal/10' 
+                  : 'text-gray-600 hover:text-cyber-teal hover:bg-cyber-teal/10'
+            }`}
+          >
+            <CreditCard className="w-4 h-4" />
+            <span className="font-medium">Phone to Credit & Business</span>
+          </button>
         </div>
       </div>
 
