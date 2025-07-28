@@ -10,7 +10,9 @@ export default defineConfig({
   server: {
     proxy: {
       '/api/signzy': {
-        target: 'https://api.signzy.app',
+        
+        target: 'https://api.signzy.app/',
+
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/signzy/, ''),
         secure: true,
