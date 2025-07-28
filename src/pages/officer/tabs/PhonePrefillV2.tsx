@@ -64,7 +64,6 @@ const PhonePrefillV2: React.FC = () => {
       const cleanPhoneNumber = phoneNumber.replace(/\D/g, '');
       const requestPayload = {
         mobileNumber: cleanPhoneNumber,
-        
         consent: {
           consentFlag: true,
           consentTimestamp: Math.floor(Date.now() / 1000),
@@ -77,8 +76,7 @@ const PhonePrefillV2: React.FC = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': phonePrefillAPI.api_key,
-          
+          'Authorization': phonePrefillAPI.api_key
         },
         body: JSON.stringify(requestPayload)
       });
