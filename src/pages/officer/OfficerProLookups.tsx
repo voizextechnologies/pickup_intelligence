@@ -148,21 +148,21 @@ export const OfficerProLookups: React.FC = () => {
             <Search className="w-4 h-4" />
             <span className="font-medium">Operator Check</span>
           </button>
-          <button
+          <div
             onClick={() => setActiveTab('phone-pro-max')}
-            className={`flex items-center space-x-2 py-2 px-4 rounded-lg transition-all duration-200 relative overflow-hidden ${
+            className={`flex items-center space-x-2 py-2 px-4 rounded-lg cursor-pointer transition-all duration-200 relative overflow-hidden ${
               activeTab === 'phone-pro-max'
-                ? 'bg-gradient-to-r from-neon-magenta to-electric-blue text-white border border-neon-magenta/50 shadow-lg'
+                ? 'bg-gradient-to-br from-neon-magenta to-electric-blue text-white border-2 border-neon-magenta shadow-xl'
                 : isDark 
-                  ? 'text-white bg-gradient-to-r from-neon-magenta/80 to-electric-blue/80 hover:from-neon-magenta hover:to-electric-blue' 
-                  : 'text-white bg-gradient-to-r from-neon-magenta/80 to-electric-blue/80 hover:from-neon-magenta hover:to-electric-blue'
+                  ? 'bg-gradient-to-br from-neon-magenta/60 to-electric-blue/60 text-white hover:from-neon-magenta/80 hover:to-electric-blue/80'
+                  : 'bg-gradient-to-br from-neon-magenta/60 to-electric-blue/60 text-white hover:from-neon-magenta/80 hover:to-electric-blue/80'
             }`}
           >
-            <span className="absolute inset-0 bg-gradient-to-r from-neon-magenta/20 to-electric-blue/20 animate-pulse" />
+            <span className="absolute inset-0 bg-gradient-to-br from-neon-magenta/10 to-electric-blue/10 animate-pulse" />
             <Phone className="w-4 h-4 relative z-10" />
             <span className="font-bold relative z-10">Phone Pro Max</span>
             <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full animate-bounce">New</span>
-          </button>
+          </div>
         </div>
       </div>
 
