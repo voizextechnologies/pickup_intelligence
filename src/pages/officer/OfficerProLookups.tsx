@@ -6,10 +6,11 @@ import RCSearch from './tabs/RCSearch';
 import RechargeStatusCheck from './tabs/RechargeStatusCheck';
 import RechargeExpiryCheck from './tabs/RechargeExpiryCheck';
 import OperatorCircleCheck from './tabs/Operator_Circle_Check';
+import PhoneToCreditAndBusinessDetails from './tabs/PhoneToCreditAndBusinessDetails';
 
 export const OfficerProLookups: React.FC = () => {
   const { isDark } = useTheme();
-  const [activeTab, setActiveTab] = useState<'phone-prefill-v2' | 'rc' | 'imei' | 'fasttag' | 'credit-history' | 'cell-id' | 'recharge-status' | 'recharge-expiry' | 'operator-check' | 'phone-pro-max'>('phone-prefill-v2');
+  const [activeTab, setActiveTab] = useState<'phone-prefill-v2' | 'rc' | 'imei' | 'fasttag' | 'credit-history' | 'cell-id' | 'recharge-status' | 'recharge-expiry' | 'operator-check' | 'phone-to-credit-business'>('phone-prefill-v2');
 
   const renderComingSoon = (title: string, icon: React.ElementType) => {
     const Icon = icon;
@@ -148,21 +149,19 @@ export const OfficerProLookups: React.FC = () => {
             <Search className="w-4 h-4" />
             <span className="font-medium">Operator Check</span>
           </button>
-          <div
-            onClick={() => setActiveTab('phone-pro-max')}
-            className={`flex items-center space-x-2 py-2 px-4 rounded-lg cursor-pointer transition-all duration-200 relative overflow-hidden ${
-              activeTab === 'phone-pro-max'
-                ? 'bg-gradient-to-br from-neon-magenta to-electric-blue text-white border-2 border-neon-magenta shadow-xl'
+          <button
+            onClick={() => setActiveTab('phone-to-credit-business')}
+            className={`flex items-center space-x-2 py-2 px-4 rounded-lg transition-all duration-200 ${
+              activeTab === 'phone-to-credit-business'
+                ? 'bg-cyber-teal/20 text-cyber-teal border border-cyber-teal/30'
                 : isDark 
-                  ? 'bg-gradient-to-br from-neon-magenta/60 to-electric-blue/60 text-white hover:from-neon-magenta/80 hover:to-electric-blue/80'
-                  : 'bg-gradient-to-br from-neon-magenta/60 to-electric-blue/60 text-white hover:from-neon-magenta/80 hover:to-electric-blue/80'
+                  ? 'text-gray-400 hover:text-cyber-teal hover:bg-cyber-teal/10' 
+                  : 'text-gray-600 hover:text-cyber-teal hover:bg-cyber-teal/10'
             }`}
           >
-            <span className="absolute inset-0 bg-gradient-to-br from-neon-magenta/10 to-electric-blue/10 animate-pulse" />
-            <Phone className="w-4 h-4 relative z-10" />
-            <span className="font-bold relative z-10">Phone Pro Max</span>
-            
-          </div>
+            <CreditCard className="w-4 h-4" />
+            <span className="font-medium">Phone to Credit & Business</span>
+          </button>
         </div>
       </div>
 
@@ -174,7 +173,7 @@ export const OfficerProLookups: React.FC = () => {
       {activeTab === 'fasttag' && renderComingSoon('FastTag Verification', Car)}
       {activeTab === 'cell-id' && renderComingSoon('Cell ID Lookup', MapPin)}
       {activeTab === 'operator-check' && <OperatorCircleCheck />}
-      {activeTab === 'phone-pro-max' && renderComingSoon('Phone Pro Max', Phone)}
+      {activeTab === 'phone-to-credit-business' && <PhoneToCreditAndBusinessDetails />}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div className={`border border-cyber-teal/20 rounded-lg p-6 hover:shadow-cyber transition-all duration-300 ${isDark ? 'bg-muted-graphite' : 'bg-white'}`}>
@@ -197,8 +196,8 @@ export const OfficerProLookups: React.FC = () => {
               <span className="text-cyber-teal">2 credits</span>
             </div>
             <div className="flex justify-between">
-              <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Phone Pro Max</span>
-              <span className="text-cyber-teal">3 credits</span>
+              <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Phone to Credit & Business</span>
+              <span className="text-cyber-teal">100 credits</span>
             </div>
             <div className="flex justify-between">
               <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Carrier Lookup</span>
