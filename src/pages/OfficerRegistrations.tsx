@@ -61,7 +61,7 @@ export const OfficerRegistrations: React.FC = () => {
         name: selectedRequest.name,
         email: selectedRequest.email,
         mobile: selectedRequest.mobile,
-        telegram_id: `@${selectedRequest.name.toLowerCase().replace(/\s+/g, '')}_${selectedRequest.id.substring(0, 8)}`, // Ensure uniqueness
+        telegram_id: `@${selectedRequest.name.toLowerCase().replace(/\s+/g, '')}`,
         password: approvalData.password,
         status: 'Active',
         department: selectedRequest.department,
