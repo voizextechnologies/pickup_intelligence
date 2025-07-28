@@ -161,8 +161,7 @@ export const OfficerProLookups: React.FC = () => {
             <span className="absolute inset-0 bg-gradient-to-br from-neon-magenta/10 to-electric-blue/10 animate-pulse" />
             <Phone className="w-4 h-4 relative z-10" />
             <span className="font-bold relative z-10">Phone Pro Max</span>
-            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full animate-bounce">New</span>
-          </div>
+            
         </div>
       </div>
 
