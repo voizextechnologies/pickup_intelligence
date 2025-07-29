@@ -73,24 +73,35 @@ const UpiInfoCheck: React.FC = () => {
     setSearchResults(null);
 
     try {
-      const [apiUserId, apiPassword] = upiAPI.api_key.split(':');
-      if (!apiUserId || !apiPassword) {
-        throw new Error('Invalid API key format');
-      }
+      const apiParts = upiAPI.api_key.split(':');
+if (apiParts.length < 3) { // Ensure all three parts are present
+  throw new Error('Invalid API key format: Expected ApiUserID:ApiPassword:TokenID');
+}
+const apiUserId = apiParts[0];
+const apiPassword = apiParts[1];
+const tokenId = apiParts[2]; // Extract TokenID
 
-      const cleanUpiId = upiId.trim();
-      const encodedPassword = encodeURIComponent(apiPassword);
-      const baseUrl = '/api/planapi/api/Ekyc/VPA_Info';
+const cleanUpiId = upiId.trim();
+const baseUrl = '/api/planapi/api/Ekyc/VPA_Info';
 
-      const url = `${baseUrl}?ApiUserID=${apiUserId}&ApiPassword=${encodedPassword}&UpiId=${cleanUpiId}`;
+// Prepare the JSON payload
+const payload = {
+  UpiId: cleanUpiId,
+  ApiMode: '1', // As per your Python example, use '1' for live mode
+};
 
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-          'Authorization': upiAPI.api_key,
-          'Accept': 'application/json',
-        },
-      });
+const response = await fetch(baseUrl, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json', // Change to application/json
+    'TokenID': tokenId, // Add TokenID to headers
+    'ApiUserID': apiUserId,
+    'ApiPassword': apiPassword,
+    'Accept': 'application/json',
+  },
+  body: JSON.stringify(payload) // Send JSON stringified payload
+});
+
 
       if (!response.ok) {
         const text = await response.text();
