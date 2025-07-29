@@ -80,7 +80,7 @@ const UpiInfoCheck: React.FC = () => {
 
       const cleanUpiId = upiId.trim();
       const encodedPassword = encodeURIComponent(apiPassword);
-      const baseUrl = '/api/rapidapi/api/UpiInfoFetch';
+      const baseUrl = '/Api/Ekyc/VPA_Info';
 
       const url = `${baseUrl}?ApiUserID=${apiUserId}&ApiPassword=${encodedPassword}&UpiId=${cleanUpiId}`;
 
