@@ -80,7 +80,7 @@ const UpiInfoCheck: React.FC = () => {
 
       const cleanUpiId = upiId.trim();
       const encodedPassword = encodeURIComponent(apiPassword);
-      const baseUrl = '/api/planapi/api/Mobile/OperatorFetchNew';
+      const baseUrl = '/api/planapi/api/Ekyc/VPA_Info';
 
       const url = `${baseUrl}?ApiUserID=${apiUserId}&ApiPassword=${encodedPassword}&UpiId=${cleanUpiId}`;
 
