@@ -3,7 +3,8 @@ import { Shield, Database, CreditCard, FileText, Search, Car, User } from 'lucid
 import { useTheme } from '../../contexts/ThemeContext';
 import PassportVerification from './tabs/PassportVerification';
 import PanDetails from './tabs/PanDetails';
-import UpiInfoCheck from './tabs/UpiInfoCheck'; // Import the new UPI Info Check component
+import UpiInfoCheck from './tabs/UpiInfoCheck';
+import UpiVerification from './tabs/UpiVerification'; // Import the new UPI Verification component
 
 export const OfficerProLookupsV1: React.FC = () => {
   const { isDark } = useTheme();
@@ -35,7 +36,7 @@ export const OfficerProLookupsV1: React.FC = () => {
         <h1 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
           PRO Verification Services V1
         </h1>
-        <p className={`mt-1 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+        <p className={`mt-1 ${isDark ? 'text-gray-404' : 'text-gray-600'}`}>
           Premium API-based verification and intelligence services
         </p>
       </div>
@@ -200,13 +201,13 @@ export const OfficerProLookupsV1: React.FC = () => {
           </button>
           <button
             onClick={() => setActiveTab('gst-advance')}
-            className={`flex items-center space-x-2 py-2 px-4 rounded-lg transition-all duration-200 ${
+            className=`flex items-center space-x-2 py-2 px-4 rounded-lg transition-all duration-200 ${
               activeTab === 'gst-advance'
                 ? 'bg-cyber-teal/20 text-cyber-teal border border-cyber-teal/30'
                 : isDark 
                   ? 'text-gray-400 hover:text-cyber-teal hover:bg-cyber-teal/10' 
                   : 'text-gray-600 hover:text-cyber-teal hover:bg-cyber-teal/10'
-            }`}
+            }`
           >
             <FileText className="w-4 h-4" />
             <span className="font-medium">GST Advance Check</span>
@@ -352,7 +353,7 @@ export const OfficerProLookupsV1: React.FC = () => {
       {activeTab === 'bank-verification-v1' && renderComingSoon('Bank Account Verification V1', CreditCard)}
       {activeTab === 'bank-verification-v2' && renderComingSoon('Bank Account Verification V2', CreditCard)}
       {activeTab === 'upi-info' && <UpiInfoCheck />}
-      {activeTab === 'upi-to-account' && renderComingSoon('UPI to Account Number', CreditCard)}
+      {activeTab === 'upi-to-account' && <UpiVerification />} {/* Updated to use UpiVerification */}
       {activeTab === 'upi-validation' && renderComingSoon('UPI Validation', CreditCard)}
       {activeTab === 'mobile-to-upi' && renderComingSoon('Mobile to UPI', CreditCard)}
       {activeTab === 'gst-status' && renderComingSoon('GST Status', FileText)}
@@ -440,11 +441,11 @@ export const OfficerProLookupsV1: React.FC = () => {
             </div>
             <div className="flex justify-between">
               <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>UPI Info</span>
-              <span className="text-cyber-teal">1.8 credits</span> {/* Updated credit cost */}
+              <span className="text-cyber-teal">1.8 credits</span>
             </div>
             <div className="flex justify-between">
               <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>UPI to Account Number</span>
-              <span className="text-cyber-teal">2 credits</span>
+              <span className="text-cyber-teal">20 credits</span> {/* Updated credit cost */}
             </div>
             <div className="flex justify-between">
               <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>UPI Validation</span>
