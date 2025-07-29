@@ -33,9 +33,21 @@ const UpiVerification: React.FC = () => {
     }
   }, [apis, officer]);
 
+  const isValidUpiId = (id: string): boolean => {
+    const pattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+$/;
+    return pattern.test(id.trim());
+  };
+
   const handleUpiVerification = async () => {
-    if (!upiId.trim()) {
+    const cleanUpiId = upiId.trim();
+    if (!cleanUpiId) {
       toast.error('Please enter a UPI ID');
+      return;
+    }
+
+    if (!isValidUpiId(cleanUpiId)) {
+      toast.error('Invalid UPI ID format. Expected format: username@bank (e.g., abc@ybl)');
+      setSearchError('Invalid UPI ID format');
       return;
     }
 
@@ -79,8 +91,8 @@ const UpiVerification: React.FC = () => {
       }
       const [apiUserId, apiPassword, tokenId] = apiParts;
 
-      const cleanUpiId = upiId.trim();
-      const baseUrl = '/api/planapi/api/Ekyc/UpiVerification'; // Use proxy; replace with 'https://planapi.in/Api/Ekyc/UpiVerification' if direct
+      const baseUrl = '/api/planapi/api/Ekyc/UpiVerification'; // Proxy
+      // const baseUrl = 'https://planapi.in/Api/Ekyc/UpiVerification'; // Direct (uncomment to bypass proxy)
 
       const payload = {
         UpiId: cleanUpiId,
@@ -104,12 +116,13 @@ const UpiVerification: React.FC = () => {
         console.error('API request failed:', {
           status: response.status,
           statusText: response.statusText,
-          responseText: text || 'No response body',
+          contentType: response.headers.get('content-type'),
+          responseText: text,
         });
         if (response.status === 404) {
           throw new Error('API endpoint not found. Please verify the proxy configuration or use the direct endpoint.');
         }
-        throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+        throw new Error(`API request failed: ${response.status} ${response.statusText}. Response: ${text.substring(0, 200)}`);
       }
 
       const contentType = response.headers.get('content-type');
@@ -117,13 +130,23 @@ const UpiVerification: React.FC = () => {
         const text = await response.text();
         console.error('Invalid response content type:', {
           contentType,
-          responseText: text.substring(0, 100),
+          responseText: text,
+          status: response.status,
         });
-        throw new Error('Invalid response format: Expected JSON');
+        let errorMessage = 'Invalid response format: Expected JSON.';
+        if (text.includes('Invalid UPI ID')) {
+          errorMessage = 'Invalid UPI ID provided. Please check the input.';
+        } else if (text.includes('Invalid Token') || text.includes('Unauthorized')) {
+          errorMessage = 'Authentication failed: Invalid API credentials. Please verify the API key.';
+        } else {
+          errorMessage += ` Received: ${contentType || 'no content type'}. Response: ${text.substring(0, 200)}`;
+        }
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
       if (data.status !== 'Success') {
+        console.error('API error response:', data);
         throw new Error(data.msg || 'API returned an error');
       }
 
@@ -131,7 +154,7 @@ const UpiVerification: React.FC = () => {
       const vpaInfo = data.response || {};
       const mappedData: UpiVerificationResult = {
         upiId: vpaInfo.VPA || cleanUpiId,
-        name: vpaInfo.Name || 'N/A',
+        name: vpaInfo.Name || vpaInfo.beneficiary_name || 'N/A',
         bank: vpaInfo.Bank || 'N/A',
         status: data.status || 'N/A',
         ...vpaInfo,
@@ -180,7 +203,7 @@ const UpiVerification: React.FC = () => {
           officer_name: officer.name || 'Unknown',
           type: 'PRO',
           category: 'UPI Verification',
-          input_data: `UPI ID: ${upiId}`,
+          input_data: `UPI ID: ${cleanUpiId}`,
           source: 'PlanAPI',
           result_summary: `Error: ${errorMessage}`,
           full_result: null,
@@ -291,6 +314,8 @@ const UpiVerification: React.FC = () => {
                 <span> Contact admin to top up your credits.</span>
               ) : searchError.includes('API endpoint not found') || searchError.includes('API request failed') || searchError.includes('Invalid response format') ? (
                 <span> Please verify the API configuration or check your network connection.</span>
+              ) : searchError.includes('Invalid UPI ID') ? (
+                <span> Please enter a valid UPI ID (e.g., abc@ybl).</span>
               ) : (
                 <span> Please try again or contact support.</span>
               )}
