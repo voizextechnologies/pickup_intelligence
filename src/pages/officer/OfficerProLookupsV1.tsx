@@ -11,6 +11,7 @@ import UpiValidation from './tabs/UpiValidation';
 import MobileToUpi from './tabs/MobileToUpi';
 import GstStatus from './tabs/GstStatus';
 import GstAdvance from './tabs/GstAdvance';
+import GstVerification from './tabs/GstVerification';
 
 export const OfficerProLookupsV1: React.FC = () => {
   const { isDark } = useTheme();
@@ -364,7 +365,7 @@ export const OfficerProLookupsV1: React.FC = () => {
       {activeTab === 'mobile-to-upi' && <MobileToUpi />}
       {activeTab === 'gst-status' && <GstStatus />}
       {activeTab === 'gst-advance' && <GstAdvance />}
-      {activeTab === 'gst-verification' && renderComingSoon('GST Verification', FileText)}
+      {activeTab === 'gst-verification' && <GstAdvance />}
       {activeTab === 'voter-id-verification' && renderComingSoon('Voter ID Verification', User)}
       {activeTab === 'voter-id-2-verification' && renderComingSoon('Voter ID 2 Verification', User)}
       {activeTab === 'mca-company' && renderComingSoon('MCA Company', FileText)}
