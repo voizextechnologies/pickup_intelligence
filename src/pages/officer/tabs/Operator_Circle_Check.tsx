@@ -58,7 +58,7 @@ const OperatorCircleCheck: React.FC = () => {
     );
     const enabledAPIs = getOfficerEnabledAPIs(officer.id); // Get APIs enabled for this officer's plan
 const operatorAPI = enabledAPIs.find(api =>
-  api.name.toLowerCase().includes('mobile to upi') && api.key_status === 'Active'
+  api.name.toLowerCase().includes('operator circle check') && api.key_status === 'Active'
 );
 
 
