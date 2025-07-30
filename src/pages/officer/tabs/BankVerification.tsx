@@ -16,7 +16,6 @@ const BankVerification: React.FC = () => {
   const [name, setName] = useState('');
   const [accountNo, setAccountNo] = useState('');
   const [ifsc, setIfsc] = useState('');
-  const [apiMode, setApiMode] = useState('1');
   const [isSearching, setIsSearching] = useState(false);
   const [searchResults, setSearchResults] = useState<BankVerificationResult | null>(null);
   const [searchError, setSearchError] = useState<string | null>(null);
@@ -33,7 +32,7 @@ const BankVerification: React.FC = () => {
   }, [apis, officer]);
 
   const handleBankVerification = async () => {
-    if (!name.trim() || !accountNo.trim() || !ifsc.trim() || !apiMode) {
+    if (!name.trim() || !accountNo.trim() || !ifsc.trim()) {
       toast.error('Please fill all required fields');
       return;
     }
@@ -89,7 +88,7 @@ const BankVerification: React.FC = () => {
         Name: name.trim(),
         AccountNo: accountNo.trim(),
         Ifsc: ifsc.trim().toUpperCase(),
-        ApiMode: apiMode,
+        ApiMode: '1',
       };
 
       const baseUrl = '/api/planapi/api/Ekyc/BankVarification';
@@ -269,23 +268,10 @@ const BankVerification: React.FC = () => {
             className={`w-full px-4 py-3 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal ${isDark ? 'bg-crisp-black text-white placeholder-gray-500' : 'bg-white text-gray-900 placeholder-gray-400'}`}
           />
         </div>
-        <div>
-          <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
-            Api Mode *
-          </label>
-          <select
-            value={apiMode}
-            onChange={(e) => setApiMode(e.target.value)}
-            className={`w-full px-4 py-3 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal ${isDark ? 'bg-crisp-black text-white' : 'bg-white text-gray-900'}`}
-          >
-            <option value="0">Test</option>
-            <option value="1">Production</option>
-          </select>
-        </div>
         <div className="flex items-end col-span-2">
           <button
             onClick={handleBankVerification}
-            disabled={isSearching || !name.trim() || !accountNo.trim() || !ifsc.trim() || !apiMode}
+            disabled={isSearching || !name.trim() || !accountNo.trim() || !ifsc.trim()}
             className="w-full py-3 px-4 bg-cyber-gradient text-white font-medium rounded-lg hover:shadow-cyber transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
           >
             {isSearching ? (
@@ -336,7 +322,7 @@ const BankVerification: React.FC = () => {
             </div>
             <div className="flex items-center space-x-2">
               <span className={`text-xs px-2 py-1 rounded ${isDark ? 'bg-green-500/20 text-green-400' : 'bg-green-100 text-green-600'}`}>
-                Verified 7/30/2025, 9:42 PM
+                Verified 7/30/2025, 9:41 PM
               </span>
             </div>
           </div>
@@ -435,7 +421,6 @@ const BankVerification: React.FC = () => {
                 setName('');
                 setAccountNo('');
                 setIfsc('');
-                setApiMode('1');
               }}
               className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-lg hover:shadow-lg transition-all duration-200"
             >
