@@ -161,7 +161,7 @@ export const OfficerProLookups: React.FC = () => {
 >
   <span className="absolute inset-0 bg-gradient-to-r from-electric-blue/20 to-neon-magenta/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
   <CreditCard className="w-6 h-6 relative z-10" />
-  <span className="font-extrabold text-lg relative z-10 tracking-wide">Phone to Credit & Business</span>
+  <span className="font-extrabold text-lg relative z-10 tracking-wide">Phone PRO MAX</span>
 </button>
         </div>
       </div>
