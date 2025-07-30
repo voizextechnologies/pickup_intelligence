@@ -12,6 +12,7 @@ import MobileToUpi from './tabs/MobileToUpi';
 import GstStatus from './tabs/GstStatus';
 import GstAdvance from './tabs/GstAdvance';
 import VoterIdVerification from './tabs/VoterIdVerification';
+import VoterIdVerification from './tabs/VoterId2Verification';
 
 export const OfficerProLookupsV1: React.FC = () => {
   const { isDark } = useTheme();
