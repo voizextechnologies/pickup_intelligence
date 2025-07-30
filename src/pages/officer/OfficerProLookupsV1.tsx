@@ -13,6 +13,7 @@ import GstStatus from './tabs/GstStatus';
 import GstAdvance from './tabs/GstAdvance';
 import VoterIdVerification from './tabs/VoterIdVerification';
 import VoterId2Verification from './tabs/VoterId2Verification';
+import VehicleChallanDetails from './tabs/VehicleChallanDetails';
 
 export const OfficerProLookupsV1: React.FC = () => {
   const { isDark } = useTheme();
