@@ -82,7 +82,7 @@ const PanVerification: React.FC = () => {
       }
 
       const cleanPanNumber = panNumber.replace(/\s/g, '').toUpperCase();
-      const url = 'https://planapi.in/Api/Ekyc/PanVerification';
+      const url = '/api/planapi/api/Ekyc/PanVerification';
 
       const payload = {
         Panid: cleanPanNumber,
