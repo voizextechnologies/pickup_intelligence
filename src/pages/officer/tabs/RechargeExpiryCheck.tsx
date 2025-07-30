@@ -17,6 +17,8 @@ const RechargeExpiryCheck: React.FC = () => {
   const { isDark } = useTheme();
   const { officer, updateOfficerState } = useOfficerAuth();
   const { apis, addQuery, addTransaction } = useSupabaseData();
+  const { apis, addQuery, addTransaction, getOfficerEnabledAPIs } = useSupabaseData();
+
   const [mobileNumber, setMobileNumber] = useState('');
   const operatorCode = '2'; // Fixed operator code
   const [isSearching, setIsSearching] = useState(false);
