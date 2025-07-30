@@ -12,7 +12,7 @@ interface GstStatusResult {
 const GstStatus: React.FC = () => {
   const { isDark } = useTheme();
   const { officer, updateOfficerState } = useOfficerAuth();
-  const { apis, addQuery, addTransaction } = useSupabaseData();
+  const { apis, addQuery, addTransaction, getOfficerEnabledAPIs } = useSupabaseData();
   const [gstNumber, setGstNumber] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [searchResults, setSearchResults] = useState<GstStatusResult | null>(null);
@@ -34,8 +34,8 @@ const GstStatus: React.FC = () => {
       toast.error('Please enter a GST number');
       return;
     }
-    if (!/^\d{14}$/.test(gstNumber)) {
-      toast.error('Please enter a valid 15-digit GST number');
+    if (!/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[0-9]{1}[A-Z]{1}[0-9A-Z]{1}$/.test(gstNumber)) {
+      toast.error('Please enter a valid 15-digit GST number (e.g., 29ABCDE1234F5Z6)');
       return;
     }
 
@@ -51,7 +51,8 @@ const GstStatus: React.FC = () => {
       return;
     }
 
-    const gstAPI = apis.find(api =>
+    const enabledAPIs = getOfficerEnabledAPIs(officer.id);
+    const gstAPI = enabledAPIs.find(api =>
       api.name.toLowerCase().includes('gst status') && api.key_status === 'Active'
     );
 
@@ -241,7 +242,7 @@ const GstStatus: React.FC = () => {
             type="text"
             value={gstNumber}
             onChange={(e) => setGstNumber(e.target.value)}
-            placeholder="Enter 15-digit GST number"
+            placeholder="Enter 15-digit GST number (e.g., 29ABCDE1234F5Z6)"
             className={`w-full px-4 py-3 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal ${isDark ? 'bg-crisp-black text-white placeholder-gray-500' : 'bg-white text-gray-900 placeholder-gray-400'}`}
           />
         </div>
@@ -299,7 +300,7 @@ const GstStatus: React.FC = () => {
             </div>
             <div className="flex items-center space-x-2">
               <span className={`text-xs px-2 py-1 rounded ${isDark ? 'bg-green-500/20 text-green-400' : 'bg-green-100 text-green-600'}`}>
-                Verified 7/30/2025, 5:10 PM
+                Verified 7/30/2025, 5:23 PM
               </span>
             </div>
           </div>
