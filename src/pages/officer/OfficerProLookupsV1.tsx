@@ -3,7 +3,7 @@ import { Shield, Database, CreditCard, FileText, Search, Car, User } from 'lucid
 import { useTheme } from '../../contexts/ThemeContext';
 import PassportVerification from './tabs/PassportVerification';
 import AadhaarOCRVerification from './tabs/AadhaarOCRVerification';
-import AadhaarOCRVerification from './tabs/PanOCRVerification';
+import PanOCRVerification from './tabs/PanOCRVerification';
 import PanDetails from './tabs/PanDetails';
 import UpiInfoCheck from './tabs/UpiInfoCheck';
 import UpiVerification from './tabs/UpiVerification';
