@@ -314,14 +314,14 @@ const UpiValidation: React.FC = () => {
             </div>
             <div className="flex items-center space-x-2">
               <span className={`text-xs px-2 py-1 rounded ${isDark ? 'bg-green-500/20 text-green-400' : 'bg-green-100 text-green-600'}`}>
-                Verified 7/30/2025, 3:11 PM
+                Verified 7/30/2025, 3:13 PM
               </span>
             </div>
           </div>
 
           <div className="mb-6">
             <button
-              onClick={() => toggleSection('upi')}
+              onClick={() => toggleSection('raw')}
               className={`w-full flex items-center justify-between p-4 rounded-lg border ${isDark ? 'bg-gray-800/50 border-cyber-teal/10' : 'bg-gray-50 border-gray-200'}`}
             >
               <h5 className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
@@ -378,7 +378,7 @@ const UpiValidation: React.FC = () => {
 
           <div className="mb-6">
             <button
-              onClick={() => toggleSection('raw'))
+              onClick={() => toggleSection('raw')}
               className={`w-full flex items-center justify-between p-4 rounded-lg border ${isDark ? 'bg-gray-800/50 border-cyber-teal/10' : 'bg-gray-50 border-gray-200'}`}
             >
               <h5 className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
