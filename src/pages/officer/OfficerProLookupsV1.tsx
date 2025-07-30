@@ -375,7 +375,7 @@ export const OfficerProLookupsV1: React.FC = () => {
       {activeTab === 'din-verification' && renderComingSoon('DIN Verification', FileText)}
       {activeTab === 'registration-certificate' && renderComingSoon('Registration Certificate', Car)}
       {activeTab === 'driving-license-verification' && renderComingSoon('Driving License Verification', FileText)}
-      {activeTab === 'vehicle-challan-details' && renderComingSoon('Vehicle Challan Details', Car)}
+      {activeTab === 'vehicle-challan-details' && <VehicleChallanDetails />}
       {activeTab === 'passport-verification' && <PassportVerification />}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
