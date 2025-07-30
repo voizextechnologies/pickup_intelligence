@@ -9,8 +9,8 @@ interface PanVerificationResult {
   status?: string;
   msg?: string;
   response?: {
-    name?: string;
-    pan?: string;
+    pan_no?: string;
+    registered_name?: string;
     [key: string]: any;
   };
   [key: string]: any;
@@ -304,11 +304,11 @@ const PanVerification: React.FC = () => {
                     <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>PAN Number:</span>
                     <div className="flex items-center space-x-2">
                       <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                        {searchResults.response?.pan || 'N/A'}
+                        {searchResults.response?.pan_no || 'N/A'}
                       </span>
-                      {searchResults.response?.pan && (
+                      {searchResults.response?.pan_no && (
                         <button
-                          onClick={() => copyToClipboard(searchResults.response?.pan || '')}
+                          onClick={() => copyToClipboard(searchResults.response?.pan_no || '')}
                           className="p-1 text-cyan-500 hover:text-cyan-400 transition-colors"
                           title="Copy PAN Number"
                         >
@@ -320,7 +320,7 @@ const PanVerification: React.FC = () => {
                   <div className="flex justify-between items-center">
                     <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Name:</span>
                     <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                      {searchResults.response?.name || 'N/A'}
+                      {searchResults.response?.registered_name || 'N/A'}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
