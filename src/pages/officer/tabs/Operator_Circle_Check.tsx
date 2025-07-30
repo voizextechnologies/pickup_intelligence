@@ -52,10 +52,15 @@ const OperatorCircleCheck: React.FC = () => {
       setSearchError('API configuration not loaded');
       return;
     }
-    const enabledAPIs = getOfficerEnabledAPIs(officer.id); // Get APIs enabled for this officer's plan
+    
     const operatorAPI = apis.find(api =>
       api.name.toLowerCase().includes('operator circle check') && api.key_status === 'Active'
     );
+    const enabledAPIs = getOfficerEnabledAPIs(officer.id); // Get APIs enabled for this officer's plan
+const operatorAPI = enabledAPIs.find(api =>
+  api.name.toLowerCase().includes('mobile to upi') && api.key_status === 'Active'
+);
+
 
     if (!operatorAPI) {
       toast.error('Operator & Circle Check API not configured. Please contact admin.');
