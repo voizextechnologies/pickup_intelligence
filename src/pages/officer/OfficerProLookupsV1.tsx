@@ -365,7 +365,7 @@ export const OfficerProLookupsV1: React.FC = () => {
       {activeTab === 'mobile-to-upi' && <MobileToUpi />}
       {activeTab === 'gst-status' && <GstStatus />}
       {activeTab === 'gst-advance' && <GstAdvance />}
-      {activeTab === 'gst-verification' && <GstAdvance />}
+      {activeTab === 'gst-verification' && <GstVerification />}
       {activeTab === 'voter-id-verification' && renderComingSoon('Voter ID Verification', User)}
       {activeTab === 'voter-id-2-verification' && renderComingSoon('Voter ID 2 Verification', User)}
       {activeTab === 'mca-company' && renderComingSoon('MCA Company', FileText)}
