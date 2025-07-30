@@ -16,7 +16,7 @@ interface PassportVerificationResult {
 const PassportVerification: React.FC = () => {
   const { isDark } = useTheme();
   const { officer, updateOfficerState } = useOfficerAuth();
-  const { apis, addQuery, addTransaction } = useSupabaseData();
+  // const { apis, addQuery, addTransaction } = useSupabaseData();
   const { apis, addQuery, addTransaction, getOfficerEnabledAPIs } = useSupabaseData();
 
   const [fileNo, setFileNo] = useState('');
@@ -54,9 +54,15 @@ const PassportVerification: React.FC = () => {
       return;
     }
 
-    const passportAPI = apis.find(api =>
-      api.name.toLowerCase().includes('passport verification') && api.key_status === 'Active'
-    );
+    const enabledAPIs = getOfficerEnabledAPIs(officer.id); // Get APIs enabled for this officer's plan
+
+
+
+const passportAPI = enabledAPIs.find(api =>
+  api.name.toLowerCase().includes('passport verification') && api.key_status === 'Active'
+);
+
+
 
     if (!passportAPI) {
       toast.error('Passport Verification API not configured. Please contact admin.');
