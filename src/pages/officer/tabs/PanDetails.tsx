@@ -19,7 +19,7 @@ interface PanDetailsResult {
 const PanDetails: React.FC = () => {
   const { isDark } = useTheme();
   const { officer, updateOfficerState } = useOfficerAuth();
-  const { apis, addQuery, addTransaction } = useSupabaseData();
+  // const { apis, addQuery, addTransaction } = useSupabaseData();
   const { apis, addQuery, addTransaction, getOfficerEnabledAPIs } = useSupabaseData();
 
   const [panNumber, setPanNumber] = useState('');
@@ -59,6 +59,12 @@ const PanDetails: React.FC = () => {
     const panAPI = apis.find(api =>
       api.name.toLowerCase().includes('pan details') && api.key_status === 'Active'
     );
+
+    const enabledAPIs = getOfficerEnabledAPIs(officer.id); // Get APIs enabled for this officer's plan
+    const mobileAPI = enabledAPIs.find(api =>
+      api.name.toLowerCase().includes('mobile to upi') && api.key_status === 'Active'
+);
+
 
     if (!panAPI) {
       toast.error('PAN Details API not configured. Please contact admin.');
