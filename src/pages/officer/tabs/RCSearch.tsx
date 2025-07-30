@@ -8,7 +8,7 @@ import toast from 'react-hot-toast';
 const RCSearch: React.FC = () => {
   const { isDark } = useTheme();
   const { officer, updateOfficerState } = useOfficerAuth();
-  const { apis, addQuery } = useSupabaseData();
+  // const { apis, addQuery } = useSupabaseData();
   const { apis, addQuery, addTransaction, getOfficerEnabledAPIs } = useSupabaseData();
 
   const [rcNumber, setRcNumber] = useState('');
@@ -27,8 +27,13 @@ const RCSearch: React.FC = () => {
       return;
     }
 
-    const rcAPI = apis.find(api => api.name.toLowerCase().includes('vehicle rc detailed search') && api.key_status === 'Active');
-    
+    const enabledAPIs = getOfficerEnabledAPIs(officer.id); // Get APIs enabled for this officer's plan
+
+    const rcAPI = enabledAPIs.find(api =>
+      api.name.toLowerCase().includes('vehicle rc detailed search') &&
+      api.key_status === 'Active'
+    );
+
     if (!rcAPI) {
       toast.error('RC search service is currently unavailable');
       return;
