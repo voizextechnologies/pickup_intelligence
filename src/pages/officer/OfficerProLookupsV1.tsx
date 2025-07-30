@@ -374,7 +374,7 @@ export const OfficerProLookupsV1: React.FC = () => {
       {activeTab === 'mca-cin-search' && renderComingSoon('MCA CIN Search', Search)}
       {activeTab === 'din-verification' && renderComingSoon('DIN Verification', FileText)}
       {activeTab === 'registration-certificate' && renderComingSoon('Registration Certificate', Car)}
-      {activeTab === 'driving-license-verification' && renderComingSoon('Driving License Verification', FileText)}
+      {activeTab === 'driving-license-verification' && <VehicleChallanDetails />}
       {activeTab === 'vehicle-challan-details' && <VehicleChallanDetails />}
       {activeTab === 'passport-verification' && <PassportVerification />}
 
