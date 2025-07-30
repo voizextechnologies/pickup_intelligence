@@ -16,7 +16,7 @@ interface RechargeExpiryResult {
 const RechargeExpiryCheck: React.FC = () => {
   const { isDark } = useTheme();
   const { officer, updateOfficerState } = useOfficerAuth();
-  const { apis, addQuery, addTransaction } = useSupabaseData();
+  // const { apis, addQuery, addTransaction } = useSupabaseData();
   const { apis, addQuery, addTransaction, getOfficerEnabledAPIs } = useSupabaseData();
 
   const [mobileNumber, setMobileNumber] = useState('');
@@ -54,9 +54,13 @@ const RechargeExpiryCheck: React.FC = () => {
       return;
     }
 
-    const rechargeAPI = apis.find(api =>
-      api.name.toLowerCase().includes('recharge expiry check') && api.key_status === 'Active'
-    );
+    const enabledAPIs = getOfficerEnabledAPIs(officer.id); // Get APIs enabled for this officer's plan
+
+const rechargeAPI = enabledAPIs.find(api =>
+  api.name.toLowerCase().includes('recharge expiry check') &&
+  api.key_status === 'Active'
+);
+
 
     if (!rechargeAPI) {
       toast.error('Recharge Expiry Check API not configured. Please contact admin.');
