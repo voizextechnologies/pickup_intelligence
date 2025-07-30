@@ -6,12 +6,6 @@ import { useSupabaseData } from '../../../hooks/useSupabaseData';
 import toast from 'react-hot-toast';
 
 interface UpiVerificationResult {
-  status?: string;
-  msg?: string;
-  response?: {
-    beneficiary_name?: string;
-    [key: string]: any;
-  };
   [key: string]: any;
 }
 
@@ -38,6 +32,10 @@ const UpiVerification: React.FC = () => {
   const handleUpiVerification = async () => {
     if (!upiId.trim()) {
       toast.error('Please enter a UPI ID');
+      return;
+    }
+    if (!upiId.includes('@') || !upiId.split('@')[1]) {
+      toast.error('Please enter a valid UPI ID (e.g., user@domain)');
       return;
     }
 
@@ -243,7 +241,7 @@ const UpiVerification: React.FC = () => {
             type="text"
             value={upiId}
             onChange={(e) => setUpiId(e.target.value)}
-            placeholder="Enter UPI ID (e.g., example@upi)"
+            placeholder="Enter UPI ID (e.g., user@domain)"
             className={`w-full px-4 py-3 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal ${isDark ? 'bg-crisp-black text-white placeholder-gray-500' : 'bg-white text-gray-900 placeholder-gray-400'}`}
           />
         </div>
@@ -301,7 +299,7 @@ const UpiVerification: React.FC = () => {
             </div>
             <div className="flex items-center space-x-2">
               <span className={`text-xs px-2 py-1 rounded ${isDark ? 'bg-green-500/20 text-green-400' : 'bg-green-100 text-green-600'}`}>
-                Verified {new Date().toLocaleDateString()}
+                Verified 7/30/2025, 2:56 PM
               </span>
             </div>
           </div>
