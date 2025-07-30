@@ -8,7 +8,11 @@ import toast from 'react-hot-toast';
 interface PanDetailsResult {
   status?: string;
   message?: string;
-  panNumber?: string;
+  data?: {
+    pan_number?: string;
+    full_name?: string;
+    [key: string]: any;
+  };
   [key: string]: any;
 }
 
@@ -80,24 +84,21 @@ const PanDetails: React.FC = () => {
       const cleanPanNumber = panNumber.replace(/\s/g, '').toUpperCase();
       const url = '/api/planapi/api/Ekyc/PanDetails';
 
-     // Prepare the JSON payload
-const payload = {
-  Panid: cleanPanNumber,
-  ApiMode: '1', // "1" = Live Mode, "0" = Test
-};
+      const payload = {
+        Panid: cleanPanNumber,
+        ApiMode: '1',
+      };
 
-// Send POST request
-const response = await fetch(url, {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json', // Change to application/json
-    'ApiUserID': apiUserId,
-    'ApiPassword': apiPassword,
-    'TokenID': tokenId
-  },
-  body: JSON.stringify(payload) // Send JSON stringified payload
-});
-
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'ApiUserID': apiUserId,
+          'ApiPassword': apiPassword,
+          'TokenID': tokenId
+        },
+        body: JSON.stringify(payload)
+      });
 
       if (!response.ok) {
         throw new Error(`API request failed: ${response.status} ${response.statusText}`);
@@ -277,7 +278,7 @@ const response = await fetch(url, {
             </div>
             <div className="flex items-center space-x-2">
               <span className={`text-xs px-2 py-1 rounded ${isDark ? 'bg-green-500/20 text-green-400' : 'bg-green-100 text-green-600'}`}>
-                Verified {new Date().toLocaleDateString()}
+                Verified 7/30/2025, 2:03 PM
               </span>
             </div>
           </div>
@@ -303,11 +304,11 @@ const response = await fetch(url, {
                     <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>PAN Number:</span>
                     <div className="flex items-center space-x-2">
                       <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                        {searchResults.panNumber || 'N/A'}
+                        {searchResults.data?.pan_number || 'N/A'}
                       </span>
-                      {searchResults.panNumber && (
+                      {searchResults.data?.pan_number && (
                         <button
-                          onClick={() => copyToClipboard(searchResults.panNumber)}
+                          onClick={() => copyToClipboard(searchResults.data?.pan_number || '')}
                           className="p-1 text-cyan-500 hover:text-cyan-400 transition-colors"
                           title="Copy PAN Number"
                         >
@@ -315,6 +316,12 @@ const response = await fetch(url, {
                         </button>
                       )}
                     </div>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Name:</span>
+                    <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                      {searchResults.data?.full_name || 'N/A'}
+                    </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Status:</span>
