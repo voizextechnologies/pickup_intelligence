@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Shield, AlertCircle, CheckCircle, ChevronDown, ChevronUp, Copy, Download, Search, IdCard } from 'lucide-react';
+import { Shield, AlertCircle, CheckCircle, ChevronDown, ChevronUp, Copy, Download, Search, IdentificationCard } from 'lucide-react';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { useOfficerAuth } from '../../../contexts/OfficerAuthContext';
 import { useSupabaseData } from '../../../hooks/useSupabaseData';
@@ -222,7 +222,7 @@ const VoterIdVerification: React.FC = () => {
     <div className={`border border-cyber-teal/20 rounded-lg p-6 ${isDark ? 'bg-muted-graphite' : 'bg-white'} shadow-md hover:shadow-cyber transition-shadow duration-300`}>
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-3">
-          <IdCard className="w-6 h-6 text-electric-blue" />
+          <IdentificationCard className="w-6 h-6 text-electric-blue" />
           <h3 className={`text-xl font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
             Voter ID Verification
           </h3>
@@ -300,7 +300,7 @@ const VoterIdVerification: React.FC = () => {
             </div>
             <div className="flex items-center space-x-2">
               <span className={`text-xs px-2 py-1 rounded ${isDark ? 'bg-green-500/20 text-green-400' : 'bg-green-100 text-green-600'}`}>
-                Verified 7/30/2025, 6:59 PM
+                Verified 7/30/2025, 7:06 PM
               </span>
             </div>
           </div>
