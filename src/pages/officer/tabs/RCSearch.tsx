@@ -9,6 +9,8 @@ const RCSearch: React.FC = () => {
   const { isDark } = useTheme();
   const { officer, updateOfficerState } = useOfficerAuth();
   const { apis, addQuery } = useSupabaseData();
+  const { apis, addQuery, addTransaction, getOfficerEnabledAPIs } = useSupabaseData();
+
   const [rcNumber, setRcNumber] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [searchResults, setSearchResults] = useState<any>(null);
