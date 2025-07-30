@@ -55,7 +55,7 @@ const UpiVerification: React.FC = () => {
 
    const enabledAPIs = getOfficerEnabledAPIs(officer.id); // Get APIs enabled for this officer's plan
 
-    const upiAPI = enabledAPIs.find(api =>
+   const upiAPI = enabledAPIs.find(api =>
       api.name.toLowerCase().includes('upi verification api') &&
       api.key_status === 'Active'
     );
