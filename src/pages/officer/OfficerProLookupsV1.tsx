@@ -15,6 +15,7 @@ import GstStatus from './tabs/GstStatus';
 import GstAdvance from './tabs/GstAdvance';
 import VoterIdVerification from './tabs/VoterIdVerification';
 import VoterId2Verification from './tabs/VoterId2Verification';
+import MCACompanySearch from './tabs/MCACompanySearch';
 import VehicleChallanDetails from './tabs/VehicleChallanDetails';
 import DrivingLicenseVerification from './tabs/DrivingLicenseVerification';
 import RegistrationCertificateVerification from './tabs/RegistrationCertificateVerification';
