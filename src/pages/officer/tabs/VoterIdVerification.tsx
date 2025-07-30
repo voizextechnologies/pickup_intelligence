@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
-
 import { Shield, AlertCircle, CheckCircle, ChevronDown, ChevronUp, Copy, Download, Search, IdCard } from 'lucide-react';
-
 import { useTheme } from '../../../contexts/ThemeContext';
 import { useOfficerAuth } from '../../../contexts/OfficerAuthContext';
 import { useSupabaseData } from '../../../hooks/useSupabaseData';
@@ -36,8 +34,8 @@ const VoterIdVerification: React.FC = () => {
       toast.error('Please enter a Voter ID');
       return;
     }
-    if (!/^[A-Z]{3}\d{7}[A-Z]\d$/.test(voterId)) {
-      toast.error('Please enter a valid 15-digit Voter ID (e.g., ABC1234567X1)');
+    if (!/^[A-Z]{3}\d{7,10}[A-Z]{1}$/.test(voterId)) {
+      toast.error('Please enter a valid Voter ID (e.g., ABC1234567Z)');
       return;
     }
 
@@ -224,9 +222,7 @@ const VoterIdVerification: React.FC = () => {
     <div className={`border border-cyber-teal/20 rounded-lg p-6 ${isDark ? 'bg-muted-graphite' : 'bg-white'} shadow-md hover:shadow-cyber transition-shadow duration-300`}>
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-3">
-          
           <IdCard className="w-6 h-6 text-electric-blue" />
-
           <h3 className={`text-xl font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
             Voter ID Verification
           </h3>
@@ -246,7 +242,7 @@ const VoterIdVerification: React.FC = () => {
             type="text"
             value={voterId}
             onChange={(e) => setVoterId(e.target.value)}
-            placeholder="Enter 15-digit Voter ID (e.g., ABC1234567X1)"
+            placeholder="Enter Voter ID (e.g., ABC1234567Z)"
             className={`w-full px-4 py-3 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal ${isDark ? 'bg-crisp-black text-white placeholder-gray-500' : 'bg-white text-gray-900 placeholder-gray-400'}`}
           />
         </div>
@@ -304,7 +300,7 @@ const VoterIdVerification: React.FC = () => {
             </div>
             <div className="flex items-center space-x-2">
               <span className={`text-xs px-2 py-1 rounded ${isDark ? 'bg-green-500/20 text-green-400' : 'bg-green-100 text-green-600'}`}>
-                Verified 7/30/2025, 6:52 PM
+                Verified 7/30/2025, 6:59 PM
               </span>
             </div>
           </div>
@@ -357,21 +353,9 @@ const VoterIdVerification: React.FC = () => {
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Gender:</span>
-                    <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                      {searchResults.response?.gender || 'N/A'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
                     <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Area:</span>
                     <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
                       {searchResults.response?.area || 'N/A'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>District:</span>
-                    <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                      {searchResults.response?.district || 'N/A'}
                     </span>
                   </div>
                 </div>
@@ -410,7 +394,7 @@ const VoterIdVerification: React.FC = () => {
                 const url = URL.createObjectURL(dataBlob);
                 const link = document.createElement('a');
                 link.href = url;
-                link.download = `voter-verification-${voterId}-${Date.now()}.json`;
+                link.download = `voter-id-verification-${voterId}-${Date.now()}.json`;
                 link.click();
                 URL.revokeObjectURL(url);
                 toast.success('Results exported successfully!');
