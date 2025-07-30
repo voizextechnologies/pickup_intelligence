@@ -1,25 +1,30 @@
 import React, { useState, useEffect } from 'react';
-import { Shield, AlertCircle, CheckCircle, ChevronDown, ChevronUp, Copy, Download, Search, FileText } from 'lucide-react';
+import { Shield, AlertCircle, CheckCircle, ChevronDown, ChevronUp, Copy, Download, Search, Smartphone } from 'lucide-react';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { useOfficerAuth } from '../../../contexts/OfficerAuthContext';
 import { useSupabaseData } from '../../../hooks/useSupabaseData';
 import toast from 'react-hot-toast';
 
-interface GstStatusResult {
+interface OperatorCircleResult {
+  mobileNumber?: string;
+  operator?: string;
+  circle?: string;
+  status?: string;
   [key: string]: any;
 }
 
-const GstStatus: React.FC = () => {
+const OperatorCircleCheck: React.FC = () => {
   const { isDark } = useTheme();
   const { officer, updateOfficerState } = useOfficerAuth();
-  const { apis, addQuery, addTransaction } = useSupabaseData();
-  const [gstNumber, setGstNumber] = useState('');
+  const { apis, addQuery, addTransaction, getOfficerEnabledAPIs } = useSupabaseData();
+
+  const [mobileNumber, setMobileNumber] = useState('');
   const [isSearching, setIsSearching] = useState(false);
-  const [searchResults, setSearchResults] = useState<GstStatusResult | null>(null);
+  const [searchResults, setSearchResults] = useState<OperatorCircleResult | null>(null);
   const [searchError, setSearchError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [expandedSections, setExpandedSections] = useState({
-    upi: true,
+    operator: true,
     raw: false,
   });
 
@@ -29,13 +34,9 @@ const GstStatus: React.FC = () => {
     }
   }, [apis, officer]);
 
-  const handleGstStatus = async () => {
-    if (!gstNumber.trim()) {
-      toast.error('Please enter a GST number');
-      return;
-    }
-    if (!/^\d{15}$/.test(gstNumber)) {
-      toast.error('Please enter a valid 15-digit GST number');
+  const handleOperatorCircleCheck = async () => {
+    if (!mobileNumber.trim()) {
+      toast.error('Please enter a mobile number');
       return;
     }
 
@@ -50,18 +51,19 @@ const GstStatus: React.FC = () => {
       setSearchError('API configuration not loaded');
       return;
     }
-
-    const gstAPI = apis.find(api =>
-      api.name.toLowerCase().includes('gst status') && api.key_status === 'Active'
+    
+    const enabledAPIs = getOfficerEnabledAPIs(officer.id);
+    const operatorAPI = enabledAPIs.find(api =>
+      api.name.toLowerCase().includes('operator circle check') && api.key_status === 'Active'
     );
 
-    if (!gstAPI) {
-      toast.error('GST Status API not configured. Please contact admin.');
-      setSearchError('GST Status API not configured');
+    if (!operatorAPI) {
+      toast.error('Operator & Circle Check API not configured. Please contact admin.');
+      setSearchError('Operator & Circle Check API not configured');
       return;
     }
 
-    const creditCost = gstAPI.default_credit_charge || 1.80;
+    const creditCost = operatorAPI.default_credit_charge || 1;
     if (officer.credits_remaining < creditCost) {
       toast.error(`Insufficient credits. Required: ${creditCost}, Available: ${officer.credits_remaining}`);
       setSearchError(`Insufficient credits: ${creditCost} required`);
@@ -73,55 +75,29 @@ const GstStatus: React.FC = () => {
     setSearchResults(null);
 
     try {
-      const apiParts = gstAPI.api_key.split(':');
-      if (apiParts.length < 3) {
-        throw new Error('Invalid API key format: Expected ApiUserID:ApiPassword:TokenID');
+      const [apiUserId, apiPassword] = operatorAPI.api_key.split(':');
+      if (!apiUserId || !apiPassword) {
+        throw new Error('Invalid API key format');
       }
-      const apiUserId = apiParts[0];
-      const apiPassword = apiParts[1];
-      const tokenId = apiParts[2];
 
-      const cleanGstNumber = gstNumber.trim();
-      const baseUrl = '/api/planapi/api/Ekyc/GSTReturnStatus';
+      const cleanMobileNumber = mobileNumber.replace(/\D/g, '');
+      const encodedPassword = encodeURIComponent(apiPassword);
+      const baseUrl = '/api/planapi/api/Mobile/OperatorFetchNew';
 
-      const payload = {
-        GstNumber: cleanGstNumber,
-        ApiMode: '1',
-      };
+      const url = `${baseUrl}?ApiUserID=${apiUserId}&ApiPassword=${encodedPassword}&Mobileno=${cleanMobileNumber}`;
 
-      const response = await fetch(baseUrl, {
-        method: 'POST',
+      const response = await fetch(url, {
+        method: 'GET',
         headers: {
-          'Content-Type': 'application/json',
-          'TokenID': tokenId,
-          'ApiUserID': apiUserId,
-          'ApiPassword': apiPassword,
-          'Accept': 'application/json',
+          'Authorization': operatorAPI.api_key,
         },
-        body: JSON.stringify(payload)
       });
 
       if (!response.ok) {
-        const text = await response.text();
-        console.error('API request failed:', {
-          status: response.status,
-          statusText: response.statusText,
-          responseText: text,
-        });
         throw new Error(`API request failed: ${response.status} ${response.statusText}`);
       }
 
-      const contentType = response.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/json')) {
-        const text = await response.text();
-        console.error('Invalid response content type:', {
-          contentType,
-          responseText: text.substring(0, 100),
-        });
-        throw new Error('Invalid response format: Expected JSON');
-      }
-
-      const data: GstStatusResult = await response.json();
+      const data: OperatorCircleResult = await response.json();
       setSearchResults(data);
 
       const newCreditsRemaining = officer.credits_remaining - creditCost;
@@ -134,7 +110,7 @@ const GstStatus: React.FC = () => {
           action: 'Deduction',
           credits: creditCost,
           payment_mode: 'Query Usage',
-          remarks: `GST Status query for ${cleanGstNumber}`,
+          remarks: `Operator & Circle Check query for ${cleanMobileNumber}`,
         });
       }
 
@@ -143,23 +119,19 @@ const GstStatus: React.FC = () => {
           officer_id: officer.id,
           officer_name: officer.name || 'Unknown',
           type: 'PRO',
-          category: 'GST Status',
-          input_data: `GST Number: ${cleanGstNumber}, ApiMode: 1`,
-          source: 'RapidAPI',
-          result_summary: `GST Status for ${cleanGstNumber}: ${data.Status === 'Success' ? 'Successful' : 'Failed'}`,
+          category: 'Operator Circle Check',
+          input_data: `Mobile: ${cleanMobileNumber}`,
+          source: 'PlanAPI',
+          result_summary: `Operator and circle retrieved for ${cleanMobileNumber}`,
           full_result: data,
           credits_used: creditCost,
-          status: data.Status === 'Success' ? 'Success' : 'Failed',
+          status: 'Success',
         });
       }
 
-      if (data.Status === 'Success') {
-        toast.success('GST status check successful!');
-      } else {
-        toast.error(`GST status check failed: ${data.Message || 'Unknown error'}`);
-      }
+      toast.success('Operator and circle retrieved successfully!');
     } catch (error) {
-      console.error('GST Status error:', error);
+      console.error('Operator Circle Check error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       setSearchError(errorMessage);
 
@@ -168,9 +140,9 @@ const GstStatus: React.FC = () => {
           officer_id: officer.id,
           officer_name: officer.name || 'Unknown',
           type: 'PRO',
-          category: 'GST Status',
-          input_data: `GST Number: ${gstNumber}, ApiMode: 1`,
-          source: 'RapidAPI',
+          category: 'Operator Circle Check',
+          input_data: `Mobile: ${mobileNumber}`,
+          source: 'PlanAPI',
           result_summary: `Error: ${errorMessage}`,
           full_result: null,
           credits_used: 0,
@@ -221,9 +193,9 @@ const GstStatus: React.FC = () => {
     <div className={`border border-cyber-teal/20 rounded-lg p-6 ${isDark ? 'bg-muted-graphite' : 'bg-white'} shadow-md hover:shadow-cyber transition-shadow duration-300`}>
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-3">
-          <FileText className="w-6 h-6 text-electric-blue" />
+          <Smartphone className="w-6 h-6 text-electric-blue" />
           <h3 className={`text-xl font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-            GST Status
+            Operator & Circle Check
           </h3>
         </div>
         <div className="flex items-center space-x-2">
@@ -235,38 +207,38 @@ const GstStatus: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <div>
           <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
-            GST Number *
+            Mobile Number *
           </label>
           <input
-            type="text"
-            value={gstNumber}
-            onChange={(e) => setGstNumber(e.target.value)}
-            placeholder="Enter 15-digit GST number"
+            type="tel"
+            value={mobileNumber}
+            onChange={(e) => setMobileNumber(e.target.value)}
+            placeholder="Enter mobile number (e.g., 9876543210)"
             className={`w-full px-4 py-3 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal ${isDark ? 'bg-crisp-black text-white placeholder-gray-500' : 'bg-white text-gray-900 placeholder-gray-400'}`}
           />
         </div>
         <div className="flex items-end">
           <button
-            onClick={handleGstStatus}
-            disabled={isSearching || !gstNumber.trim()}
+            onClick={handleOperatorCircleCheck}
+            disabled={isSearching || !mobileNumber.trim()}
             className="w-full py-3 px-4 bg-cyber-gradient text-white font-medium rounded-lg hover:shadow-cyber transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
           >
             {isSearching ? (
               <>
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                <span>Checking...</span>
+                <span>Searching...</span>
               </>
             ) : (
               <>
                 <Search className="w-4 h-4" />
-                <span>Check GST Status</span>
+                <span>Check Operator & Circle</span>
               </>
             )}
           </button>
         </div>
       </div>
       <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'} mb-6`}>
-        * Required. Consumes {apis.find(api => api.name.toLowerCase().includes('gst status'))?.default_credit_charge || 1.80} credits per query.
+        * Required. Consumes {apis.find(api => api.name.toLowerCase().includes('operator circle check'))?.default_credit_charge || 1} credits per query.
       </p>
 
       {searchError && (
@@ -278,8 +250,8 @@ const GstStatus: React.FC = () => {
               {searchError}
               {searchError.includes('Insufficient credits') ? (
                 <span> Contact admin to top up your credits.</span>
-              ) : searchError.includes('API request failed') || searchError.includes('Invalid response format') ? (
-                <span> Please verify the API configuration or check your network connection.</span>
+              ) : searchError.includes('API request failed') ? (
+                <span> Please try again or check your network connection.</span>
               ) : (
                 <span> Please try again or contact support.</span>
               )}
@@ -294,49 +266,66 @@ const GstStatus: React.FC = () => {
             <div className="flex items-center space-x-3">
               <CheckCircle className="w-5 h-5 text-green-400" />
               <h4 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                GST Status Results
+                Operator & Circle Found
               </h4>
             </div>
             <div className="flex items-center space-x-2">
               <span className={`text-xs px-2 py-1 rounded ${isDark ? 'bg-green-500/20 text-green-400' : 'bg-green-100 text-green-600'}`}>
-                Verified 7/30/2025, 5:10 PM
+                Verified 7/30/2025, 5:17 PM
               </span>
             </div>
           </div>
 
           <div className="mb-6">
             <button
-              onClick={() => toggleSection('upi')}
+              onClick={() => toggleSection('operator')}
               className={`w-full flex items-center justify-between p-4 rounded-lg border ${isDark ? 'bg-gray-800/50 border-cyber-teal/10' : 'bg-gray-50 border-gray-200'}`}
             >
               <h5 className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                GST Status Details
+                Operator & Circle Information
               </h5>
-              {expandedSections.upi ? (
+              {expandedSections.operator ? (
                 <ChevronUp className="w-5 h-5 text-cyan-500" />
               ) : (
                 <ChevronDown className="w-5 h-5 text-cyan-500" />
               )}
             </button>
-            {expandedSections.upi && (
+            {expandedSections.operator && (
               <div className={`p-4 mt-2 rounded-lg border ${isDark ? 'bg-gray-700/50 border-cyber-teal/10' : 'bg-white border-gray-200'}`}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                   <div className="flex justify-between items-center">
-                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>GST Number:</span>
+                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Mobile Number:</span>
+                    <div className="flex items-center space-x-2">
+                      <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                        {searchResults.Mobile || 'N/A'}
+                      </span>
+                      {searchResults.Mobile && (
+                        <button
+                          onClick={() => copyToClipboard(searchResults.Mobile)}
+                          className="p-1 text-cyan-500 hover:text-cyan-400 transition-colors"
+                          title="Copy Mobile Number"
+                        >
+                          <Copy className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Operator:</span>
                     <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                      {gstNumber || 'N/A'}
+                      {searchResults.Operator || 'N/A'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Circle:</span>
+                    <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                      {searchResults.Circle || 'N/A'}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Status:</span>
                     <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                      {searchResults.Status || 'N/A'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Message:</span>
-                    <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                      {searchResults.Message || 'N/A'}
+                      {searchResults.STATUS === '1' ? 'Success' : 'Failed'}
                     </span>
                   </div>
                 </div>
@@ -375,7 +364,7 @@ const GstStatus: React.FC = () => {
                 const url = URL.createObjectURL(dataBlob);
                 const link = document.createElement('a');
                 link.href = url;
-                link.download = `gst-status-${gstNumber}-${Date.now()}.json`;
+                link.download = `operator-circle-${mobileNumber}-${Date.now()}.json`;
                 link.click();
                 URL.revokeObjectURL(url);
                 toast.success('Results exported successfully!');
@@ -389,7 +378,7 @@ const GstStatus: React.FC = () => {
               onClick={() => {
                 setSearchResults(null);
                 setSearchError(null);
-                setGstNumber('');
+                setMobileNumber('');
               }}
               className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-lg hover:shadow-lg transition-all duration-200"
             >
@@ -402,4 +391,4 @@ const GstStatus: React.FC = () => {
   );
 };
 
-export default GstStatus;
+export default OperatorCircleCheck;
