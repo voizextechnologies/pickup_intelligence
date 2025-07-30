@@ -51,9 +51,11 @@ const MobileToUpi: React.FC = () => {
       return;
     }
 
-    const mobileAPI = apis.find(api =>
-      api.name.toLowerCase().includes('mobile to upi') && api.key_status === 'Active'
-    );
+    const enabledAPIs = getOfficerEnabledAPIs(officer.id); // Get APIs enabled for this officer's plan
+const mobileAPI = enabledAPIs.find(api =>
+  api.name.toLowerCase().includes('mobile to upi') && api.key_status === 'Active'
+);
+
 
     if (!mobileAPI) {
       toast.error('Mobile to UPI API not configured. Please contact admin.');
