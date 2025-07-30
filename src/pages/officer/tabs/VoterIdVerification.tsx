@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Shield, AlertCircle, CheckCircle, ChevronDown, ChevronUp, Copy, Download, Search, Identification } from 'lucide-react';
+
+import { Shield, AlertCircle, CheckCircle, ChevronDown, ChevronUp, Copy, Download, Search, IdCard } from 'lucide-react';
+
 import { useTheme } from '../../../contexts/ThemeContext';
 import { useOfficerAuth } from '../../../contexts/OfficerAuthContext';
 import { useSupabaseData } from '../../../hooks/useSupabaseData';
