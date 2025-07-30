@@ -19,7 +19,7 @@ interface UpiInfoResult {
 const UpiInfoCheck: React.FC = () => {
   const { isDark } = useTheme();
   const { officer, updateOfficerState } = useOfficerAuth();
-  const { apis, addQuery, addTransaction } = useSupabaseData();
+  // const { apis, addQuery, addTransaction } = useSupabaseData();
   const { apis, addQuery, addTransaction, getOfficerEnabledAPIs } = useSupabaseData();
 
   const [upiId, setUpiId] = useState('');
@@ -56,9 +56,13 @@ const UpiInfoCheck: React.FC = () => {
       return;
     }
 
-    const upiAPI = apis.find(api =>
-      api.name.toLowerCase().includes('upi info api') && api.key_status === 'Active'
+    const enabledAPIs = getOfficerEnabledAPIs(officer.id); // Get APIs enabled for this officer's plan
+
+    const upiAPI = enabledAPIs.find(api =>
+      api.name.toLowerCase().includes('upi info api') &&
+      api.key_status === 'Active'
     );
+
 
     if (!upiAPI) {
       toast.error('UPI Info API not configured. Please contact admin.');
