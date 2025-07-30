@@ -6,10 +6,13 @@ import { useSupabaseData } from '../../../hooks/useSupabaseData';
 import toast from 'react-hot-toast';
 
 interface UpiInfoResult {
-  upiId?: string;
-  name?: string;
-  bank?: string;
-  status?: string;
+  Errorcode?: number;
+  Status?: string;
+  Message?: string;
+  BankName?: string;
+  UPI_Handel?: string;
+  TPAP?: string;
+  UpiId?: string;
   [key: string]: any;
 }
 
@@ -74,34 +77,32 @@ const UpiInfoCheck: React.FC = () => {
 
     try {
       const apiParts = upiAPI.api_key.split(':');
-if (apiParts.length < 3) { // Ensure all three parts are present
-  throw new Error('Invalid API key format: Expected ApiUserID:ApiPassword:TokenID');
-}
-const apiUserId = apiParts[0];
-const apiPassword = apiParts[1];
-const tokenId = apiParts[2]; // Extract TokenID
+      if (apiParts.length < 3) {
+        throw new Error('Invalid API key format: Expected ApiUserID:ApiPassword:TokenID');
+      }
+      const apiUserId = apiParts[0];
+      const apiPassword = apiParts[1];
+      const tokenId = apiParts[2];
 
-const cleanUpiId = upiId.trim();
-const baseUrl = '/api/planapi/api/Ekyc/VPA_Info';
+      const cleanUpiId = upiId.trim();
+      const baseUrl = '/api/planapi/api/Ekyc/VPA_Info';
 
-// Prepare the JSON payload
-const payload = {
-  UpiId: cleanUpiId,
-  ApiMode: '1', // As per your Python example, use '1' for live mode
-};
+      const payload = {
+        UpiId: cleanUpiId,
+        ApiMode: '1',
+      };
 
-const response = await fetch(baseUrl, {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json', // Change to application/json
-    'TokenID': tokenId, // Add TokenID to headers
-    'ApiUserID': apiUserId,
-    'ApiPassword': apiPassword,
-    'Accept': 'application/json',
-  },
-  body: JSON.stringify(payload) // Send JSON stringified payload
-});
-
+      const response = await fetch(baseUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'TokenID': tokenId,
+          'ApiUserID': apiUserId,
+          'ApiPassword': apiPassword,
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
 
       if (!response.ok) {
         const text = await response.text();
@@ -113,13 +114,12 @@ const response = await fetch(baseUrl, {
         throw new Error(`API request failed: ${response.status} ${response.statusText}`);
       }
 
-      // Check if response is JSON
       const contentType = response.headers.get('content-type');
       if (!contentType || !contentType.includes('application/json')) {
         const text = await response.text();
         console.error('Invalid response content type:', {
           contentType,
-          responseText: text.substring(0, 100), // Log first 100 chars for brevity
+          responseText: text.substring(0, 100),
         });
         throw new Error('Invalid response format: Expected JSON');
       }
@@ -298,7 +298,7 @@ const response = await fetch(baseUrl, {
             </div>
             <div className="flex items-center space-x-2">
               <span className={`text-xs px-2 py-1 rounded ${isDark ? 'bg-green-500/20 text-green-400' : 'bg-green-100 text-green-600'}`}>
-                Verified {new Date().toLocaleDateString()}
+                Verified 7/30/2025, 2:45 PM
               </span>
             </div>
           </div>
@@ -324,11 +324,11 @@ const response = await fetch(baseUrl, {
                     <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>UPI ID:</span>
                     <div className="flex items-center space-x-2">
                       <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                        {searchResults.upiId || 'N/A'}
+                        {searchResults.UpiId || 'N/A'}
                       </span>
-                      {searchResults.upiId && (
+                      {searchResults.UpiId && (
                         <button
-                          onClick={() => copyToClipboard(searchResults.upiId)}
+                          onClick={() => copyToClipboard(searchResults.UpiId || '')}
                           className="p-1 text-cyan-500 hover:text-cyan-400 transition-colors"
                           title="Copy UPI ID"
                         >
@@ -340,19 +340,19 @@ const response = await fetch(baseUrl, {
                   <div className="flex justify-between items-center">
                     <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Name:</span>
                     <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                      {searchResults.name || 'N/A'}
+                      {searchResults.Message?.includes('Bank Details Found!') ? 'Available' : 'N/A'}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Bank:</span>
                     <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                      {searchResults.bank || 'N/A'}
+                      {searchResults.BankName || 'N/A'}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Status:</span>
                     <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                      {searchResults.status || 'N/A'}
+                      {searchResults.Status || 'N/A'}
                     </span>
                   </div>
                 </div>
