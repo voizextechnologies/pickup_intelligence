@@ -13,6 +13,8 @@ const MobileToUpi: React.FC = () => {
   const { isDark } = useTheme();
   const { officer, updateOfficerState } = useOfficerAuth();
   const { apis, addQuery, addTransaction } = useSupabaseData();
+  const { apis, addQuery, addTransaction, getOfficerEnabledAPIs } = useSupabaseData();
+
   const [mobileNo, setMobileNo] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [searchResults, setSearchResults] = useState<MobileToUpiResult | null>(null);
