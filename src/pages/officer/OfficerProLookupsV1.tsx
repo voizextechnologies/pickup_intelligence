@@ -12,6 +12,7 @@ import PanByGstNumber from './tabs/PanByGstNumber';
 import UpiValidation from './tabs/UpiValidation';
 import MobileToUpi from './tabs/MobileToUpi';
 import GstStatus from './tabs/GstStatus';
+import BankVerification from './tabs/BankVerification';
 import GstAdvance from './tabs/GstAdvance';
 import VoterIdVerification from './tabs/VoterIdVerification';
 import VoterId2Verification from './tabs/VoterId2Verification';
