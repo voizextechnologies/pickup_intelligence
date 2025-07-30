@@ -59,6 +59,11 @@ const PanVerification: React.FC = () => {
     const panAPI = apis.find(api =>
       api.name.toLowerCase().includes('pan verification') && api.key_status === 'Active'
     );
+    const enabledAPIs = getOfficerEnabledAPIs(officer.id); // Get APIs enabled for this officer's plan
+    const mobileAPI = enabledAPIs.find(api =>
+      api.name.toLowerCase().includes('mobile to upi') && api.key_status === 'Active'
+    );
+
 
     if (!panAPI) {
       toast.error('PAN Verification API not configured. Please contact admin.');
