@@ -16,6 +16,7 @@ import GstAdvance from './tabs/GstAdvance';
 import VoterIdVerification from './tabs/VoterIdVerification';
 import VoterId2Verification from './tabs/VoterId2Verification';
 import MCACompanySearch from './tabs/MCACompanySearch';
+import MCACINSearch from './tabs/MCACINSearch';
 import VehicleChallanDetails from './tabs/VehicleChallanDetails';
 import DrivingLicenseVerification from './tabs/DrivingLicenseVerification';
 import RegistrationCertificateVerification from './tabs/RegistrationCertificateVerification';
@@ -378,7 +379,7 @@ export const OfficerProLookupsV1: React.FC = () => {
       {activeTab === 'voter-id-verification' && <VoterIdVerification />}
       {activeTab === 'voter-id-2-verification' && <VoterId2Verification />}
       {activeTab === 'mca-company' && <MCACompanySearch />}
-      {activeTab === 'mca-cin-search' && renderComingSoon('MCA CIN Search', Search)}
+      {activeTab === 'mca-cin-search' && <MCACINSearch />}
       {activeTab === 'din-verification' && <DINVerification />}
       {activeTab === 'registration-certificate' && <RegistrationCertificateVerification />}
       {activeTab === 'driving-license-verification' && <DrivingLicenseVerification />}
