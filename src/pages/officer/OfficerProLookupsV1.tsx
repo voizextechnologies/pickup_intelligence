@@ -359,7 +359,7 @@ export const OfficerProLookupsV1: React.FC = () => {
       {activeTab === 'upi-info' && <UpiInfoCheck />}
       {activeTab === 'upi-to-account' && <UpiVerification />}
       {activeTab === 'upi-validation' && <UpiValidation />}
-      {activeTab === 'mobile-to-upi' && renderComingSoon('Mobile to UPI', CreditCard)}
+      {activeTab === 'mobile-to-upi' && <UpiValidation />}
       {activeTab === 'gst-status' && renderComingSoon('GST Status', FileText)}
       {activeTab === 'gst-advance' && renderComingSoon('GST Advance Check', FileText)}
       {activeTab === 'gst-verification' && renderComingSoon('GST Verification', FileText)}
