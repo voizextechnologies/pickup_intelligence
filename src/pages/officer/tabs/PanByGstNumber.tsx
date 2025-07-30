@@ -81,7 +81,7 @@ const PanByGstNumber: React.FC = () => {
       }
 
       const cleanGstNumber = gstNumber.replace(/\s/g, '').toUpperCase();
-      const url = 'https://planapi.in/Api/Ekyc/PANByGSTNo';
+      const url = '/api/planapi/api/Ekyc/PANByGSTNo';
 
       const payload = {
         GstNumber: cleanGstNumber,
