@@ -314,7 +314,7 @@ const UpiValidation: React.FC = () => {
             </div>
             <div className="flex items-center space-x-2">
               <span className={`text-xs px-2 py-1 rounded ${isDark ? 'bg-green-500/20 text-green-400' : 'bg-green-100 text-green-600'}`}>
-                Verified 7/30/2025, 3:10 PM
+                Verified 7/30/2025, 3:11 PM
               </span>
             </div>
           </div>
