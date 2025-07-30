@@ -58,9 +58,9 @@ const PassportVerification: React.FC = () => {
 
 
 
-const passportAPI = enabledAPIs.find(api =>
-  api.name.toLowerCase().includes('passport verification') && api.key_status === 'Active'
-);
+    const passportAPI = enabledAPIs.find(api =>
+      api.name.toLowerCase().includes('passport verification') && api.key_status === 'Active'
+    );
 
 
 
