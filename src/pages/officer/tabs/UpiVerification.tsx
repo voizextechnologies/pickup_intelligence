@@ -6,10 +6,12 @@ import { useSupabaseData } from '../../../hooks/useSupabaseData';
 import toast from 'react-hot-toast';
 
 interface UpiVerificationResult {
-  upiId?: string;
-  name?: string;
-  bank?: string;
   status?: string;
+  msg?: string;
+  response?: {
+    beneficiary_name?: string;
+    [key: string]: any;
+  };
   [key: string]: any;
 }
 
@@ -33,21 +35,9 @@ const UpiVerification: React.FC = () => {
     }
   }, [apis, officer]);
 
-  const isValidUpiId = (id: string): boolean => {
-    const pattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+$/;
-    return pattern.test(id.trim());
-  };
-
   const handleUpiVerification = async () => {
-    const cleanUpiId = upiId.trim();
-    if (!cleanUpiId) {
+    if (!upiId.trim()) {
       toast.error('Please enter a UPI ID');
-      return;
-    }
-
-    if (!isValidUpiId(cleanUpiId)) {
-      toast.error('Invalid UPI ID format. Expected format: username@bank (e.g., abc@ybl)');
-      setSearchError('Invalid UPI ID format');
       return;
     }
 
@@ -73,7 +63,7 @@ const UpiVerification: React.FC = () => {
       return;
     }
 
-    const creditCost = upiAPI.default_credit_charge || 20.00;
+    const creditCost = upiAPI.default_credit_charge || 1.80;
     if (officer.credits_remaining < creditCost) {
       toast.error(`Insufficient credits. Required: ${creditCost}, Available: ${officer.credits_remaining}`);
       setSearchError(`Insufficient credits: ${creditCost} required`);
@@ -89,26 +79,28 @@ const UpiVerification: React.FC = () => {
       if (apiParts.length < 3) {
         throw new Error('Invalid API key format: Expected ApiUserID:ApiPassword:TokenID');
       }
-      const [apiUserId, apiPassword, tokenId] = apiParts;
+      const apiUserId = apiParts[0];
+      const apiPassword = apiParts[1];
+      const tokenId = apiParts[2];
 
-      const baseUrl = '/api/planapi/api/Ekyc/UpiVerification'; // Proxy
-      // const baseUrl = 'https://planapi.in/Api/Ekyc/UpiVerification'; // Direct (uncomment to bypass proxy)
+      const cleanUpiId = upiId.trim();
+      const baseUrl = '/api/planapi/api/Ekyc/UpiVerification';
 
       const payload = {
         UpiId: cleanUpiId,
-        ApiMode: '1', // Live mode
+        ApiMode: '1',
       };
 
       const response = await fetch(baseUrl, {
         method: 'POST',
         headers: {
+          'Content-Type': 'application/json',
           'TokenID': tokenId,
           'ApiUserID': apiUserId,
           'ApiPassword': apiPassword,
-          'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(payload)
       });
 
       if (!response.ok) {
@@ -116,13 +108,9 @@ const UpiVerification: React.FC = () => {
         console.error('API request failed:', {
           status: response.status,
           statusText: response.statusText,
-          contentType: response.headers.get('content-type'),
           responseText: text,
         });
-        if (response.status === 404) {
-          throw new Error('API endpoint not found. Please verify the proxy configuration or use the direct endpoint.');
-        }
-        throw new Error(`API request failed: ${response.status} ${response.statusText}. Response: ${text.substring(0, 200)}`);
+        throw new Error(`API request failed: ${response.status} ${response.statusText}`);
       }
 
       const contentType = response.headers.get('content-type');
@@ -130,37 +118,13 @@ const UpiVerification: React.FC = () => {
         const text = await response.text();
         console.error('Invalid response content type:', {
           contentType,
-          responseText: text,
-          status: response.status,
+          responseText: text.substring(0, 100),
         });
-        let errorMessage = 'Invalid response format: Expected JSON.';
-        if (text.includes('Invalid UPI ID')) {
-          errorMessage = 'Invalid UPI ID provided. Please check the input.';
-        } else if (text.includes('Invalid Token') || text.includes('Unauthorized')) {
-          errorMessage = 'Authentication failed: Invalid API credentials. Please verify the API key.';
-        } else {
-          errorMessage += ` Received: ${contentType || 'no content type'}. Response: ${text.substring(0, 200)}`;
-        }
-        throw new Error(errorMessage);
+        throw new Error('Invalid response format: Expected JSON');
       }
 
-      const data = await response.json();
-      if (data.status !== 'Success') {
-        console.error('API error response:', data);
-        throw new Error(data.msg || 'API returned an error');
-      }
-
-      // Map response to UpiVerificationResult
-      const vpaInfo = data.response || {};
-      const mappedData: UpiVerificationResult = {
-        upiId: vpaInfo.VPA || cleanUpiId,
-        name: vpaInfo.Name || vpaInfo.beneficiary_name || 'N/A',
-        bank: vpaInfo.Bank || 'N/A',
-        status: data.status || 'N/A',
-        ...vpaInfo,
-      };
-
-      setSearchResults(mappedData);
+      const data: UpiVerificationResult = await response.json();
+      setSearchResults(data);
 
       const newCreditsRemaining = officer.credits_remaining - creditCost;
       updateOfficerState({ credits_remaining: newCreditsRemaining });
@@ -183,15 +147,19 @@ const UpiVerification: React.FC = () => {
           type: 'PRO',
           category: 'UPI Verification',
           input_data: `UPI ID: ${cleanUpiId}`,
-          source: 'PlanAPI',
-          result_summary: `UPI verification retrieved for ${cleanUpiId}`,
+          source: 'RapidAPI',
+          result_summary: `UPI verification for ${cleanUpiId}: ${data.status === 'Success' ? 'Successful' : 'Failed'}`,
           full_result: data,
           credits_used: creditCost,
-          status: 'Success',
+          status: data.status === 'Success' ? 'Success' : 'Failed',
         });
       }
 
-      toast.success('UPI verification retrieved successfully!');
+      if (data.status === 'Success') {
+        toast.success('UPI verification successful!');
+      } else {
+        toast.error(`Verification failed: ${data.msg || 'Unknown error'}`);
+      }
     } catch (error) {
       console.error('UPI Verification error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -203,8 +171,8 @@ const UpiVerification: React.FC = () => {
           officer_name: officer.name || 'Unknown',
           type: 'PRO',
           category: 'UPI Verification',
-          input_data: `UPI ID: ${cleanUpiId}`,
-          source: 'PlanAPI',
+          input_data: `UPI ID: ${upiId}`,
+          source: 'RapidAPI',
           result_summary: `Error: ${errorMessage}`,
           full_result: null,
           credits_used: 0,
@@ -300,7 +268,7 @@ const UpiVerification: React.FC = () => {
         </div>
       </div>
       <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'} mb-6`}>
-        * Required. Consumes {apis.find(api => api.name.toLowerCase().includes('upi verification api'))?.default_credit_charge || 20.00} credits per query.
+        * Required. Consumes {apis.find(api => api.name.toLowerCase().includes('upi verification api'))?.default_credit_charge || 1.80} credits per query.
       </p>
 
       {searchError && (
@@ -312,10 +280,8 @@ const UpiVerification: React.FC = () => {
               {searchError}
               {searchError.includes('Insufficient credits') ? (
                 <span> Contact admin to top up your credits.</span>
-              ) : searchError.includes('API endpoint not found') || searchError.includes('API request failed') || searchError.includes('Invalid response format') ? (
+              ) : searchError.includes('API request failed') || searchError.includes('Invalid response format') ? (
                 <span> Please verify the API configuration or check your network connection.</span>
-              ) : searchError.includes('Invalid UPI ID') ? (
-                <span> Please enter a valid UPI ID (e.g., abc@ybl).</span>
               ) : (
                 <span> Please try again or contact support.</span>
               )}
@@ -330,7 +296,7 @@ const UpiVerification: React.FC = () => {
             <div className="flex items-center space-x-3">
               <CheckCircle className="w-5 h-5 text-green-400" />
               <h4 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                UPI Verification Found
+                UPI Verification Results
               </h4>
             </div>
             <div className="flex items-center space-x-2">
@@ -346,7 +312,7 @@ const UpiVerification: React.FC = () => {
               className={`w-full flex items-center justify-between p-4 rounded-lg border ${isDark ? 'bg-gray-800/50 border-cyber-teal/10' : 'bg-gray-50 border-gray-200'}`}
             >
               <h5 className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                UPI Information
+                UPI Verification Details
               </h5>
               {expandedSections.upi ? (
                 <ChevronUp className="w-5 h-5 text-cyan-500" />
@@ -361,11 +327,11 @@ const UpiVerification: React.FC = () => {
                     <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>UPI ID:</span>
                     <div className="flex items-center space-x-2">
                       <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                        {searchResults.upiId || 'N/A'}
+                        {upiId || 'N/A'}
                       </span>
-                      {searchResults.upiId && (
+                      {upiId && (
                         <button
-                          onClick={() => copyToClipboard(searchResults.upiId)}
+                          onClick={() => copyToClipboard(upiId)}
                           className="p-1 text-cyan-500 hover:text-cyan-400 transition-colors"
                           title="Copy UPI ID"
                         >
@@ -375,21 +341,21 @@ const UpiVerification: React.FC = () => {
                     </div>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Name:</span>
+                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Beneficiary Name:</span>
                     <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                      {searchResults.name || 'N/A'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Bank:</span>
-                    <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                      {searchResults.bank || 'N/A'}
+                      {searchResults.response?.beneficiary_name || 'N/A'}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Status:</span>
                     <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
                       {searchResults.status || 'N/A'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Message:</span>
+                    <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                      {searchResults.msg || 'N/A'}
                     </span>
                   </div>
                 </div>
@@ -428,7 +394,7 @@ const UpiVerification: React.FC = () => {
                 const url = URL.createObjectURL(dataBlob);
                 const link = document.createElement('a');
                 link.href = url;
-                link.download = `upi-verification-${cleanUpiId}-${Date.now()}.json`;
+                link.download = `upi-verification-${upiId}-${Date.now()}.json`;
                 link.click();
                 URL.revokeObjectURL(url);
                 toast.success('Results exported successfully!');
