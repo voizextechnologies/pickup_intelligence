@@ -56,10 +56,10 @@ const RechargeExpiryCheck: React.FC = () => {
 
     const enabledAPIs = getOfficerEnabledAPIs(officer.id); // Get APIs enabled for this officer's plan
 
-const rechargeAPI = enabledAPIs.find(api =>
-  api.name.toLowerCase().includes('recharge expiry check') &&
-  api.key_status === 'Active'
-);
+    const rechargeAPI = enabledAPIs.find(api =>
+      api.name.toLowerCase().includes('recharge expiry check') &&
+      api.key_status === 'Active'
+    );
 
 
     if (!rechargeAPI) {
