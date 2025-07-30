@@ -229,7 +229,7 @@ const DrivingLicenseVerification: React.FC = () => {
     <div className={`border border-cyber-teal/20 rounded-lg p-6 ${isDark ? 'bg-muted-graphite' : 'bg-white'} shadow-md hover:shadow-cyber transition-shadow duration-300`}>
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-3">
-          <Id className="w-6 h-6 text-electric-blue" />
+          <Car className="w-6 h-6 text-electric-blue" />
           <h3 className={`text-xl font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
             Driving License Verification
           </h3>
