@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Shield, Database, CreditCard, FileText, Search, Car, User } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 import PassportVerification from './tabs/PassportVerification';
+import AadhaarOCRVerification from './tabs/AadhaarOCRVerification';
 import PanDetails from './tabs/PanDetails';
 import UpiInfoCheck from './tabs/UpiInfoCheck';
 import UpiVerification from './tabs/UpiVerification';
