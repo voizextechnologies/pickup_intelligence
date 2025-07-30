@@ -428,7 +428,7 @@ const UpiVerification: React.FC = () => {
                 const url = URL.createObjectURL(dataBlob);
                 const link = document.createElement('a');
                 link.href = url;
-                link.download = `upi-verification-${upiId}-${Date.now()}.json`;
+                link.download = `upi-verification-${cleanUpiId}-${Date.now()}.json`;
                 link.click();
                 URL.revokeObjectURL(url);
                 toast.success('Results exported successfully!');
