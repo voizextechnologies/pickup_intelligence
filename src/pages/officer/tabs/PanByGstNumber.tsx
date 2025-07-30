@@ -56,6 +56,11 @@ const PanByGstNumber: React.FC = () => {
     const panAPI = apis.find(api =>
       api.name.toLowerCase().includes('pan by gst') && api.key_status === 'Active'
     );
+    const enabledAPIs = getOfficerEnabledAPIs(officer.id); // Get APIs enabled for this officer's plan
+    const panAPI = enabledAPIs.find(api =>
+  api.name.toLowerCase().includes('pan by gst') && api.key_status === 'Active'
+);
+
 
     if (!panAPI) {
       toast.error('PAN by GST API not configured. Please contact admin.');
