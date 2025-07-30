@@ -10,7 +10,28 @@ import PhoneToCreditAndBusinessDetails from './tabs/PhoneToCreditAndBusinessDeta
 
 export const OfficerProLookups: React.FC = () => {
   const { isDark } = useTheme();
-  const [activeTab, setActiveTab] = useState<'phone-prefill-v2' | 'rc' | 'imei' | 'fasttag' | 'credit-history' | 'cell-id' | 'recharge-status' | 'recharge-expiry' | 'operator-check' | 'phone-to-credit-business'>('phone-prefill-v2');
+  const [activeTab, setActiveTab] = useState<
+    | 'phone-prefill-v2'
+    | 'rc'
+    | 'imei'
+    | 'fasttag'
+    | 'credit-history'
+    | 'cell-id'
+    | 'recharge-status'
+    | 'recharge-expiry'
+    | 'operator-check'
+    | 'phone-to-credit-business'
+    | 'sample-tab-1'
+    | 'sample-tab-2'
+    | 'sample-tab-3'
+    | 'sample-tab-4'
+    | 'sample-tab-5'
+    | 'sample-tab-6'
+    | 'sample-tab-7'
+    | 'sample-tab-8'
+    | 'sample-tab-9'
+    | 'sample-tab-10'
+  >('phone-prefill-v2');
 
   const renderComingSoon = (title: string, icon: React.ElementType) => {
     const Icon = icon;
@@ -150,19 +171,149 @@ export const OfficerProLookups: React.FC = () => {
             <span className="font-medium">Operator Check</span>
           </button>
           <button
-  onClick={() => setActiveTab('phone-to-credit-business')}
-  className={`relative flex items-center space-x-3 py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-xl ${
-    activeTab === 'phone-to-credit-business'
-      ? 'bg-gradient-to-r from-neon-magenta to-cyber-teal text-white border-2 border-electric-blue shadow-2xl shadow-electric-blue/40 animate-pulse-slow'
-      : isDark
-        ? 'bg-gradient-to-r from-neon-magenta/70 to-cyber-teal/70 text-white border border-electric-blue/50 hover:bg-gradient-to-r hover:from-neon-magenta/90 hover:to-cyber-teal/90'
-        : 'bg-gradient-to-r from-neon-magenta/60 to-cyber-teal/60 text-white border border-electric-blue/40 hover:bg-gradient-to-r hover:from-neon-magenta/80 hover:to-cyber-teal/80'
-  } overflow-hidden group`}
->
-  <span className="absolute inset-0 bg-gradient-to-r from-electric-blue/20 to-neon-magenta/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-  <CreditCard className="w-6 h-6 relative z-10" />
-  <span className="font-extrabold text-lg relative z-10 tracking-wide">Phone PRO MAX</span>
-</button>
+            onClick={() => setActiveTab('phone-to-credit-business')}
+            className={`relative flex items-center space-x-3 py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-xl ${
+              activeTab === 'phone-to-credit-business'
+                ? 'bg-gradient-to-r from-neon-magenta to-cyber-teal text-white border-2 border-electric-blue shadow-2xl shadow-electric-blue/40 animate-pulse-slow'
+                : isDark
+                  ? 'bg-gradient-to-r from-neon-magenta/70 to-cyber-teal/70 text-white border border-electric-blue/50 hover:bg-gradient-to-r hover:from-neon-magenta/90 hover:to-cyber-teal/90'
+                  : 'bg-gradient-to-r from-neon-magenta/60 to-cyber-teal/60 text-white border border-electric-blue/40 hover:bg-gradient-to-r hover:from-neon-magenta/80 hover:to-cyber-teal/80'
+            } overflow-hidden group`}
+          >
+            <span className="absolute inset-0 bg-gradient-to-r from-electric-blue/20 to-neon-magenta/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <CreditCard className="w-6 h-6 relative z-10" />
+            <span className="font-extrabold text-lg relative z-10 tracking-wide">Phone PRO MAX</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('sample-tab-1')}
+            className={`flex items-center space-x-2 py-2 px-4 rounded-lg transition-all duration-200 ${
+              activeTab === 'sample-tab-1'
+                ? 'bg-cyber-teal/20 text-cyber-teal border border-cyber-teal/30'
+                : isDark 
+                  ? 'text-gray-400 hover:text-cyber-teal hover:bg-cyber-teal/10' 
+                  : 'text-gray-600 hover:text-cyber-teal hover:bg-cyber-teal/10'
+            }`}
+          >
+            <Shield className="w-4 h-4" />
+            <span className="font-medium">Sample Tab 1</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('sample-tab-2')}
+            className={`flex items-center space-x-2 py-2 px-4 rounded-lg transition-all duration-200 ${
+              activeTab === 'sample-tab-2'
+                ? 'bg-cyber-teal/20 text-cyber-teal border border-cyber-teal/30'
+                : isDark 
+                  ? 'text-gray-400 hover:text-cyber-teal hover:bg-cyber-teal/10' 
+                  : 'text-gray-600 hover:text-cyber-teal hover:bg-cyber-teal/10'
+            }`}
+          >
+            <Database className="w-4 h-4" />
+            <span className="font-medium">Sample Tab 2</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('sample-tab-3')}
+            className={`flex items-center space-x-2 py-2 px-4 rounded-lg transition-all duration-200 ${
+              activeTab === 'sample-tab-3'
+                ? 'bg-cyber-teal/20 text-cyber-teal border border-cyber-teal/30'
+                : isDark 
+                  ? 'text-gray-400 hover:text-cyber-teal hover:bg-cyber-teal/10' 
+                  : 'text-gray-600 hover:text-cyber-teal hover:bg-cyber-teal/10'
+            }`}
+          >
+            <Phone className="w-4 h-4" />
+            <span className="font-medium">Sample Tab 3</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('sample-tab-4')}
+            className={`flex items-center space-x-2 py-2 px-4 rounded-lg transition-all duration-200 ${
+              activeTab === 'sample-tab-4'
+                ? 'bg-cyber-teal/20 text-cyber-teal border border-cyber-teal/30'
+                : isDark 
+                  ? 'text-gray-400 hover:text-cyber-teal hover:bg-cyber-teal/10' 
+                  : 'text-gray-600 hover:text-cyber-teal hover:bg-cyber-teal/10'
+            }`}
+          >
+            <Car className="w-4 h-4" />
+            <span className="font-medium">Sample Tab 4</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('sample-tab-5')}
+            className={`flex items-center space-x-2 py-2 px-4 rounded-lg transition-all duration-200 ${
+              activeTab === 'sample-tab-5'
+                ? 'bg-cyber-teal/20 text-cyber-teal border border-cyber-teal/30'
+                : isDark 
+                  ? 'text-gray-400 hover:text-cyber-teal hover:bg-cyber-teal/10' 
+                  : 'text-gray-600 hover:text-cyber-teal hover:bg-cyber-teal/10'
+            }`}
+          >
+            <CreditCard className="w-4 h-4" />
+            <span className="font-medium">Sample Tab 5</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('sample-tab-6')}
+            className={`flex items-center space-x-2 py-2 px-4 rounded-lg transition-all duration-200 ${
+              activeTab === 'sample-tab-6'
+                ? 'bg-cyber-teal/20 text-cyber-teal border border-cyber-teal/30'
+                : isDark 
+                  ? 'text-gray-400 hover:text-cyber-teal hover:bg-cyber-teal/10' 
+                  : 'text-gray-600 hover:text-cyber-teal hover:bg-cyber-teal/10'
+            }`}
+          >
+            <FileText className="w-4 h-4" />
+            <span className="font-medium">Sample Tab 6</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('sample-tab-7')}
+            className={`flex items-center space-x-2 py-2 px-4 rounded-lg transition-all duration-200 ${
+              activeTab === 'sample-tab-7'
+                ? 'bg-cyber-teal/20 text-cyber-teal border border-cyber-teal/30'
+                : isDark 
+                  ? 'text-gray-400 hover:text-cyber-teal hover:bg-cyber-teal/10' 
+                  : 'text-gray-600 hover:text-cyber-teal hover:bg-cyber-teal/10'
+            }`}
+          >
+            <Search className="w-4 h-4" />
+            <span className="font-medium">Sample Tab 7</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('sample-tab-8')}
+            className={`flex items-center space-x-2 py-2 px-4 rounded-lg transition-all duration-200 ${
+              activeTab === 'sample-tab-8'
+                ? 'bg-cyber-teal/20 text-cyber-teal border border-cyber-teal/30'
+                : isDark 
+                  ? 'text-gray-400 hover:text-cyber-teal hover:bg-cyber-teal/10' 
+                  : 'text-gray-600 hover:text-cyber-teal hover:bg-cyber-teal/10'
+            }`}
+          >
+            <Smartphone className="w-4 h-4" />
+            <span className="font-medium">Sample Tab 8</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('sample-tab-9')}
+            className={`flex items-center space-x-2 py-2 px-4 rounded-lg transition-all duration-200 ${
+              activeTab === 'sample-tab-9'
+                ? 'bg-cyber-teal/20 text-cyber-teal border border-cyber-teal/30'
+                : isDark 
+                  ? 'text-gray-400 hover:text-cyber-teal hover:bg-cyber-teal/10' 
+                  : 'text-gray-600 hover:text-cyber-teal hover:bg-cyber-teal/10'
+            }`}
+          >
+            <MapPin className="w-4 h-4" />
+            <span className="font-medium">Sample Tab 9</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('sample-tab-10')}
+            className={`flex items-center space-x-2 py-2 px-4 rounded-lg transition-all duration-200 ${
+              activeTab === 'sample-tab-10'
+                ? 'bg-cyber-teal/20 text-cyber-teal border border-cyber-teal/30'
+                : isDark 
+                  ? 'text-gray-400 hover:text-cyber-teal hover:bg-cyber-teal/10' 
+                  : 'text-gray-600 hover:text-cyber-teal hover:bg-cyber-teal/10'
+            }`}
+          >
+            <Shield className="w-4 h-4" />
+            <span className="font-medium">Sample Tab 10</span>
+          </button>
         </div>
       </div>
 
@@ -175,6 +326,16 @@ export const OfficerProLookups: React.FC = () => {
       {activeTab === 'cell-id' && renderComingSoon('Cell ID Lookup', MapPin)}
       {activeTab === 'operator-check' && <OperatorCircleCheck />}
       {activeTab === 'phone-to-credit-business' && <PhoneToCreditAndBusinessDetails />}
+      {activeTab === 'sample-tab-1' && renderComingSoon('Sample Tab 1', Shield)}
+      {activeTab === 'sample-tab-2' && renderComingSoon('Sample Tab 2', Database)}
+      {activeTab === 'sample-tab-3' && renderComingSoon('Sample Tab 3', Phone)}
+      {activeTab === 'sample-tab-4' && renderComingSoon('Sample Tab 4', Car)}
+      {activeTab === 'sample-tab-5' && renderComingSoon('Sample Tab 5', CreditCard)}
+      {activeTab === 'sample-tab-6' && renderComingSoon('Sample Tab 6', FileText)}
+      {activeTab === 'sample-tab-7' && renderComingSoon('Sample Tab 7', Search)}
+      {activeTab === 'sample-tab-8' && renderComingSoon('Sample Tab 8', Smartphone)}
+      {activeTab === 'sample-tab-9' && renderComingSoon('Sample Tab 9', MapPin)}
+      {activeTab === 'sample-tab-10' && renderComingSoon('Sample Tab 10', Shield)}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div className={`border border-cyber-teal/20 rounded-lg p-6 hover:shadow-cyber transition-all duration-300 ${isDark ? 'bg-muted-graphite' : 'bg-white'}`}>
