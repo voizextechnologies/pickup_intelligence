@@ -360,7 +360,7 @@ export const OfficerProLookupsV1: React.FC = () => {
       </div>
 
       {activeTab === 'aadhaar-duplicate' && <AadhaarOCRVerification />}
-      {activeTab === 'pan-duplicate' && renderComingSoon('PAN Duplicate Check', FileText)}
+      {activeTab === 'pan-duplicate' && <PanOCRVerification />}
       {activeTab === 'pan-details' && <PanDetails />}
       {activeTab === 'pan-verification' && <PanVerification />}
       {activeTab === 'pan-by-gst' && <PanByGstNumber />}
