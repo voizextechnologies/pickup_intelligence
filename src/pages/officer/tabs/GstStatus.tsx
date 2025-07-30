@@ -34,7 +34,7 @@ const GstStatus: React.FC = () => {
       toast.error('Please enter a GST number');
       return;
     }
-    if (!/^\d{15}$/.test(gstNumber)) {
+    if (!/^\d{14}$/.test(gstNumber)) {
       toast.error('Please enter a valid 15-digit GST number');
       return;
     }
