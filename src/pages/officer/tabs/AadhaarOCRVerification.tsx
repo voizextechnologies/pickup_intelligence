@@ -1,0 +1,457 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { Shield, AlertCircle, CheckCircle, ChevronDown, ChevronUp, Download, Search, FileImage } from 'lucide-react';
+import { useTheme } from '../../../contexts/ThemeContext';
+import { useOfficerAuth } from '../../../contexts/OfficerAuthContext';
+import { useSupabaseData } from '../../../hooks/useSupabaseData';
+import toast from 'react-hot-toast';
+
+interface AadhaarOCRResult {
+  [key: string]: any;
+}
+
+const AadhaarOCRVerification: React.FC = () => {
+  const { isDark } = useTheme();
+  const { officer, updateOfficerState } = useOfficerAuth();
+  const { apis, addQuery, addTransaction, getOfficerEnabledAPIs } = useSupabaseData();
+  const [frontImage, setFrontImage] = useState<File | null>(null);
+  const [backImage, setBackImage] = useState<File | null>(null);
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchResults, setSearchResults] = useState<AadhaarOCRResult | null>(null);
+  const [searchError, setSearchError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [expandedSections, setExpandedSections] = useState({
+    details: true,
+    raw: false,
+  });
+  const frontInputRef = useRef<HTMLInputElement>(null);
+  const backInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (apis && officer) {
+      setIsLoading(false);
+    }
+  }, [apis, officer]);
+
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>, setImage: (file: File | null) => void) => {
+    const file = event.target.files?.[0];
+    if (file && (file.type === 'image/jpeg' || file.type === 'image/png')) {
+      setImage(file);
+    } else {
+      toast.error('Please upload a valid JPEG or PNG image');
+      event.target.value = '';
+    }
+  };
+
+  const handleAadhaarOCR = async () => {
+    if (!frontImage || !backImage) {
+      toast.error('Please upload both front and back Aadhaar images');
+      return;
+    }
+
+    if (!officer) {
+      toast.error('Officer not authenticated');
+      setSearchError('Officer not authenticated');
+      return;
+    }
+
+    if (!apis) {
+      toast.error('API configuration not loaded');
+      setSearchError('API configuration not loaded');
+      return;
+    }
+
+    const enabledAPIs = getOfficerEnabledAPIs(officer.id);
+    const aadhaarAPI = enabledAPIs.find(api =>
+      api.name.toLowerCase().includes('aadhaar ocr') && api.key_status === 'Active'
+    );
+
+    if (!aadhaarAPI) {
+      toast.error('Aadhaar OCR API not configured. Please contact admin.');
+      setSearchError('Aadhaar OCR API not configured');
+      return;
+    }
+
+    const creditCost = aadhaarAPI.default_credit_charge || 2.50;
+    if (officer.credits_remaining < creditCost) {
+      toast.error(`Insufficient credits. Required: ${creditCost}, Available: ${officer.credits_remaining}`);
+      setSearchError(`Insufficient credits: ${creditCost} required`);
+      return;
+    }
+
+    setIsSearching(true);
+    setSearchError(null);
+    setSearchResults(null);
+
+    try {
+      const apiParts = aadhaarAPI.api_key.split(':');
+      if (apiParts.length < 3) {
+        throw new Error('Invalid API key format: Expected ApiUserID:ApiPassword:TokenID');
+      }
+      const apiUserId = apiParts[0];
+      const apiPassword = apiParts[1];
+      const tokenId = apiParts[2];
+
+      const formData = new FormData();
+      formData.append('FrontImage', frontImage);
+      formData.append('BackImage', backImage);
+      formData.append('ApiMode', '1');
+
+      const baseUrl = '/api/planapi/api/Ekyc/AadhaarOCR';
+
+      const response = await fetch(baseUrl, {
+        method: 'POST',
+        headers: {
+          'TokenID': tokenId,
+          'ApiUserID': apiUserId,
+          'ApiPassword': apiPassword,
+          'Accept': 'application/json',
+        },
+        body: formData
+      });
+
+      if (!response.ok) {
+        const text = await response.text();
+        console.error('API request failed:', {
+          status: response.status,
+          statusText: response.statusText,
+          responseText: text,
+        });
+        throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+      }
+
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await response.text();
+        console.error('Invalid response content type:', {
+          contentType,
+          responseText: text.substring(0, 100),
+        });
+        throw new Error('Invalid response format: Expected JSON');
+      }
+
+      const data: AadhaarOCRResult = await response.json();
+      setSearchResults(data);
+
+      const newCreditsRemaining = officer.credits_remaining - creditCost;
+      updateOfficerState({ credits_remaining: newCreditsRemaining });
+
+      if (addTransaction) {
+        await addTransaction({
+          officer_id: officer.id,
+          officer_name: officer.name || 'Unknown',
+          action: 'Deduction',
+          credits: creditCost,
+          payment_mode: 'Query Usage',
+          remarks: `Aadhaar OCR query for ${frontImage.name}`,
+        });
+      }
+
+      if (addQuery) {
+        await addQuery({
+          officer_id: officer.id,
+          officer_name: officer.name || 'Unknown',
+          type: 'PRO',
+          category: 'Aadhaar OCR Verification',
+          input_data: `Front Image: ${frontImage.name}, Back Image: ${backImage.name}, ApiMode: 1`,
+          source: 'RapidAPI',
+          result_summary: `Aadhaar OCR for ${frontImage.name}: ${data.Status === 'Success' ? 'Successful' : 'Failed'}`,
+          full_result: data,
+          credits_used: creditCost,
+          status: data.Status === 'Success' ? 'Success' : 'Failed',
+        });
+      }
+
+      if (data.Status === 'Success') {
+        toast.success('Aadhaar OCR verification successful!');
+      } else {
+        toast.error(`Aadhaar OCR verification failed: ${data.Message || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Aadhaar OCR error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      setSearchError(errorMessage);
+
+      if (addQuery) {
+        await addQuery({
+          officer_id: officer.id,
+          officer_name: officer.name || 'Unknown',
+          type: 'PRO',
+          category: 'Aadhaar OCR Verification',
+          input_data: `Front Image: ${frontImage?.name || 'N/A'}, Back Image: ${backImage?.name || 'N/A'}, ApiMode: 1`,
+          source: 'RapidAPI',
+          result_summary: `Error: ${errorMessage}`,
+          full_result: null,
+          credits_used: 0,
+          status: 'Failed',
+        });
+      }
+
+      toast.error(errorMessage);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  const toggleSection = (section: keyof typeof expandedSections) => {
+    setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
+  };
+
+  if (isLoading) {
+    return (
+      <div className={`border border-cyber-teal/20 rounded-lg p-6 ${isDark ? 'bg-muted-graphite' : 'bg-white'} text-center`}>
+        <p className={isDark ? 'text-gray-400' : 'text-gray-600'}>Loading...</p>
+      </div>
+    );
+  }
+
+  if (!officer || !apis) {
+    return (
+      <div className={`border border-cyber-teal/20 rounded-lg p-6 ${isDark ? 'bg-muted-graphite' : 'bg-white'}`}>
+        <div className={`p-4 rounded-lg border flex items-center space-x-3 ${isDark ? 'bg-red-500/10 border-red-500/30' : 'bg-red-50 border-red-200'}`}>
+          <AlertCircle className="w-5 h-5 text-red-400" />
+          <div>
+            <p className="text-red-400 text-sm font-medium">Error</p>
+            <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+              Required data not loaded. Please try refreshing or contact support.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={`border border-cyber-teal/20 rounded-lg p-6 ${isDark ? 'bg-muted-graphite' : 'bg-white'} shadow-md hover:shadow-cyber transition-shadow duration-300`}>
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center space-x-3">
+          <FileImage className="w-6 h-6 text-electric-blue" />
+          <h3 className={`text-xl font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+            Aadhaar OCR Verification
+          </h3>
+        </div>
+        <div className="flex items-center space-x-2">
+          <Shield className="w-5 h-5 text-electric-blue" />
+          <span className="text-xs bg-electric-blue/20 text-electric-blue px-2 py-1 rounded">PREMIUM</span>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <div>
+          <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+            Front Image *
+          </label>
+          <input
+            ref={frontInputRef}
+            type="file"
+            accept="image/jpeg,image/png"
+            onChange={(e) => handleImageUpload(e, setFrontImage)}
+            className={`w-full px-4 py-3 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal ${isDark ? 'bg-crisp-black text-white placeholder-gray-500' : 'bg-white text-gray-900 placeholder-gray-400'}`}
+          />
+          {frontImage && (
+            <p className={`text-sm mt-1 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+              Selected: {frontImage.name}
+            </p>
+          )}
+        </div>
+        <div>
+          <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+            Back Image *
+          </label>
+          <input
+            ref={backInputRef}
+            type="file"
+            accept="image/jpeg,image/png"
+            onChange={(e) => handleImageUpload(e, setBackImage)}
+            className={`w-full px-4 py-3 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal ${isDark ? 'bg-crisp-black text-white placeholder-gray-500' : 'bg-white text-gray-900 placeholder-gray-400'}`}
+          />
+          {backImage && (
+            <p className={`text-sm mt-1 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+              Selected: {backImage.name}
+            </p>
+          )}
+        </div>
+        <div className="flex items-end col-span-2">
+          <button
+            onClick={handleAadhaarOCR}
+            disabled={isSearching || !frontImage || !backImage}
+            className="w-full py-3 px-4 bg-cyber-gradient text-white font-medium rounded-lg hover:shadow-cyber transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+          >
+            {isSearching ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <span>Processing...</span>
+              </>
+            ) : (
+              <>
+                <Search className="w-4 h-4" />
+                <span>Verify Aadhaar</span>
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+      <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'} mb-6`}>
+        * Required. Consumes {apis.find(api => api.name.toLowerCase().includes('aadhaar ocr'))?.default_credit_charge || 2.50} credits per query.
+      </p>
+
+      {searchError && (
+        <div className={`p-4 rounded-lg border flex items-center space-x-3 ${isDark ? 'bg-red-500/10 border-red-500/30' : 'bg-red-50 border-red-200'} mb-6`}>
+          <AlertCircle className="w-5 h-5 text-red-400" />
+          <div>
+            <p className="text-red-400 text-sm font-medium">Error</p>
+            <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+              {searchError}
+              {searchError.includes('Insufficient credits') ? (
+                <span> Contact admin to top up your credits.</span>
+              ) : searchError.includes('API request failed') || searchError.includes('Invalid response format') ? (
+                <span> Please verify the API configuration or check your network connection.</span>
+              ) : (
+                <span> Please try again or contact support.</span>
+              )}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {searchResults && (
+        <div className={`p-6 rounded-lg border ${isDark ? 'bg-green-500/10 border-green-500/30' : 'bg-green-50 border-green-200'}`}>
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center space-x-3">
+              <CheckCircle className="w-5 h-5 text-green-400" />
+              <h4 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                Aadhaar OCR Verification Results
+              </h4>
+            </div>
+            <div className="flex items-center space-x-2">
+              <span className={`text-xs px-2 py-1 rounded ${isDark ? 'bg-green-500/20 text-green-400' : 'bg-green-100 text-green-600'}`}>
+                Verified 7/30/2025, 8:04 PM
+              </span>
+            </div>
+          </div>
+
+          <div className="mb-6">
+            <button
+              onClick={() => toggleSection('details')}
+              className={`w-full flex items-center justify-between p-4 rounded-lg border ${isDark ? 'bg-gray-800/50 border-cyber-teal/10' : 'bg-gray-50 border-gray-200'}`}
+            >
+              <h5 className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                Aadhaar Details
+              </h5>
+              {expandedSections.details ? (
+                <ChevronUp className="w-5 h-5 text-cyan-500" />
+              ) : (
+                <ChevronDown className="w-5 h-5 text-cyan-500" />
+              )}
+            </button>
+            {expandedSections.details && (
+              <div className={`p-4 mt-2 rounded-lg border ${isDark ? 'bg-gray-700/50 border-cyber-teal/10' : 'bg-white border-gray-200'}`}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <div className="flex justify-between items-center">
+                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Aadhaar Number:</span>
+                    <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                      {searchResults.data?.AadharNumber || 'N/A'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Name:</span>
+                    <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                      {searchResults.data?.Name || 'N/A'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>DOB:</span>
+                    <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                      {searchResults.data?.DOB || 'N/A'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Address:</span>
+                    <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                      {searchResults.data?.Address || 'N/A'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>State:</span>
+                    <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                      {searchResults.data?.State || 'N/A'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Pincode:</span>
+                    <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                      {searchResults.data?.Pincode || 'N/A'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Valid:</span>
+                    <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                      {searchResults.data?.Valid || 'N/A'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="mb-6">
+            <button
+              onClick={() => toggleSection('raw')}
+              className={`w-full flex items-center justify-between p-4 rounded-lg border ${isDark ? 'bg-gray-800/50 border-cyber-teal/10' : 'bg-gray-50 border-gray-200'}`}
+            >
+              <h5 className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                Raw JSON Response
+              </h5>
+              {expandedSections.raw ? (
+                <ChevronUp className="w-5 h-5 text-cyan-500" />
+              ) : (
+                <ChevronDown className="w-5 h-5 text-cyan-500" />
+              )}
+            </button>
+            {expandedSections.raw && (
+              <div className={`mt-2 p-4 rounded-lg border ${isDark ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-800'} overflow-x-auto`}>
+                <pre className="text-xs">
+                  <code>{JSON.stringify(searchResults, null, 2)}</code>
+                </pre>
+              </div>
+            )}
+          </div>
+
+          <div className="flex justify-end space-x-3 pt-4 border-t border-cyber-teal/20">
+            <button
+              onClick={() => {
+                const dataStr = JSON.stringify(searchResults, null, 2);
+                const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                const url = URL.createObjectURL(dataBlob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `aadhaar-ocr-${Date.now()}.json`;
+                link.click();
+                URL.revokeObjectURL(url);
+                toast.success('Results exported successfully!');
+              }}
+              className="px-4 py-2 bg-blue-500/20 text-blue-500 rounded-lg hover:bg-blue-500/30 transition-all duration-200 flex items-center space-x-2"
+            >
+              <Download className="w-4 h-4" />
+              <span>Export Results</span>
+            </button>
+            <button
+              onClick={() => {
+                setSearchResults(null);
+                setSearchError(null);
+                setFrontImage(null);
+                setBackImage(null);
+                if (frontInputRef.current) frontInputRef.current.value = '';
+                if (backInputRef.current) backInputRef.current.value = '';
+              }}
+              className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-lg hover:shadow-lg transition-all duration-200"
+            >
+              New Search
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default AadhaarOCRVerification;
