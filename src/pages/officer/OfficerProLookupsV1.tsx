@@ -9,6 +9,7 @@ import PanVerification from './tabs/PanVerification';
 import PanByGstNumber from './tabs/PanByGstNumber';
 import UpiValidation from './tabs/UpiValidation';
 import MobileToUpi from './tabs/MobileToUpi';
+import GstStatus from './tabs/GstStatus';
 
 export const OfficerProLookupsV1: React.FC = () => {
   const { isDark } = useTheme();
