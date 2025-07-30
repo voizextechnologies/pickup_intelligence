@@ -368,7 +368,7 @@ export const OfficerProLookupsV1: React.FC = () => {
       {activeTab === 'pan-details' && <PanDetails />}
       {activeTab === 'pan-verification' && <PanVerification />}
       {activeTab === 'pan-by-gst' && <PanByGstNumber />}
-      {activeTab === 'bank-verification-v1' && renderComingSoon('Bank Account Verification V1', CreditCard)}
+      {activeTab === 'bank-verification-v1' && <BankVerification />}
       {activeTab === 'bank-verification-v2' && renderComingSoon('Bank Account Verification V2', CreditCard)}
       {activeTab === 'upi-info' && <UpiInfoCheck />}
       {activeTab === 'upi-to-account' && <UpiVerification />}
