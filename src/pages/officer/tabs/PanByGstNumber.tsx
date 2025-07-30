@@ -6,10 +6,10 @@ import { useSupabaseData } from '../../../hooks/useSupabaseData';
 import toast from 'react-hot-toast';
 
 interface PanByGstResult {
-  errorcode?: number;
-  status?: string;
-  message?: string;
-  panNumber?: string;
+  ERRORCODE?: number;
+  STATUS?: string;
+  MESSAGE?: string;
+  PanNumber?: string;
   [key: string]: any;
 }
 
@@ -98,7 +98,7 @@ const PanByGstNumber: React.FC = () => {
       });
 
       if (!response.ok) {
-        throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+        throw new Error(`API response failed: ${response.status} ${response.statusText}`);
       }
 
       const data: PanByGstResult = await response.json();
@@ -254,7 +254,7 @@ const PanByGstNumber: React.FC = () => {
               {searchError}
               {searchError.includes('Insufficient credits') ? (
                 <span> Contact admin to top up your credits.</span>
-              ) : searchError.includes('API request failed') ? (
+              ) : searchError.includes('API response failed') ? (
                 <span> Please try again or check your network connection.</span>
               ) : (
                 <span> Please try again or contact support.</span>
@@ -275,7 +275,7 @@ const PanByGstNumber: React.FC = () => {
             </div>
             <div className="flex items-center space-x-2">
               <span className={`text-xs px-2 py-1 rounded ${isDark ? 'bg-green-500/20 text-green-400' : 'bg-green-100 text-green-600'}`}>
-                Verified 7/30/2025, 2:37 PM
+                Verified 7/30/2025, 2:40 PM
               </span>
             </div>
           </div>
@@ -301,11 +301,11 @@ const PanByGstNumber: React.FC = () => {
                     <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>PAN Number:</span>
                     <div className="flex items-center space-x-2">
                       <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                        {searchResults.panNumber || 'N/A'}
+                        {searchResults.PanNumber || 'N/A'}
                       </span>
-                      {searchResults.panNumber && (
+                      {searchResults.PanNumber && (
                         <button
-                          onClick={() => copyToClipboard(searchResults.panNumber || '')}
+                          onClick={() => copyToClipboard(searchResults.PanNumber || '')}
                           className="p-1 text-cyan-500 hover:text-cyan-400 transition-colors"
                           title="Copy PAN Number"
                         >
@@ -317,13 +317,13 @@ const PanByGstNumber: React.FC = () => {
                   <div className="flex justify-between items-center">
                     <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Status:</span>
                     <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                      {searchResults.status || 'N/A'}
+                      {searchResults.STATUS || 'N/A'}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Message:</span>
                     <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                      {searchResults.message || 'N/A'}
+                      {searchResults.MESSAGE || 'N/A'}
                     </span>
                   </div>
                 </div>
