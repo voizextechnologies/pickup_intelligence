@@ -7,6 +7,7 @@ import RechargeStatusCheck from './tabs/RechargeStatusCheck';
 import RechargeExpiryCheck from './tabs/RechargeExpiryCheck';
 import OperatorCircleCheck from './tabs/Operator_Circle_Check';
 import PhoneToCreditAndBusinessDetails from './tabs/PhoneToCreditAndBusinessDetails';
+import UdyamDetailsSearch from './tabs/UdyamDetailsSearch';
 
 export const OfficerProLookups: React.FC = () => {
   const { isDark } = useTheme();
@@ -21,7 +22,7 @@ export const OfficerProLookups: React.FC = () => {
     | 'recharge-expiry'
     | 'operator-check'
     | 'phone-to-credit-business'
-    | 'sample-tab-1'
+    | 'phoneto-udyam'
     | 'sample-tab-2'
     | 'sample-tab-3'
     | 'sample-tab-4'
@@ -185,9 +186,9 @@ export const OfficerProLookups: React.FC = () => {
             <span className="font-extrabold text-lg relative z-10 tracking-wide">Phone PRO MAX</span>
           </button>
           <button
-            onClick={() => setActiveTab('sample-tab-1')}
+            onClick={() => setActiveTab('phone-to-udyam')}
             className={`flex items-center space-x-2 py-2 px-4 rounded-lg transition-all duration-200 ${
-              activeTab === 'sample-tab-1'
+              activeTab === 'phone-to-udyam'
                 ? 'bg-cyber-teal/20 text-cyber-teal border border-cyber-teal/30'
                 : isDark 
                   ? 'text-gray-400 hover:text-cyber-teal hover:bg-cyber-teal/10' 
@@ -195,7 +196,7 @@ export const OfficerProLookups: React.FC = () => {
             }`}
           >
             <Shield className="w-4 h-4" />
-            <span className="font-medium">Sample Tab 1</span>
+            <span className="font-medium">Phone to Udyam</span>
           </button>
           <button
             onClick={() => setActiveTab('sample-tab-2')}
@@ -326,7 +327,7 @@ export const OfficerProLookups: React.FC = () => {
       {activeTab === 'cell-id' && renderComingSoon('Cell ID Lookup', MapPin)}
       {activeTab === 'operator-check' && <OperatorCircleCheck />}
       {activeTab === 'phone-to-credit-business' && <PhoneToCreditAndBusinessDetails />}
-      {activeTab === 'sample-tab-1' && renderComingSoon('Sample Tab 1', Shield)}
+      {activeTab === 'phone-to-udyam' && <UdyamDetailsSearch />}
       {activeTab === 'sample-tab-2' && renderComingSoon('Sample Tab 2', Database)}
       {activeTab === 'sample-tab-3' && renderComingSoon('Sample Tab 3', Phone)}
       {activeTab === 'sample-tab-4' && renderComingSoon('Sample Tab 4', Car)}
