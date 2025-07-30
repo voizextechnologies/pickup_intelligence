@@ -149,17 +149,17 @@ const UpiValidation: React.FC = () => {
           category: 'UPI Validation',
           input_data: `Name: ${cleanName}, UPI ID: ${cleanUpiId}, ApiMode: 1`,
           source: 'RapidAPI',
-          result_summary: `UPI validation for ${cleanUpiId}: ${data.status === 'Success' ? 'Successful' : 'Failed'}`,
+          result_summary: `UPI validation for ${cleanUpiId}: ${data.Status === 'Success' ? 'Successful' : 'Failed'}`,
           full_result: data,
           credits_used: creditCost,
-          status: data.status === 'Success' ? 'Success' : 'Failed',
+          status: data.Status === 'Success' ? 'Success' : 'Failed',
         });
       }
 
-      if (data.status === 'Success') {
+      if (data.Status === 'Success') {
         toast.success('UPI validation successful!');
       } else {
-        toast.error(`Validation failed: ${data.msg || 'Unknown error'}`);
+        toast.error(`Validation failed: ${data.Message || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('UPI Validation error:', error);
@@ -314,7 +314,7 @@ const UpiValidation: React.FC = () => {
             </div>
             <div className="flex items-center space-x-2">
               <span className={`text-xs px-2 py-1 rounded ${isDark ? 'bg-green-500/20 text-green-400' : 'bg-green-100 text-green-600'}`}>
-                Verified 7/30/2025, 3:07 PM
+                Verified 7/30/2025, 3:10 PM
               </span>
             </div>
           </div>
@@ -362,13 +362,13 @@ const UpiValidation: React.FC = () => {
                   <div className="flex justify-between items-center">
                     <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Status:</span>
                     <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                      {searchResults.status || 'N/A'}
+                      {searchResults.Status || 'N/A'}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Message:</span>
                     <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                      {searchResults.msg || 'N/A'}
+                      {searchResults.Message || 'N/A'}
                     </span>
                   </div>
                 </div>
@@ -378,7 +378,7 @@ const UpiValidation: React.FC = () => {
 
           <div className="mb-6">
             <button
-              onClick={() => toggleSection('raw')}
+              onClick={() => toggleSection('raw'))
               className={`w-full flex items-center justify-between p-4 rounded-lg border ${isDark ? 'bg-gray-800/50 border-cyber-teal/10' : 'bg-gray-50 border-gray-200'}`}
             >
               <h5 className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
