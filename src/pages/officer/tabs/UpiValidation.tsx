@@ -15,7 +15,6 @@ const UpiValidation: React.FC = () => {
   const { apis, addQuery, addTransaction } = useSupabaseData();
   const [name, setName] = useState('');
   const [upiId, setUpiId] = useState('');
-  const [apiMode, setApiMode] = useState('1');
   const [isSearching, setIsSearching] = useState(false);
   const [searchResults, setSearchResults] = useState<UpiValidationResult | null>(null);
   const [searchError, setSearchError] = useState<string | null>(null);
@@ -90,7 +89,7 @@ const UpiValidation: React.FC = () => {
       const payload = {
         Name: cleanName,
         UpiId: cleanUpiId,
-        ApiMode: apiMode,
+        ApiMode: '1',
       };
 
       const response = await fetch(baseUrl, {
@@ -148,7 +147,7 @@ const UpiValidation: React.FC = () => {
           officer_name: officer.name || 'Unknown',
           type: 'PRO',
           category: 'UPI Validation',
-          input_data: `Name: ${cleanName}, UPI ID: ${cleanUpiId}, ApiMode: ${apiMode}`,
+          input_data: `Name: ${cleanName}, UPI ID: ${cleanUpiId}, ApiMode: 1`,
           source: 'RapidAPI',
           result_summary: `UPI validation for ${cleanUpiId}: ${data.status === 'Success' ? 'Successful' : 'Failed'}`,
           full_result: data,
@@ -173,7 +172,7 @@ const UpiValidation: React.FC = () => {
           officer_name: officer.name || 'Unknown',
           type: 'PRO',
           category: 'UPI Validation',
-          input_data: `Name: ${name}, UPI ID: ${upiId}, ApiMode: ${apiMode}`,
+          input_data: `Name: ${name}, UPI ID: ${upiId}, ApiMode: 1`,
           source: 'RapidAPI',
           result_summary: `Error: ${errorMessage}`,
           full_result: null,
@@ -236,7 +235,7 @@ const UpiValidation: React.FC = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <div>
           <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
             Name *
@@ -261,20 +260,7 @@ const UpiValidation: React.FC = () => {
             className={`w-full px-4 py-3 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal ${isDark ? 'bg-crisp-black text-white placeholder-gray-500' : 'bg-white text-gray-900 placeholder-gray-400'}`}
           />
         </div>
-        <div>
-          <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
-            API Mode *
-          </label>
-          <select
-            value={apiMode}
-            onChange={(e) => setApiMode(e.target.value)}
-            className={`w-full px-4 py-3 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal ${isDark ? 'bg-crisp-black text-white' : 'bg-white text-gray-900'}`}
-          >
-            <option value="0">Test (0)</option>
-            <option value="1">Live (1)</option>
-          </select>
-        </div>
-        <div className="md:col-span-3 flex items-end">
+        <div className="md:col-span-2 flex items-end">
           <button
             onClick={handleUpiValidation}
             disabled={isSearching || !name.trim() || !upiId.trim()}
@@ -328,7 +314,7 @@ const UpiValidation: React.FC = () => {
             </div>
             <div className="flex items-center space-x-2">
               <span className={`text-xs px-2 py-1 rounded ${isDark ? 'bg-green-500/20 text-green-400' : 'bg-green-100 text-green-600'}`}>
-                Verified 7/30/2025, 3:01 PM
+                Verified 7/30/2025, 3:07 PM
               </span>
             </div>
           </div>
@@ -372,12 +358,6 @@ const UpiValidation: React.FC = () => {
                         </button>
                       )}
                     </div>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>API Mode:</span>
-                    <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                      {apiMode === '0' ? 'Test' : 'Live'}
-                    </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Status:</span>
@@ -443,7 +423,6 @@ const UpiValidation: React.FC = () => {
                 setSearchError(null);
                 setName('');
                 setUpiId('');
-                setApiMode('1');
               }}
               className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-lg hover:shadow-lg transition-all duration-200"
             >
