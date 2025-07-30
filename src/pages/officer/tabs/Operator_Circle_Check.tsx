@@ -16,7 +16,9 @@ interface OperatorCircleResult {
 const OperatorCircleCheck: React.FC = () => {
   const { isDark } = useTheme();
   const { officer, updateOfficerState } = useOfficerAuth();
-  const { apis, addQuery, addTransaction } = useSupabaseData();
+  
+  const { apis, addQuery, addTransaction, getOfficerEnabledAPIs } = useSupabaseData();
+
   const [mobileNumber, setMobileNumber] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [searchResults, setSearchResults] = useState<OperatorCircleResult | null>(null);
