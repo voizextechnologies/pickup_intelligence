@@ -56,9 +56,7 @@ const PanVerification: React.FC = () => {
       return;
     }
 
-    const panAPI = apis.find(api =>
-      api.name.toLowerCase().includes('pan verification') && api.key_status === 'Active'
-    );
+   
     const enabledAPIs = getOfficerEnabledAPIs(officer.id); // Get APIs enabled for this officer's plan
     const panAPI = enabledAPIs.find(api =>
       api.name.toLowerCase().includes('pan verification') && api.key_status === 'Active'
