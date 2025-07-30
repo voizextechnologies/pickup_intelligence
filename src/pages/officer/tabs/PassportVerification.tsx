@@ -17,6 +17,8 @@ const PassportVerification: React.FC = () => {
   const { isDark } = useTheme();
   const { officer, updateOfficerState } = useOfficerAuth();
   const { apis, addQuery, addTransaction } = useSupabaseData();
+  const { apis, addQuery, addTransaction, getOfficerEnabledAPIs } = useSupabaseData();
+
   const [fileNo, setFileNo] = useState('');
   const [dateOfBirth, setDateOfBirth] = useState('');
   const [isSearching, setIsSearching] = useState(false);
