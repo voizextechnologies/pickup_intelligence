@@ -359,7 +359,7 @@ export const OfficerProLookupsV1: React.FC = () => {
         </div>
       </div>
 
-      {activeTab === 'aadhaar-duplicate' && renderComingSoon('Aadhaar Duplicate Check', FileText)}
+      {activeTab === 'aadhaar-duplicate' && <AadhaarOCRVerification />}
       {activeTab === 'pan-duplicate' && renderComingSoon('PAN Duplicate Check', FileText)}
       {activeTab === 'pan-details' && <PanDetails />}
       {activeTab === 'pan-verification' && <PanVerification />}
