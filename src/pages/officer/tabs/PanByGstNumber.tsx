@@ -6,12 +6,10 @@ import { useSupabaseData } from '../../../hooks/useSupabaseData';
 import toast from 'react-hot-toast';
 
 interface PanByGstResult {
+  errorcode?: number;
   status?: string;
   message?: string;
-  data?: {
-    pan_number?: string;
-    [key: string]: any;
-  };
+  panNumber?: string;
   [key: string]: any;
 }
 
@@ -277,7 +275,7 @@ const PanByGstNumber: React.FC = () => {
             </div>
             <div className="flex items-center space-x-2">
               <span className={`text-xs px-2 py-1 rounded ${isDark ? 'bg-green-500/20 text-green-400' : 'bg-green-100 text-green-600'}`}>
-                Verified 7/30/2025, 2:08 PM
+                Verified 7/30/2025, 2:37 PM
               </span>
             </div>
           </div>
@@ -303,11 +301,11 @@ const PanByGstNumber: React.FC = () => {
                     <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>PAN Number:</span>
                     <div className="flex items-center space-x-2">
                       <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                        {searchResults.data?.pan_number || 'N/A'}
+                        {searchResults.panNumber || 'N/A'}
                       </span>
-                      {searchResults.data?.pan_number && (
+                      {searchResults.panNumber && (
                         <button
-                          onClick={() => copyToClipboard(searchResults.data?.pan_number || '')}
+                          onClick={() => copyToClipboard(searchResults.panNumber || '')}
                           className="p-1 text-cyan-500 hover:text-cyan-400 transition-colors"
                           title="Copy PAN Number"
                         >
