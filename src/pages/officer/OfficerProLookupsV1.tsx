@@ -5,7 +5,8 @@ import PassportVerification from './tabs/PassportVerification';
 import PanDetails from './tabs/PanDetails';
 import UpiInfoCheck from './tabs/UpiInfoCheck';
 import UpiVerification from './tabs/UpiVerification';
-import PanVerification from './tabs/PanVerification'; // Import the new PanVerification component
+import PanVerification from './tabs/PanVerification';
+import PanByGstNumber from './tabs/PanByGstNumber';
 
 export const OfficerProLookupsV1: React.FC = () => {
   const { isDark } = useTheme();
@@ -177,7 +178,7 @@ export const OfficerProLookupsV1: React.FC = () => {
           <button
             onClick={() => setActiveTab('mobile-to-upi')}
             className={`flex items-center space-x-2 py-2 px-4 rounded-lg transition-all duration-200 ${
-              activeTab === 'upi-validation'
+              activeTab === 'mobile-to-upi'
                 ? 'bg-cyber-teal/20 text-cyber-teal border border-cyber-teal/30'
                 : isDark 
                   ? 'text-gray-400 hover:text-cyber-teal hover:bg-cyber-teal/10' 
@@ -350,7 +351,7 @@ export const OfficerProLookupsV1: React.FC = () => {
       {activeTab === 'pan-duplicate' && renderComingSoon('PAN Duplicate Check', FileText)}
       {activeTab === 'pan-details' && <PanDetails />}
       {activeTab === 'pan-verification' && <PanVerification />}
-      {activeTab === 'pan-by-gst' && renderComingSoon('PAN Number by GST Number', FileText)}
+      {activeTab === 'pan-by-gst' && <PanByGstNumber />}
       {activeTab === 'bank-verification-v1' && renderComingSoon('Bank Account Verification V1', CreditCard)}
       {activeTab === 'bank-verification-v2' && renderComingSoon('Bank Account Verification V2', CreditCard)}
       {activeTab === 'upi-info' && <UpiInfoCheck />}
