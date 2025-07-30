@@ -16,6 +16,8 @@ import VoterId2Verification from './tabs/VoterId2Verification';
 import VehicleChallanDetails from './tabs/VehicleChallanDetails';
 import DrivingLicenseVerification from './tabs/DrivingLicenseVerification';
 import RegistrationCertificateVerification from './tabs/RegistrationCertificateVerification';
+import DINVerification from './tabs/DINVerification';
+
 
 export const OfficerProLookupsV1: React.FC = () => {
   const { isDark } = useTheme();
@@ -374,7 +376,7 @@ export const OfficerProLookupsV1: React.FC = () => {
       {activeTab === 'voter-id-2-verification' && <VoterId2Verification />}
       {activeTab === 'mca-company' && renderComingSoon('MCA Company', FileText)}
       {activeTab === 'mca-cin-search' && renderComingSoon('MCA CIN Search', Search)}
-      {activeTab === 'din-verification' && renderComingSoon('DIN Verification', FileText)}
+      {activeTab === 'din-verification' && <DINVerification />}
       {activeTab === 'registration-certificate' && <RegistrationCertificateVerification />}
       {activeTab === 'driving-license-verification' && <DrivingLicenseVerification />}
       {activeTab === 'vehicle-challan-details' && <VehicleChallanDetails />}
