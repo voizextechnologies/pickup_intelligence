@@ -72,43 +72,46 @@ const UdyamDetailsSearch: React.FC = () => {
       }
 
       const data = await response.json();
-      
-      if (data.result) {
-        setSearchResults(data.result);
-        
-        const newCredits = officer.credits_remaining - creditCost;
-        updateOfficerState({ credits_remaining: newCredits });
+      console.log('API Response:', data); // Debug log to check response structure
 
-        if (addTransaction) {
-          await addTransaction({
-            officer_id: officer.id,
-            officer_name: officer.name || 'Unknown',
-            action: 'Deduction',
-            credits: creditCost,
-            payment_mode: 'Query Usage',
-            remarks: `Udyam Details Search for phone ${phone}`,
-          });
-        }
-
-        if (addQuery) {
-          await addQuery({
-            officer_id: officer.id,
-            officer_name: officer.name || 'Unknown',
-            type: 'PRO',
-            category: 'Udyam Details Search',
-            input_data: phone,
-            source: 'Signzy API',
-            result_summary: `Udyam details found for phone: ${data.result.udyamNumber || 'N/A'}`,
-            full_result: data.result,
-            credits_used: creditCost,
-            status: 'Success'
-          });
-        }
-
-        toast.success('Udyam details retrieved successfully!');
+      if (data.result?.[0]?.result) {
+        setSearchResults(data.result[0].result);
+      } else if (data && Object.keys(data).length > 0) {
+        setSearchResults(data.result?.[0] || data); // Fallback if result is not nested
       } else {
         throw new Error('No Udyam data found');
       }
+      
+      const newCredits = officer.credits_remaining - creditCost;
+      updateOfficerState({ credits_remaining: newCredits });
+
+      if (addTransaction) {
+        await addTransaction({
+          officer_id: officer.id,
+          officer_name: officer.name || 'Unknown',
+          action: 'Deduction',
+          credits: creditCost,
+          payment_mode: 'Query Usage',
+          remarks: `Udyam Details Search for phone ${phone}`,
+        });
+      }
+
+      if (addQuery) {
+        await addQuery({
+          officer_id: officer.id,
+          officer_name: officer.name || 'Unknown',
+          type: 'PRO',
+          category: 'Udyam Details Search',
+          input_data: phone,
+          source: 'Signzy API',
+          result_summary: `Udyam details found for phone: ${data.result?.[0]?.result?.generalInfo?.udyamRegistrationNumber || 'N/A'}`,
+          full_result: data.result?.[0]?.result || data,
+          credits_used: creditCost,
+          status: 'Success'
+        });
+      }
+
+      toast.success('Udyam details retrieved successfully!');
     } catch (error: any) {
       console.error('Udyam Search Error:', error);
       setSearchError(error.message || 'Search failed');
@@ -232,7 +235,7 @@ const UdyamDetailsSearch: React.FC = () => {
         </div>
       )}
 
-      {searchResults && searchResults.udyamNumber && (
+      {searchResults && Object.keys(searchResults).length > 0 && (
         <div className={`p-6 rounded-lg border ${isDark ? 'bg-green-500/10 border-green-500/30' : 'bg-green-50 border-green-200'}`}>
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center space-x-3">
@@ -243,7 +246,7 @@ const UdyamDetailsSearch: React.FC = () => {
             </div>
             <div className="flex items-center space-x-2">
               <span className={`text-xs px-2 py-1 rounded ${isDark ? 'bg-green-500/20 text-green-400' : 'bg-green-100 text-green-600'}`}>
-                Verified 7/30/2025, 11:06 PM
+                Verified 7/31/2025, 06:38 PM
               </span>
             </div>
           </div>
@@ -269,11 +272,11 @@ const UdyamDetailsSearch: React.FC = () => {
                     <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Udyam Number:</span>
                     <div className="flex items-center space-x-2">
                       <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                        {searchResults.udyamNumber || 'N/A'}
+                        {searchResults.generalInfo?.udyamRegistrationNumber || 'N/A'}
                       </span>
-                      {searchResults.udyamNumber && (
+                      {searchResults.generalInfo?.udyamRegistrationNumber && (
                         <button
-                          onClick={() => copyToClipboard(searchResults.udyamNumber)}
+                          onClick={() => copyToClipboard(searchResults.generalInfo.udyamRegistrationNumber)}
                           className="p-1 text-cyber-teal hover:text-electric-blue transition-colors"
                           title="Copy Udyam Number"
                         >
@@ -285,31 +288,33 @@ const UdyamDetailsSearch: React.FC = () => {
                   <div className="flex justify-between items-center">
                     <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Enterprise Name:</span>
                     <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                      {searchResults.enterpriseName || 'N/A'}
+                      {searchResults.generalInfo?.nameOfEnterprise || 'N/A'}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Owner Name:</span>
                     <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                      {searchResults.ownerName || 'N/A'}
+                      {searchResults.ownerDetails?.ownerName || 'N/A'}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Address:</span>
                     <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                      {searchResults.address || 'N/A'}
+                      {searchResults.officialAddressOfEnterprise
+                        ? `${searchResults.officialAddressOfEnterprise.flatDoorBlockNo}, ${searchResults.officialAddressOfEnterprise.villageTown}, ${searchResults.officialAddressOfEnterprise.city}, ${searchResults.officialAddressOfEnterprise.state} - ${searchResults.officialAddressOfEnterprise.pin}`
+                        : 'N/A'}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Registration Date:</span>
                     <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                      {searchResults.registrationDate || 'N/A'}
+                      {searchResults.generalInfo?.dateOfUdyamRegistration || 'N/A'}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Status:</span>
                     <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                      {searchResults.status || 'N/A'}
+                      {searchResults.enterpriseType?.[0]?.enterpriseType || 'N/A'}
                     </span>
                   </div>
                 </div>
