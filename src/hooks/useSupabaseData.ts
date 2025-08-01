@@ -176,6 +176,7 @@ export const useSupabaseData = () => {
         if (error.code === '23505') {
           toast.error('An officer with this email or mobile number already exists.');
           return { success: false, message: 'Duplicate officer entry', code: 'DUPLICATE_ENTRY' };
+        }
       await loadOfficers(); // Reload officers list after successful addition
       return { success: true, data: data };
         console.error('Supabase addOfficer error:', error);
