@@ -32,6 +32,12 @@ export default defineConfig({
           'Origin': 'https://planapi.in'
         }
       },
-    },
+      // New Deepvue proxy
+      '/api/deepvue': {
+        target: 'https://production.deepvue.tech',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/deepvue/, ''),
+        secure: true,
+      },
   },
 });

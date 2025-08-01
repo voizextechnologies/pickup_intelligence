@@ -11,6 +11,10 @@
     {
       "source": "/api/planapi/(.*)",
       "destination": "https://planapi.in/$1"
+    },
+    {
+      "source": "/api/deepvue/(.*)",
+      "destination": "https://production.deepvue.tech/$1"
     }
   ]
 }

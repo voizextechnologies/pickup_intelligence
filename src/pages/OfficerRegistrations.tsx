@@ -56,8 +56,8 @@ export const OfficerRegistrations: React.FC = () => {
     setIsProcessing(true);
     
     try {
-      // Create officer account using the same logic as admin "Add Officer"
-      await addOfficer({
+      // Attempt to create officer account
+      const addOfficerResult = await addOfficer({
         name: selectedRequest.name,
         email: selectedRequest.email,
         mobile: selectedRequest.mobile,
@@ -73,19 +73,33 @@ export const OfficerRegistrations: React.FC = () => {
         total_credits: 0 // Will be set by plan
       });
 
+      // If addOfficer failed and it's NOT a duplicate error, stop processing
+      if (!addOfficerResult.success && addOfficerResult.code !== 'DUPLICATE_ENTRY') {
+        // The toast.error is already handled by addOfficer, so just return
+        return;
+      }
+
+      // If addOfficer succeeded OR it was a duplicate entry (meaning officer already exists)
+      // then proceed to update the registration status.
+      // This handles the case where the officer might have been created in a previous attempt
+      // but the registration status wasn't updated.
       // Update registration status
       await updateRegistration(selectedRequest.id, {
         status: 'approved',
         reviewed_by: user?.name
       });
 
+      // Close modal and reset state ONLY if everything above succeeded or was handled
       setShowApproveModal(false);
       setSelectedRequest(null);
       setApprovalData({ plan_id: '', password: '' });
+      toast.success('Registration approved successfully!'); // Move success toast here
       
     } catch (error) {
       console.error('Approval error:', error);
-      toast.error('Failed to approve registration');
+      // This catch block will now only be hit for unexpected errors during updateRegistration
+      // or other parts of the try block, not for addOfficer duplicates.
+      toast.error('Failed to approve registration due to an unexpected error.');
     } finally {
       setIsProcessing(false);
     }
