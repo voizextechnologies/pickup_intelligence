@@ -295,25 +295,7 @@ export const useSupabaseData = () => {
       
       await loadRegistrations();
       
-      // If approved, create officer account
-      if (updates.status === 'approved') {
-        const registration = registrations.find(r => r.id === id);
-        if (registration) {
-          await addOfficer({
-            name: registration.name,
-            email: registration.email,
-            mobile: registration.mobile,
-            telegram_id: `@${registration.name.toLowerCase().replace(/\s+/g, '')}`,
-            status: 'Active',
-            department: registration.department,
-            rank: registration.rank,
-            badge_number: registration.badge_number,
-            station: registration.station,
-            credits_remaining: 50,
-            total_credits: 50
-          });
-        }
-      }
+      // Officer creation is now handled in OfficerRegistrations.tsx to avoid duplicate calls
       
       toast.success(`Registration ${updates.status} successfully!`);
     } catch (error: any) {

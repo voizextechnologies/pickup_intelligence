@@ -56,22 +56,32 @@ export const OfficerRegistrations: React.FC = () => {
     setIsProcessing(true);
     
     try {
-      // Create officer account using the same logic as admin "Add Officer"
-      await addOfficer({
-        name: selectedRequest.name,
-        email: selectedRequest.email,
-        mobile: selectedRequest.mobile,
-        telegram_id: `@${selectedRequest.name.toLowerCase().replace(/\s+/g, '')}`,
-        password: approvalData.password,
-        status: 'Active',
-        department: selectedRequest.department,
-        rank: selectedRequest.rank,
-        badge_number: selectedRequest.badge_number,
-        station: selectedRequest.station,
-        plan_id: approvalData.plan_id,
-        credits_remaining: 0, // Will be set by plan
-        total_credits: 0 // Will be set by plan
-      });
+      // First, check if officer already exists
+      const existingOfficer = officers.find(o => 
+        o.email === selectedRequest.email || o.mobile === selectedRequest.mobile
+      );
+
+      if (!existingOfficer) {
+        // Create officer account only if it doesn't exist
+        await addOfficer({
+          name: selectedRequest.name,
+          email: selectedRequest.email,
+          mobile: selectedRequest.mobile,
+          telegram_id: selectedRequest.telegram_id || `@${selectedRequest.name.toLowerCase().replace(/\s+/g, '')}`,
+          password: approvalData.password,
+          status: 'Active',
+          department: selectedRequest.department,
+          rank: selectedRequest.rank,
+          badge_number: selectedRequest.badge_number,
+          station: selectedRequest.station,
+          plan_id: approvalData.plan_id,
+          credits_remaining: 0, // Will be set by plan
+          total_credits: 0 // Will be set by plan
+        });
+      } else {
+        // Officer already exists, just show a warning but continue with approval
+        toast.warning('Officer already exists in the system. Proceeding with registration approval.');
+      }
 
       // Update registration status
       await updateRegistration(selectedRequest.id, {
@@ -79,9 +89,11 @@ export const OfficerRegistrations: React.FC = () => {
         reviewed_by: user?.name
       });
 
+      // Close modal and reset state
       setShowApproveModal(false);
       setSelectedRequest(null);
       setApprovalData({ plan_id: '', password: '' });
+      toast.success('Registration approved successfully!');
       
     } catch (error) {
       console.error('Approval error:', error);
