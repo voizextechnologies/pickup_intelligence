@@ -280,7 +280,7 @@ export const useSupabaseData = () => {
     }
   };
 
-  // Registration Management
+  // Registration Management - FIXED: Removed automatic officer creation
   const updateRegistration = async (id: string, updates: Partial<OfficerRegistration>) => {
     try {
       const { error } = await supabase
@@ -295,7 +295,8 @@ export const useSupabaseData = () => {
       
       await loadRegistrations();
       
-      // Officer creation is now handled in OfficerRegistrations.tsx to avoid duplicate calls
+      // REMOVED: No longer automatically creating officer here
+      // The officer creation is now handled explicitly in the approval flow
       
       toast.success(`Registration ${updates.status} successfully!`);
     } catch (error: any) {
