@@ -172,17 +172,16 @@ export const useSupabaseData = () => {
         .single();
 
       if (error) throw error;
-        // If it's a duplicate key error, handle it specifically
-        if (error.code === '23505') {
-          toast.error('An officer with this email or mobile number already exists.');
-          return { success: false, message: 'Duplicate officer entry', code: 'DUPLICATE_ENTRY' };
-        }
-      await loadOfficers(); // Reload officers list after successful addition
-      return { success: true, data: data };
-        console.error('Supabase addOfficer error:', error);
-      console.error('Unexpected error in addOfficer:', error);
-      toast.error(`An unexpected error occurred: ${error.message}`);
-      return { success: false, message: 'An unexpected error occurred', code: 'UNEXPECTED_ERROR' };
+      
+      await loadOfficers();
+      return data;
+    } catch (error: any) {
+      if (error.message.includes('duplicate key') || error.code === '23505') {
+        toast.error('An officer with this email or mobile number already exists');
+      } else {
+        toast.error(`Failed to add officer: ${error.message}`);
+      }
+      throw error;
     }
   };
 
