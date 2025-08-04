@@ -1,56 +1,44 @@
 import React, { useState } from 'react';
 import { Search, Filter, Calendar, Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useOfficerAuth } from '../../contexts/OfficerAuthContext';
+import { useSupabaseData } from '../../hooks/useSupabaseData';
 import { StatusBadge } from '../../components/UI/StatusBadge';
+import { formatCredits } from '../../utils/formatters';
 
 export const OfficerHistory: React.FC = () => {
   const { isDark } = useTheme();
+  const { officer } = useOfficerAuth();
+  const { queries, isLoading } = useSupabaseData();
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
-  // Mock data for demonstration
-  const mockQueries = [
-    {
-      id: '1',
-      type: 'PRO',
-      category: 'Vehicle RC',
-      input: 'KA01JZ4031',
-      result: 'Vehicle details retrieved successfully',
-      credits_used: 3,
-      status: 'Success',
-      timestamp: new Date(Date.now() - 2 * 60 * 1000).toISOString()
-    },
-    {
-      id: '2',
-      type: 'PRO',
-      category: 'Phone Verification',
-      input: '+91 9876543210',
-      result: 'Phone details and associated information found',
-      credits_used: 2,
-      status: 'Success',
-      timestamp: new Date(Date.now() - 15 * 60 * 1000).toISOString()
-    },
-    {
-      id: '3',
-      type: 'OSINT',
-      category: 'Email Lookup',
-      input: 'suspect@example.com',
-      result: 'Email found in 2 data breaches',
-      credits_used: 0,
-      status: 'Success',
-      timestamp: new Date(Date.now() - 60 * 60 * 1000).toISOString()
-    }
-  ];
+  // Filter queries for the current officer only
+  const officerQueries = queries.filter(query => query.officer_id === officer?.id);
 
-  const filteredQueries = mockQueries.filter(query => {
-    const matchesSearch = query.input.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  const filteredQueries = officerQueries.filter(query => {
+    const matchesSearch = query.input_data.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          query.category.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesType = typeFilter === 'all' || query.type === typeFilter;
     const matchesStatus = statusFilter === 'all' || query.status === statusFilter;
     
     return matchesSearch && matchesType && matchesStatus;
   });
+
+  // Calculate statistics from live data
+  const totalQueries = officerQueries.length;
+  const successfulQueries = officerQueries.filter(q => q.status === 'Success').length;
+  const successRate = totalQueries > 0 ? Math.round((successfulQueries / totalQueries) * 100) : 0;
+  const totalCreditsUsed = officerQueries.reduce((sum, q) => sum + q.credits_used, 0);
+  
+  // Calculate queries from this month
+  const currentMonth = new Date().getMonth();
+  const currentYear = new Date().getFullYear();
+  const thisMonthQueries = officerQueries.filter(query => {
+    const queryDate = new Date(query.created_at);
+    return queryDate.getMonth() === currentMonth && queryDate.getFullYear() === currentYear;
+  }).length;
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -64,6 +52,14 @@ export const OfficerHistory: React.FC = () => {
         return <Clock className="w-4 h-4 text-gray-400" />;
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="w-8 h-8 border-2 border-cyber-teal border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className={`p-6 space-y-6 min-h-screen ${isDark ? 'bg-crisp-black' : 'bg-soft-white'}`}>
@@ -88,7 +84,7 @@ export const OfficerHistory: React.FC = () => {
                 Total Queries
               </p>
               <p className={`text-2xl font-bold mt-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                {mockQueries.length}
+                {totalQueries}
               </p>
             </div>
             <Search className="w-8 h-8 text-cyber-teal" />
@@ -104,7 +100,7 @@ export const OfficerHistory: React.FC = () => {
                 Success Rate
               </p>
               <p className={`text-2xl font-bold mt-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                100%
+                {successRate}%
               </p>
             </div>
             <CheckCircle className="w-8 h-8 text-green-400" />
@@ -120,7 +116,7 @@ export const OfficerHistory: React.FC = () => {
                 Credits Used
               </p>
               <p className={`text-2xl font-bold mt-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                {mockQueries.reduce((sum, q) => sum + q.credits_used, 0)}
+                {formatCredits(totalCreditsUsed)}
               </p>
             </div>
             <Clock className="w-8 h-8 text-electric-blue" />
@@ -136,7 +132,7 @@ export const OfficerHistory: React.FC = () => {
                 This Month
               </p>
               <p className={`text-2xl font-bold mt-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                {mockQueries.length}
+                {thisMonthQueries}
               </p>
             </div>
             <Calendar className="w-8 h-8 text-neon-magenta" />
@@ -265,13 +261,13 @@ export const OfficerHistory: React.FC = () => {
                     {query.category}
                   </td>
                   <td className={`px-6 py-4 text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
-                    {query.input}
+                    {query.input_data}
                   </td>
                   <td className={`px-6 py-4 text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
-                    {query.result}
+                    {query.result_summary || 'Processing...'}
                   </td>
                   <td className={`px-6 py-4 text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                    {query.credits_used}
+                    {formatCredits(query.credits_used)}
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center space-x-2">
@@ -280,7 +276,7 @@ export const OfficerHistory: React.FC = () => {
                     </div>
                   </td>
                   <td className={`px-6 py-4 text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                    {new Date(query.timestamp).toLocaleString()}
+                    {new Date(query.created_at).toLocaleString()}
                   </td>
                 </tr>
               ))}
@@ -288,6 +284,28 @@ export const OfficerHistory: React.FC = () => {
           </table>
         </div>
       </div>
+
+      {/* No Results */}
+      {filteredQueries.length === 0 && !isLoading && (
+        <div className="text-center py-12">
+          <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 ${
+            isDark ? 'bg-muted-graphite' : 'bg-gray-100'
+          }`}>
+            <Search className={`w-8 h-8 ${isDark ? 'text-gray-400' : 'text-gray-500'}`} />
+          </div>
+          <h3 className={`text-lg font-medium mb-2 ${
+            isDark ? 'text-white' : 'text-gray-900'
+          }`}>
+            No Query History Found
+          </h3>
+          <p className={isDark ? 'text-gray-400' : 'text-gray-600'}>
+            {totalQueries === 0 
+              ? 'You haven\'t performed any queries yet. Start by using the search tools in the dashboard.'
+              : 'No queries match your current search criteria. Try adjusting your filters.'
+            }
+          </p>
+        </div>
+      )}
     </div>
   );
 };
