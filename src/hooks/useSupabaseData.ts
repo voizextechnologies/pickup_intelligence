@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
-import { supabase, Officer, CreditTransaction, Query, OfficerRegistration, LiveRequest, API, RatePlan, PlanAPI, ManualRequest } from '../lib/supabase';
+import { supabase, Officer, CreditTransaction, Query, OfficerRegistration, LiveRequest, API, RatePlan, PlanAPI } from '../lib/supabase';
 import toast from 'react-hot-toast';
-import { useNotification } from '../contexts/NotificationContext'; // Import useNotification
 
 export const useSupabaseData = () => {
   const [officers, setOfficers] = useState<Officer[]>([]);
@@ -12,11 +11,8 @@ export const useSupabaseData = () => {
   const [apis, setAPIs] = useState<API[]>([]);
   const [ratePlans, setRatePlans] = useState<RatePlan[]>([]);
   const [planAPIs, setPlanAPIs] = useState<PlanAPI[]>([]);
-  const [manualRequests, setManualRequests] = useState<ManualRequest[]>([]); // Added manualRequests state
   const [isLoading, setIsLoading] = useState(true);
   const [dashboardStats, setDashboardStats] = useState<any>(null);
-
-  const { addNotification } = useNotification(); // Use the notification hook
 
   // Load all data
   const loadData = async () => {
@@ -30,8 +26,7 @@ export const useSupabaseData = () => {
         loadLiveRequests(),
         loadAPIs(),
         loadRatePlans(),
-        loadPlanAPIs(),
-        loadManualRequests() // Load manual requests
+        loadPlanAPIs()
       ]);
       calculateDashboardStats();
     } catch (error) {
@@ -121,17 +116,6 @@ export const useSupabaseData = () => {
     
     if (error) throw error;
     setPlanAPIs(data || []);
-  };
-
-  // New function to load manual requests
-  const loadManualRequests = async () => {
-    const { data, error } = await supabase
-      .from('manual_requests')
-      .select('*, officers(id, name, email, mobile)') // Join with officers table
-      .order('created_at', { ascending: false });
-    
-    if (error) throw error;
-    setManualRequests(data || []);
   };
 
   const calculateDashboardStats = () => {
@@ -337,7 +321,7 @@ export const useSupabaseData = () => {
       if (apiSettings.length > 0) {
         const planAPIData = apiSettings.map(api => ({
           plan_id: plan.id,
-          api_id: api.id,
+          api_id: api.api_id,
           enabled: api.enabled,
           credit_cost: api.credit_cost,
           buy_price: api.buy_price,
@@ -508,86 +492,6 @@ export const useSupabaseData = () => {
     }
   };
 
-  // Manual Request Management
-  const addManualRequest = async (requestData: Omit<ManualRequest, 'id' | 'status' | 'created_at' | 'approved_at' | 'admin_response' | 'credit_deducted' | 'approved_by' | 'officers'>) => {
-    try {
-      const { data, error } = await supabase
-        .from('manual_requests')
-        .insert([{ ...requestData, status: 'pending' }])
-        .select()
-        .single();
-
-      if (error) throw error;
-      
-      await loadManualRequests();
-      toast.success('Manual request submitted successfully!');
-      return data;
-    } catch (error: any) {
-      toast.error(`Failed to submit manual request: ${error.message}`);
-      throw error;
-    }
-  };
-
-  const updateManualRequest = async (id: string, updates: Partial<ManualRequest>) => {
-    try {
-      // If request is approved, deduct credits from officer and log transaction
-      if (updates.status === 'approved' && updates.credit_deducted !== undefined && updates.approved_by) {
-        const currentRequest = manualRequests.find(req => req.id === id);
-        const officer = officers.find(o => o.id === currentRequest?.officer_id);
-
-        if (officer && updates.credit_deducted > 0) {
-          const newCreditsRemaining = officer.credits_remaining - updates.credit_deducted;
-          const newTotalQueries = officer.total_queries + 1; // Assuming one query per manual request approval
-
-          await updateOfficer(officer.id, {
-            credits_remaining: newCreditsRemaining,
-            total_queries: newTotalQueries
-          });
-
-          await addTransaction({
-            officer_id: officer.id,
-            officer_name: officer.name,
-            action: 'Deduction',
-            credits: updates.credit_deducted,
-            payment_mode: 'Manual Request',
-            remarks: `Manual request approved: ${currentRequest?.input_type || 'N/A'} - ${currentRequest?.input_value || 'N/A'}`,
-          });
-
-          // Add notification for the officer
-          addNotification({
-            type: 'success',
-            title: 'Manual Request Approved!',
-            message: `Your request for "${currentRequest?.input_type}: ${currentRequest?.input_value}" has been approved. ${updates.credit_deducted} credits deducted. Admin response: "${updates.admin_response || 'N/A'}"`,
-            link: `/officer/dashboard/history`, // Link to officer's history
-          });
-
-        }
-      } else if (updates.status === 'rejected' && updates.approved_by) {
-        const currentRequest = manualRequests.find(req => req.id === id);
-        // Add notification for the officer
-        addNotification({
-          type: 'error',
-          title: 'Manual Request Rejected!',
-          message: `Your request for "${currentRequest?.input_type}: ${currentRequest?.input_value}" has been rejected. Admin response: "${updates.admin_response || 'N/A'}"`,
-          link: `/officer/dashboard/history`, // Link to officer's history
-        });
-      }
-
-      const { error } = await supabase
-        .from('manual_requests')
-        .update(updates)
-        .eq('id', id);
-
-      if (error) throw error;
-      
-      await loadManualRequests(); // Reload manual requests after update
-      toast.success('Manual request updated successfully!');
-    } catch (error: any) {
-      toast.error(`Failed to update manual request: ${error.message}`);
-      throw error;
-    }
-  };
-
   // Get officer's enabled APIs based on their rate plan
   const getOfficerEnabledAPIs = (officerId: string) => {
     const officer = officers.find(o => o.id === officerId);
@@ -617,7 +521,7 @@ export const useSupabaseData = () => {
     if (!isLoading) {
       calculateDashboardStats();
     }
-  }, [officers, queries, transactions, apis, manualRequests, isLoading]); // Added manualRequests to dependency array
+  }, [officers, queries, transactions, apis, isLoading]);
 
   return {
     // Data
@@ -629,7 +533,6 @@ export const useSupabaseData = () => {
     apis,
     ratePlans,
     planAPIs,
-    manualRequests, // Expose manualRequests
     dashboardStats,
     isLoading,
     
@@ -647,8 +550,6 @@ export const useSupabaseData = () => {
     addAPI,
     updateAPI,
     deleteAPI,
-    addManualRequest, // Expose addManualRequest
-    updateManualRequest, // Expose updateManualRequest
     getOfficerEnabledAPIs,
     
     // Setters for local updates
@@ -659,7 +560,6 @@ export const useSupabaseData = () => {
     setLiveRequests,
     setAPIs,
     setRatePlans,
-    setPlanAPIs,
-    setManualRequests // Expose setter for manualRequests
+    setPlanAPIs
   };
 };
