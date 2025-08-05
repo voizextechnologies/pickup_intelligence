@@ -1,3 +1,4 @@
+```typescript
 import React, { useState } from 'react';
 import { Search, Filter, Calendar, Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -53,6 +54,19 @@ export const OfficerHistory: React.FC = () => {
     }
   };
 
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'Pending':
+        return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
+      case 'Success':
+        return 'bg-green-500/20 text-green-400 border-green-500/30';
+      case 'Failed':
+        return 'bg-red-500/20 text-red-400 border-red-500/30';
+      default:
+        return 'bg-gray-500/20 text-gray-400 border-gray-500/30';
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -62,22 +76,26 @@ export const OfficerHistory: React.FC = () => {
   }
 
   return (
-    <div className={`p-6 space-y-6 min-h-screen ${isDark ? 'bg-crisp-black' : 'bg-soft-white'}`}>
+    <div className={`p-6 space-y-6 ${isDark ? 'bg-crisp-black' : 'bg-soft-white'}`}>
       {/* Header */}
-      <div>
-        <h1 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-          Query History
-        </h1>
-        <p className={`mt-1 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-          Your personal search and verification history
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+            Query History
+          </h1>
+          <p className={`mt-1 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+            Your personal search and verification history
+          </p>
+        </div>
+        <button className="bg-electric-blue/20 text-electric-blue px-4 py-2 rounded-lg hover:bg-electric-blue/30 transition-all duration-200 flex items-center space-x-2">
+          <Filter className="w-4 h-4" />
+          <span>Export</span>
+        </button>
       </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className={`border border-cyber-teal/20 rounded-lg p-6 ${
-          isDark ? 'bg-muted-graphite' : 'bg-white'
-        }`}>
+        <div className={`border border-cyber-teal/20 rounded-lg p-6 ${isDark ? 'bg-muted-graphite' : 'bg-white'}`}>
           <div className="flex items-center justify-between">
             <div>
               <p className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
@@ -91,9 +109,7 @@ export const OfficerHistory: React.FC = () => {
           </div>
         </div>
 
-        <div className={`border border-cyber-teal/20 rounded-lg p-6 ${
-          isDark ? 'bg-muted-graphite' : 'bg-white'
-        }`}>
+        <div className={`border border-cyber-teal/20 rounded-lg p-6 ${isDark ? 'bg-muted-graphite' : 'bg-white'}`}>
           <div className="flex items-center justify-between">
             <div>
               <p className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
@@ -107,9 +123,7 @@ export const OfficerHistory: React.FC = () => {
           </div>
         </div>
 
-        <div className={`border border-cyber-teal/20 rounded-lg p-6 ${
-          isDark ? 'bg-muted-graphite' : 'bg-white'
-        }`}>
+        <div className={`border border-cyber-teal/20 rounded-lg p-6 ${isDark ? 'bg-muted-graphite' : 'bg-white'}`}>
           <div className="flex items-center justify-between">
             <div>
               <p className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
@@ -123,9 +137,7 @@ export const OfficerHistory: React.FC = () => {
           </div>
         </div>
 
-        <div className={`border border-cyber-teal/20 rounded-lg p-6 ${
-          isDark ? 'bg-muted-graphite' : 'bg-white'
-        }`}>
+        <div className={`border border-cyber-teal/20 rounded-lg p-6 ${isDark ? 'bg-muted-graphite' : 'bg-white'}`}>
           <div className="flex items-center justify-between">
             <div>
               <p className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
@@ -141,20 +153,16 @@ export const OfficerHistory: React.FC = () => {
       </div>
 
       {/* Filters */}
-      <div className={`border border-cyber-teal/20 rounded-lg p-4 ${
-        isDark ? 'bg-muted-graphite' : 'bg-white'
-      }`}>
+      <div className={`border border-cyber-teal/20 rounded-lg p-4 ${isDark ? 'bg-muted-graphite' : 'bg-white'}`}>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="relative">
-            <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 ${
-              isDark ? 'text-gray-400' : 'text-gray-500'
-            }`} />
+            <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 ${isDark ? 'text-gray-400' : 'text-gray-500'}`} />
             <input
               type="text"
               placeholder="Search your queries..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className={`w-full pl-10 pr-4 py-2 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal focus:border-transparent ${
+              className={`w-full pl-10 pr-4 py-2 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal ${
                 isDark 
                   ? 'bg-crisp-black text-white placeholder-gray-500' 
                   : 'bg-white text-gray-900 placeholder-gray-400'
@@ -193,109 +201,63 @@ export const OfficerHistory: React.FC = () => {
         </div>
       </div>
 
-      {/* Query History Table */}
-      <div className={`border border-cyber-teal/20 rounded-lg overflow-hidden ${
-        isDark ? 'bg-muted-graphite' : 'bg-white'
-      }`}>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className={`border-b border-cyber-teal/20 ${
-              isDark ? 'bg-crisp-black/50' : 'bg-gray-50'
-            }`}>
-              <tr>
-                <th className={`px-6 py-4 text-left text-sm font-medium ${
-                  isDark ? 'text-gray-300' : 'text-gray-600'
-                }`}>
-                  Type
-                </th>
-                <th className={`px-6 py-4 text-left text-sm font-medium ${
-                  isDark ? 'text-gray-300' : 'text-gray-600'
-                }`}>
-                  Category
-                </th>
-                <th className={`px-6 py-4 text-left text-sm font-medium ${
-                  isDark ? 'text-gray-300' : 'text-gray-600'
-                }`}>
-                  Input
-                </th>
-                <th className={`px-6 py-4 text-left text-sm font-medium ${
-                  isDark ? 'text-gray-300' : 'text-gray-600'
-                }`}>
-                  Result
-                </th>
-                <th className={`px-6 py-4 text-left text-sm font-medium ${
-                  isDark ? 'text-gray-300' : 'text-gray-600'
-                }`}>
-                  Credits
-                </th>
-                <th className={`px-6 py-4 text-left text-sm font-medium ${
-                  isDark ? 'text-gray-300' : 'text-gray-600'
-                }`}>
-                  Status
-                </th>
-                <th className={`px-6 py-4 text-left text-sm font-medium ${
-                  isDark ? 'text-gray-300' : 'text-gray-600'
-                }`}>
-                  Time
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredQueries.map((query) => (
-                <tr 
-                  key={query.id} 
-                  className={`border-b border-cyber-teal/10 transition-colors ${
-                    isDark ? 'hover:bg-crisp-black/50' : 'hover:bg-gray-50'
-                  }`}
-                >
-                  <td className="px-6 py-4">
-                    <span className={`text-xs px-2 py-1 rounded ${
-                      query.type === 'PRO' 
-                        ? 'bg-neon-magenta/20 text-neon-magenta' 
-                        : 'bg-cyber-teal/20 text-cyber-teal'
-                    }`}>
-                      {query.type}
-                    </span>
-                  </td>
-                  <td className={`px-6 py-4 text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                    {query.category}
-                  </td>
-                  <td className={`px-6 py-4 text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
-                    {query.input_data}
-                  </td>
-                  <td className={`px-6 py-4 text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
-                    {query.result_summary || 'Processing...'}
-                  </td>
-                  <td className={`px-6 py-4 text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                    {formatCredits(query.credits_used)}
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center space-x-2">
-                      {getStatusIcon(query.status)}
-                      <StatusBadge status={query.status} size="sm" />
-                    </div>
-                  </td>
-                  <td className={`px-6 py-4 text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                    {new Date(query.created_at).toLocaleString()}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+      {/* Query History Cards */}
+      <div className={`border border-cyber-teal/20 rounded-lg p-6 ${isDark ? 'bg-muted-graphite' : 'bg-white'}`}>
+        {filteredQueries.map((query) => (
+          <div
+            key={query.id}
+            className={`border border-cyber-teal/10 rounded-lg p-4 mb-4 ${isDark ? 'bg-crisp-black/50' : 'bg-white'} transition-all duration-200 hover:shadow-md`}
+          >
+            <div className="flex items-center justify-between mb-2">
+              <h3 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                {query.category}
+              </h3>
+              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(query.status)}`}>
+                {getStatusIcon(query.status)}
+                <span className="ml-1 capitalize">{query.status}</span>
+              </span>
+            </div>
+            <div className="grid grid-cols-3 gap-2 text-sm">
+              <div>
+                <span className={`text-gray-400`}>Type:</span>
+                <span className={`ml-2 ${query.type === 'PRO' ? 'text-neon-magenta' : 'text-cyber-teal'}`}>
+                  {query.type}
+                </span>
+              </div>
+              <div>
+                <span className={`text-gray-400`}>Input:</span>
+                <span className={`ml-2 ${isDark ? 'text-gray-300' : 'text-gray-700'} break-words`}>
+                  {query.input_data}
+                </span>
+              </div>
+              <div>
+                <span className={`text-gray-400`}>Credits:</span>
+                <span className={`ml-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                  {formatCredits(query.credits_used)}
+                </span>
+              </div>
+              <div className="col-span-3">
+                <span className={`text-gray-400`}>Result:</span>
+                <span className={`ml-2 ${isDark ? 'text-gray-300' : 'text-gray-700'} break-words`}>
+                  {query.result_summary || 'Processing...'}
+                </span>
+              </div>
+              <div>
+                <span className={`text-gray-400`}>Time:</span>
+                <span className={`ml-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                  {new Date(query.created_at).toLocaleString()}
+                </span>
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* No Results */}
       {filteredQueries.length === 0 && !isLoading && (
         <div className="text-center py-12">
-          <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 ${
-            isDark ? 'bg-muted-graphite' : 'bg-gray-100'
-          }`}>
-            <Search className={`w-8 h-8 ${isDark ? 'text-gray-400' : 'text-gray-500'}`} />
-          </div>
-          <h3 className={`text-lg font-medium mb-2 ${
-            isDark ? 'text-white' : 'text-gray-900'
-          }`}>
+          <Search className={`w-16 h-16 mx-auto mb-4 ${isDark ? 'text-gray-600' : 'text-gray-400'}`} />
+          <h3 className={`text-lg font-medium mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
             No Query History Found
           </h3>
           <p className={isDark ? 'text-gray-400' : 'text-gray-600'}>
@@ -309,3 +271,4 @@ export const OfficerHistory: React.FC = () => {
     </div>
   );
 };
+```
