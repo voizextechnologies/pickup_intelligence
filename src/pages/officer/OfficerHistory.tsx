@@ -76,14 +76,14 @@ export const OfficerHistory: React.FC = () => {
   }
 
   return (
-    <div className={`p-6 space-y-6 ${isDark ? 'bg-crisp-black' : 'bg-soft-white'}`}>
+    <div className={\`p-6 space-y-6 ${isDark ? 'bg-crisp-black' : 'bg-soft-white'}`}>
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+          <h1 className={\`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
             Query History
           </h1>
-          <p className={`mt-1 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+          <p className={\`mt-1 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
             Your personal search and verification history
           </p>
         </div>
@@ -95,13 +95,13 @@ export const OfficerHistory: React.FC = () => {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className={`border border-cyber-teal/20 rounded-lg p-6 ${isDark ? 'bg-muted-graphite' : 'bg-white'}`}>
+        <div className={\`border border-cyber-teal/20 rounded-lg p-6 ${isDark ? 'bg-muted-graphite' : 'bg-white'}`}>
           <div className="flex items-center justify-between">
             <div>
-              <p className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+              <p className={\`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
                 Total Queries
               </p>
-              <p className={`text-2xl font-bold mt-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+              <p className={\`text-2xl font-bold mt-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>
                 {totalQueries}
               </p>
             </div>
@@ -109,13 +109,13 @@ export const OfficerHistory: React.FC = () => {
           </div>
         </div>
 
-        <div className={`border border-cyber-teal/20 rounded-lg p-6 ${isDark ? 'bg-muted-graphite' : 'bg-white'}`}>
+        <div className={\`border border-cyber-teal/20 rounded-lg p-6 ${isDark ? 'bg-muted-graphite' : 'bg-white'}`}>
           <div className="flex items-center justify-between">
             <div>
-              <p className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+              <p className={\`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
                 Success Rate
               </p>
-              <p className={`text-2xl font-bold mt-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+              <p className={\`text-2xl font-bold mt-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>
                 {successRate}%
               </p>
             </div>
@@ -123,13 +123,13 @@ export const OfficerHistory: React.FC = () => {
           </div>
         </div>
 
-        <div className={`border border-cyber-teal/20 rounded-lg p-6 ${isDark ? 'bg-muted-graphite' : 'bg-white'}`}>
+        <div className={\`border border-cyber-teal/20 rounded-lg p-6 ${isDark ? 'bg-muted-graphite' : 'bg-white'}`}>
           <div className="flex items-center justify-between">
             <div>
-              <p className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+              <p className={\`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
                 Credits Used
               </p>
-              <p className={`text-2xl font-bold mt-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+              <p className={\`text-2xl font-bold mt-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>
                 {formatCredits(totalCreditsUsed)}
               </p>
             </div>
@@ -137,13 +137,13 @@ export const OfficerHistory: React.FC = () => {
           </div>
         </div>
 
-        <div className={`border border-cyber-teal/20 rounded-lg p-6 ${isDark ? 'bg-muted-graphite' : 'bg-white'}`}>
+        <div className={\`border border-cyber-teal/20 rounded-lg p-6 ${isDark ? 'bg-muted-graphite' : 'bg-white'}`}>
           <div className="flex items-center justify-between">
             <div>
-              <p className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+              <p className={\`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
                 This Month
               </p>
-              <p className={`text-2xl font-bold mt-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+              <p className={\`text-2xl font-bold mt-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>
                 {thisMonthQueries}
               </p>
             </div>
@@ -153,16 +153,16 @@ export const OfficerHistory: React.FC = () => {
       </div>
 
       {/* Filters */}
-      <div className={`border border-cyber-teal/20 rounded-lg p-4 ${isDark ? 'bg-muted-graphite' : 'bg-white'}`}>
+      <div className={\`border border-cyber-teal/20 rounded-lg p-4 ${isDark ? 'bg-muted-graphite' : 'bg-white'}`}>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="relative">
-            <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 ${isDark ? 'text-gray-400' : 'text-gray-500'}`} />
+            <Search className={\`absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 ${isDark ? 'text-gray-400' : 'text-gray-500'}`} />
             <input
               type="text"
               placeholder="Search your queries..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className={`w-full pl-10 pr-4 py-2 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal ${
+              className={\`w-full pl-10 pr-4 py-2 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal ${
                 isDark 
                   ? 'bg-crisp-black text-white placeholder-gray-500' 
                   : 'bg-white text-gray-900 placeholder-gray-400'
@@ -173,7 +173,7 @@ export const OfficerHistory: React.FC = () => {
           <select
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value)}
-            className={`px-3 py-2 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal ${
+            className={\`px-3 py-2 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal ${
               isDark 
                 ? 'bg-crisp-black text-white' 
                 : 'bg-white text-gray-900'
@@ -187,7 +187,7 @@ export const OfficerHistory: React.FC = () => {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className={`px-3 py-2 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal ${
+            className={\`px-3 py-2 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal ${
               isDark 
                 ? 'bg-crisp-black text-white' 
                 : 'bg-white text-gray-900'
@@ -202,49 +202,49 @@ export const OfficerHistory: React.FC = () => {
       </div>
 
       {/* Query History Cards */}
-      <div className={`border border-cyber-teal/20 rounded-lg p-6 ${isDark ? 'bg-muted-graphite' : 'bg-white'}`}>
+      <div className={\`border border-cyber-teal/20 rounded-lg p-6 ${isDark ? 'bg-muted-graphite' : 'bg-white'}`}>
         {filteredQueries.map((query) => (
           <div
             key={query.id}
-            className={`border border-cyber-teal/10 rounded-lg p-4 mb-4 ${isDark ? 'bg-crisp-black/50' : 'bg-white'} transition-all duration-200 hover:shadow-md`}
+            className={\`border border-cyber-teal/10 rounded-lg p-4 mb-4 ${isDark ? 'bg-crisp-black/50' : 'bg-white'} transition-all duration-200 hover:shadow-md`}
           >
             <div className="flex items-center justify-between mb-2">
-              <h3 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+              <h3 className={\`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
                 {query.category}
               </h3>
-              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(query.status)}`}>
+              <span className={\`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(query.status)}`}>
                 {getStatusIcon(query.status)}
                 <span className="ml-1 capitalize">{query.status}</span>
               </span>
             </div>
             <div className="grid grid-cols-3 gap-2 text-sm">
               <div>
-                <span className={`text-gray-400`}>Type:</span>
-                <span className={`ml-2 ${query.type === 'PRO' ? 'text-neon-magenta' : 'text-cyber-teal'}`}>
+                <span className={\`text-gray-400`}>Type:</span>
+                <span className={\`ml-2 ${query.type === 'PRO' ? 'text-neon-magenta' : 'text-cyber-teal'}`}>
                   {query.type}
                 </span>
               </div>
               <div>
-                <span className={`text-gray-400`}>Input:</span>
-                <span className={`ml-2 ${isDark ? 'text-gray-300' : 'text-gray-700'} break-words`}>
+                <span className={\`text-gray-400`}>Input:</span>
+                <span className={\`ml-2 ${isDark ? 'text-gray-300' : 'text-gray-700'} break-words`}>
                   {query.input_data}
                 </span>
               </div>
               <div>
-                <span className={`text-gray-400`}>Credits:</span>
-                <span className={`ml-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                <span className={\`text-gray-400`}>Credits:</span>
+                <span className={\`ml-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
                   {formatCredits(query.credits_used)}
                 </span>
               </div>
               <div className="col-span-3">
-                <span className={`text-gray-400`}>Result:</span>
-                <span className={`ml-2 ${isDark ? 'text-gray-300' : 'text-gray-700'} break-words`}>
+                <span className={\`text-gray-400`}>Result:</span>
+                <span className={\`ml-2 ${isDark ? 'text-gray-300' : 'text-gray-700'} break-words`}>
                   {query.result_summary || 'Processing...'}
                 </span>
               </div>
               <div>
-                <span className={`text-gray-400`}>Time:</span>
-                <span className={`ml-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                <span className={\`text-gray-400`}>Time:</span>
+                <span className={\`ml-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
                   {new Date(query.created_at).toLocaleString()}
                 </span>
               </div>
@@ -256,8 +256,8 @@ export const OfficerHistory: React.FC = () => {
       {/* No Results */}
       {filteredQueries.length === 0 && !isLoading && (
         <div className="text-center py-12">
-          <Search className={`w-16 h-16 mx-auto mb-4 ${isDark ? 'text-gray-600' : 'text-gray-400'}`} />
-          <h3 className={`text-lg font-medium mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+          <Search className={\`w-16 h-16 mx-auto mb-4 ${isDark ? 'text-gray-600' : 'text-gray-400'}`} />
+          <h3 className={\`text-lg font-medium mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
             No Query History Found
           </h3>
           <p className={isDark ? 'text-gray-400' : 'text-gray-600'}>
