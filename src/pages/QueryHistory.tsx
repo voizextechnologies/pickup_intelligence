@@ -246,7 +246,7 @@ export const QueryHistory: React.FC = () => {
         isDark ? 'bg-muted-graphite' : 'bg-white'
       }`}>
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full table-fixed"> {/* Added table-fixed */}
             <thead className={`border-b border-cyber-teal/20 ${
               isDark ? 'bg-crisp-black/50' : 'bg-gray-50'
             }`}>
@@ -320,7 +320,7 @@ export const QueryHistory: React.FC = () => {
                       {query.type}
                     </span>
                   </td>
-                  <td className={`px-6 py-4 text-sm ${
+                  <td className={`px-6 py-4 text-sm break-words ${ /* Added break-words */
                     isDark ? 'text-gray-300' : 'text-gray-700'
                   }`}>
                     {query.input_data}
@@ -330,7 +330,7 @@ export const QueryHistory: React.FC = () => {
                   }`}>
                     {query.source || 'N/A'}
                   </td>
-                  <td className={`px-6 py-4 text-sm ${
+                  <td className={`px-6 py-4 text-sm break-words ${ /* Added break-words */
                     isDark ? 'text-gray-300' : 'text-gray-700'
                   }`}>
                     {query.result_summary || 'Processing...'}
