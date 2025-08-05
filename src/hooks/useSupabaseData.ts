@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase, Officer, CreditTransaction, Query, OfficerRegistration, LiveRequest, API, RatePlan, PlanAPI, ManualRequest } from '../lib/supabase';
 import toast from 'react-hot-toast';
 import { useNotification } from '../contexts/NotificationContext'; // Import useNotification
+import { addDays, isPast } from 'date-fns'; // Import date-fns utilities
 
 export const useSupabaseData = () => {
   const [officers, setOfficers] = useState<Officer[]>([]);
@@ -203,23 +204,39 @@ export const useSupabaseData = () => {
 
   const updateOfficer = async (id: string, updates: Partial<Officer>) => {
     try {
-      // Extract password and remove it from the updates object
-      const { password, ...updatesWithoutPassword } = updates as any;
-      
-      // Prepare the update data
-      const updateData = { ...updatesWithoutPassword };
-      
-      // If plan_id is being updated, adjust credits based on new plan
-      if (updates.plan_id !== undefined) {
-        const selectedPlan = ratePlans.find(plan => plan.id === updates.plan_id);
-        if (selectedPlan && updates.plan_id) {
-          // Only update credits if they weren't explicitly provided in updates
-          if (updates.credits_remaining === undefined && updates.total_credits === undefined) {
-            updateData.credits_remaining = selectedPlan.default_credits;
-            updateData.total_credits = selectedPlan.default_credits;
+      // Fetch current officer data to check plan expiry
+      const { data: currentOfficer, error: fetchError } = await supabase
+        .from('officers')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      const officerToUpdate = { ...currentOfficer, ...updates };
+
+      // Check for plan expiry and apply credit reset logic
+      if (officerToUpdate.plan_id) {
+        const selectedPlan = ratePlans.find(plan => plan.id === officerToUpdate.plan_id);
+        if (selectedPlan && selectedPlan.validity_days) {
+          const planStartDate = new Date(officerToUpdate.registered_on);
+          const planExpiryDate = addDays(planStartDate, selectedPlan.validity_days);
+
+          if (isPast(planExpiryDate) && !selectedPlan.carry_forward_credits_on_renewal) {
+            // Plan has expired and credits should not be carried forward
+            officerToUpdate.credits_remaining = selectedPlan.default_credits;
+            officerToUpdate.total_credits = selectedPlan.default_credits;
+            officerToUpdate.registered_on = new Date().toISOString(); // Reset plan start date
+            toast.info(`Officer ${officerToUpdate.name}'s plan expired. Credits reset to ${selectedPlan.default_credits}.`);
           }
         }
       }
+
+      // Extract password and remove it from the updates object
+      const { password, ...updatesWithoutPassword } = officerToUpdate as any;
+      
+      // Prepare the update data
+      const updateData = { ...updatesWithoutPassword };
       
       // If password is being updated, hash it
       if (password && password.trim()) {
