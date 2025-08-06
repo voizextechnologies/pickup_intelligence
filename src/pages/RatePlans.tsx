@@ -34,6 +34,8 @@ export const RatePlans: React.FC = () => {
     monthly_fee: 0, // Changed to number for decimal support
     renewal_required: true,
     topup_allowed: true,
+    validity_days: 30, // New field
+    carry_forward_credits_on_renewal: false, // New field
     apis: [] as any[]
   });
 
@@ -69,6 +71,8 @@ export const RatePlans: React.FC = () => {
       monthly_fee: 0,
       renewal_required: true,
       topup_allowed: true,
+      validity_days: 30, // Default for new plan
+      carry_forward_credits_on_renewal: false, // Default for new plan
       apis: defaultAPIs
     });
     setEditingPlan(null);
@@ -111,6 +115,8 @@ export const RatePlans: React.FC = () => {
       monthly_fee: plan.monthly_fee,
       renewal_required: plan.renewal_required,
       topup_allowed: plan.topup_allowed,
+      validity_days: plan.validity_days || 30, // Populate from existing plan or default
+      carry_forward_credits_on_renewal: plan.carry_forward_credits_on_renewal || false, // Populate from existing plan or default
       apis: allAPIsConfig
     });
     setEditingPlan(plan);
@@ -401,6 +407,18 @@ export const RatePlans: React.FC = () => {
                     <span className={`text-sm font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{plan.default_credits}</span>
                   </div>
                   <div className="flex justify-between">
+                    <span className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Validity:</span>
+                    <span className={`text-sm font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                      {plan.validity_days} days
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Carry Forward:</span>
+                    <span className={`text-sm ${plan.carry_forward_credits_on_renewal ? 'text-green-400' : 'text-red-400'}`}>
+                      {plan.carry_forward_credits_on_renewal ? 'Yes' : 'No'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
                     <span className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Renewal Required:</span>
                     <span className={`text-sm ${plan.renewal_required ? 'text-green-400' : 'text-red-400'}`}>
                       {plan.renewal_required ? 'Yes' : 'No'}
@@ -666,12 +684,32 @@ export const RatePlans: React.FC = () => {
                 </p>
               </div>
 
+              <div>
+                <label className={`block text-sm font-medium mb-2 ${
+                  isDark ? 'text-gray-300' : 'text-gray-700'
+                }`}>
+                  Validity (Days) *
+                </label>
+                <input
+                  type="number"
+                  value={planFormData.validity_days}
+                  onChange={(e) => setPlanFormData(prev => ({ ...prev, validity_days: parseInt(e.target.value) || 0 }))}
+                  placeholder="30"
+                  className={`w-full px-3 py-2 border border-cyber-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyber-teal ${
+                    isDark 
+                      ? 'bg-crisp-black text-white placeholder-gray-500' 
+                      : 'bg-white text-gray-900 placeholder-gray-400'
+                  }`}
+                />
+              </div>
+
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <span className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
                     Renewal Required (30 days)
                   </span>
                   <button
+                    type="button"
                     onClick={() => setPlanFormData(prev => ({ ...prev, renewal_required: !prev.renewal_required }))}
                     className="flex items-center"
                   >
@@ -688,10 +726,28 @@ export const RatePlans: React.FC = () => {
                     Top-up Allowed
                   </span>
                   <button
+                    type="button"
                     onClick={() => setPlanFormData(prev => ({ ...prev, topup_allowed: !prev.topup_allowed }))}
                     className="flex items-center"
                   >
                     {planFormData.topup_allowed ? (
+                      <ToggleRight className="w-8 h-8 text-cyber-teal" />
+                    ) : (
+                      <ToggleLeft className="w-8 h-8 text-gray-400" />
+                    )}
+                  </button>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <span className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                    Carry Forward Credits on Renewal
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setPlanFormData(prev => ({ ...prev, carry_forward_credits_on_renewal: !prev.carry_forward_credits_on_renewal }))}
+                    className="flex items-center"
+                  >
+                    {planFormData.carry_forward_credits_on_renewal ? (
                       <ToggleRight className="w-8 h-8 text-cyber-teal" />
                     ) : (
                       <ToggleLeft className="w-8 h-8 text-gray-400" />
@@ -729,6 +785,7 @@ export const RatePlans: React.FC = () => {
                           </span>
                         </div>
                         <button
+                          type="button"
                           onClick={() => updatePlanAPI(index, planAPI.api_id, 'enabled', !planAPI.enabled)}
                           className="flex items-center"
                         >
@@ -806,6 +863,7 @@ export const RatePlans: React.FC = () => {
 
             <div className="flex justify-end space-x-3">
               <button
+                type="button"
                 onClick={() => setShowPlanModal(false)}
                 className={`px-4 py-2 rounded-lg transition-colors ${
                   isDark ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'
@@ -814,6 +872,7 @@ export const RatePlans: React.FC = () => {
                 Cancel
               </button>
               <button
+                type="submit"
                 onClick={handleSavePlan}
                 disabled={isSubmitting}
                 className="px-4 py-2 bg-cyber-gradient text-white rounded-lg hover:shadow-cyber transition-all duration-200 disabled:opacity-50 flex items-center space-x-2"
@@ -853,6 +912,7 @@ export const RatePlans: React.FC = () => {
 
             <div className="flex justify-end space-x-3">
               <button
+                type="button"
                 onClick={() => setShowSyncModal(false)}
                 className={`px-4 py-2 rounded-lg transition-colors ${
                   isDark ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'
@@ -861,6 +921,7 @@ export const RatePlans: React.FC = () => {
                 Cancel
               </button>
               <button
+                type="button"
                 onClick={handleSyncAllPlans}
                 disabled={isSubmitting}
                 className="px-4 py-2 bg-electric-blue/20 text-electric-blue rounded-lg hover:bg-electric-blue/30 transition-all duration-200 disabled:opacity-50 flex items-center space-x-2"
@@ -885,6 +946,7 @@ export const RatePlans: React.FC = () => {
                 {editingAPI ? 'Edit API' : 'Add New API'}
               </h3>
               <button
+                type="button"
                 onClick={() => setShowAPIModal(false)}
                 className={`p-2 transition-colors ${
                   isDark ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'
@@ -1078,6 +1140,7 @@ export const RatePlans: React.FC = () => {
             {/* Fixed Footer */}
             <div className="flex justify-end space-x-3 p-6 pt-4 border-t border-cyber-teal/20">
               <button
+                type="button"
                 onClick={() => setShowAPIModal(false)}
                 className={`px-4 py-2 rounded-lg transition-colors ${
                   isDark ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'
@@ -1086,6 +1149,7 @@ export const RatePlans: React.FC = () => {
                 Cancel
               </button>
               <button
+                type="button"
                 onClick={handleSaveAPI}
                 disabled={isSubmitting}
                 className="px-4 py-2 bg-cyber-gradient text-white rounded-lg hover:shadow-cyber transition-all duration-200 disabled:opacity-50 flex items-center space-x-2"
