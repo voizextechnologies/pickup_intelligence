@@ -183,7 +183,8 @@ export const useSupabaseData = () => {
           password_hash: passwordHash,
           total_queries: 0,
           credits_remaining: finalCreditsRemaining,
-          total_credits: finalTotalCredits
+          total_credits: finalTotalCredits,
+          plan_start_date: new Date().toISOString() // Added this line
         }])
         .select()
         .single();
@@ -218,16 +219,37 @@ export const useSupabaseData = () => {
       // Check for plan expiry and apply credit reset logic
       if (officerToUpdate.plan_id) {
         const selectedPlan = ratePlans.find(plan => plan.id === officerToUpdate.plan_id);
-        if (selectedPlan && selectedPlan.validity_days) {
-          const planStartDate = new Date(officerToUpdate.registered_on);
+        if (selectedPlan && selectedPlan.validity_days !== null && selectedPlan.validity_days !== undefined && selectedPlan.validity_days > 0) { // Ensure validity_days is positive
+          const planStartDate = new Date(officerToUpdate.plan_start_date || officerToUpdate.registered_on);
           const planExpiryDate = addDays(planStartDate, selectedPlan.validity_days);
 
-          if (isPast(planExpiryDate) && !selectedPlan.carry_forward_credits_on_renewal) {
-            // Plan has expired and credits should not be carried forward
-            officerToUpdate.credits_remaining = selectedPlan.default_credits;
-            officerToUpdate.total_credits = selectedPlan.default_credits;
-            officerToUpdate.registered_on = new Date().toISOString(); // Reset plan start date
-            toast.info(`Officer ${officerToUpdate.name}'s plan expired. Credits reset to ${selectedPlan.default_credits}.`);
+          if (isPast(planExpiryDate)) { // Only proceed if the plan has actually expired
+            const renewal_enabled = selectedPlan.renewal_required;
+            const carry_forward_enabled = selectedPlan.carry_forward_credits_on_renewal;
+            const previous_credits = currentOfficer.credits_remaining; // Credits before this renewal check
+            const renewal_credits = selectedPlan.default_credits;
+            let new_credits = 0;
+            let toastMessage = '';
+
+            if (renewal_enabled && carry_forward_enabled) {
+                new_credits = previous_credits + renewal_credits;
+                toastMessage = `Officer ${officerToUpdate.name}'s plan renewed. Credits: ${previous_credits.toFixed(2)} (carried) + ${renewal_credits.toFixed(2)} (renewal) = ${new_credits.toFixed(2)}.`;
+            } else if (renewal_enabled && !carry_forward_enabled) {
+                new_credits = renewal_credits;
+                toastMessage = `Officer ${officerToUpdate.name}'s plan renewed. Credits reset to ${renewal_credits.toFixed(2)}.`;
+            } else if (!renewal_enabled && carry_forward_enabled) {
+                new_credits = previous_credits; // No renewal credits added, just carry forward
+                toastMessage = `Officer ${officerToUpdate.name}'s plan expired (no auto-renewal). Credits carried forward: ${previous_credits.toFixed(2)}.`;
+            } else if (!renewal_enabled && !carry_forward_enabled) {
+                new_credits = 0; // Reset everything
+                toastMessage = `Officer ${officerToUpdate.name}'s plan expired (no auto-renewal). Credits reset to 0.`;
+            }
+
+            officerToUpdate.credits_remaining = new_credits;
+            officerToUpdate.total_credits = new_credits; // total_credits should reflect the new cycle's total
+            officerToUpdate.plan_start_date = new Date().toISOString(); // Always reset plan_start_date on expiry/renewal
+
+            toast(toastMessage, { type: 'info' });
           }
         }
       }
@@ -237,6 +259,11 @@ export const useSupabaseData = () => {
       
       // Prepare the update data
       const updateData = { ...updatesWithoutPassword };
+
+      // If plan_id is being changed, reset plan_start_date
+      if (updates.plan_id && updates.plan_id !== currentOfficer.plan_id) {
+        updateData.plan_start_date = new Date().toISOString();
+      }
       
       // If password is being updated, hash it
       if (password && password.trim()) {
